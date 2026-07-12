@@ -11,6 +11,7 @@ import argparse
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -28,7 +29,7 @@ def run(args: list[str], *, check: bool = True, json_input: dict[str, Any] | Non
 
 
 def gh_json(args: list[str], *, default: Any = None) -> Any:
-    result = run(args, check=False)
+    result = run_retry(args)
     if result.returncode != 0:
         if default is not None:
             return default
@@ -80,12 +81,36 @@ def project_context(org: str, number: int) -> tuple[str, dict[str, dict[str, Any
     return project_id, fields, item_by_issue
 
 
-def set_project_value(org: str, project_id: str, item_id: str, field: dict[str, Any], value: Any, apply: bool) -> bool:
+def run_retry(args: list[str], *, attempts: int = 3, delay_seconds: float = 2.0) -> subprocess.CompletedProcess[str]:
+    """Run an idempotent gh edit command with limited retries for transient network failures."""
+    result: subprocess.CompletedProcess[str] | None = None
+    for attempt in range(1, attempts + 1):
+        result = run(args, check=False)
+        if result.returncode == 0:
+            return result
+        if attempt < attempts:
+            time.sleep(delay_seconds * attempt)
+    assert result is not None
+    return result
+
+
+def set_project_value(
+    org: str,
+    project_id: str,
+    item_id: str,
+    field: dict[str, Any],
+    value: Any,
+    apply: bool,
+    expected_data_type: str | None = None,
+) -> bool:
     if value in (None, ""):
         return True
     field_name = field.get("name", "<unknown>")
     args = ["project", "item-edit", "--id", item_id, "--project-id", project_id, "--field-id", field["id"]]
-    data_type = (field.get("dataType") or field.get("type") or "").upper()
+    # `gh project field-list --format json` may expose only the GraphQL object
+    # type (for example, ProjectV2Field), not the underlying NUMBER/DATE/TEXT
+    # data type. Prefer the authoritative metadata configuration when present.
+    data_type = (expected_data_type or field.get("dataType") or field.get("type") or "").upper()
     if data_type in {"SINGLE_SELECT", "SINGLESELECT"} or field.get("options"):
         option = next((o for o in field.get("options", []) if o.get("name") == str(value)), None)
         if not option:
@@ -101,7 +126,7 @@ def set_project_value(org: str, project_id: str, item_id: str, field: dict[str, 
     if not apply:
         print(f"[DRY-RUN] Set Project field {field_name}={value}")
         return True
-    result = run(args, check=False)
+    result = run_retry(args)
     if result.returncode != 0:
         print(f"[WARN] Could not set Project field {field_name}: {result.stderr.strip() or result.stdout.strip()}")
         return False
@@ -114,6 +139,7 @@ def main() -> int:
     parser.add_argument("--repository", default="movepal")
     parser.add_argument("--project-title", default="MovePal — Product and Sprint Board")
     parser.add_argument("--backlog", type=Path, default=Path("backlog/product_backlog.json"))
+    parser.add_argument("--metadata", type=Path, default=Path("config/project_metadata.json"))
     parser.add_argument("--source", choices=["all", "sprint-1", "qa", "later"], default="all")
     parser.add_argument("--task-id-start")
     parser.add_argument("--task-id-end")
@@ -125,6 +151,12 @@ def main() -> int:
     args = parser.parse_args()
 
     data = json.loads(args.backlog.read_text(encoding="utf-8"))
+    metadata = json.loads(args.metadata.read_text(encoding="utf-8"))
+    field_data_types = {
+        item["name"]: str(item["data_type"]).upper()
+        for item in metadata.get("project_fields", [])
+        if item.get("name") and item.get("data_type")
+    }
     tasks: list[dict[str, Any]] = data["tasks"]
     if args.source == "sprint-1":
         tasks = [t for t in tasks if t["sprint_designation"] == "sprint-1"]
@@ -228,7 +260,7 @@ def main() -> int:
             if int(issue["number"]) < 0:
                 print(f"[DRY-RUN] Set issue type for {tid} to {issue_type}")
             elif args.apply:
-                type_result = run(["issue", "edit", str(issue["number"]), "--repo", repo, "--type", issue_type], check=False)
+                type_result = run_retry(["issue", "edit", str(issue["number"]), "--repo", repo, "--type", issue_type])
                 if type_result.returncode != 0:
                     print(f"[WARN] Could not set issue type {issue_type} for {tid}: {type_result.stderr.strip() or type_result.stdout.strip()}")
                     summary["issue_type_warnings"] += 1
@@ -265,7 +297,15 @@ def main() -> int:
                             print(f"[WARN] Missing Project field: {field_name}")
                             summary["project_field_warnings"] += 1
                             continue
-                        if not set_project_value(args.organization, project_id, item_id, field, value, args.apply):
+                        if not set_project_value(
+                            args.organization,
+                            project_id,
+                            item_id,
+                            field,
+                            value,
+                            args.apply,
+                            field_data_types.get(field_name),
+                        ):
                             summary["project_field_warnings"] += 1
                 elif not args.apply and issue_number < 0:
                     print(f"[DRY-RUN] Set all configured Project fields for {tid} after issue creation.")
