@@ -1,0 +1,523 @@
+{
+  "qa_policy": "Manual external sanity QA only on the final sprint day after MP-024.",
+  "date": "2026-07-29",
+  "tasks": [
+    {
+      "task_id": "MP-028",
+      "position": 28,
+      "title": "Final-day manual QA: clean installation, startup, and README sanity",
+      "value": "Independently verify that a beginner can obtain the frozen MovePal release candidate, create a clean environment, install dependencies, run tests, start Flask, and reach the application by following only the documented instructions. This task is intentionally bounded for beginners and includes explicit investigation, implementation or preparation, evidence, peer review, and documentation time rather than treating learning as unpaid overhead.",
+      "description": "Independently verify that a beginner can obtain the frozen MovePal release candidate, create a clean environment, install dependencies, run tests, start Flask, and reach the application by following only the documented instructions.\n\nWork sequence:\n\n1. Use a clean folder and new Python 3.11 virtual environment.\n\n2. Record OS, Python, Git, browser, and tested commit.\n\n3. Follow README clone/install/test/start commands without undocumented corrections.\n\n4. Confirm no secret, camera, private dataset, or raw recording is required to start.\n\n5. Open the application and fallback sample mode.\n\n6. For every failure, record command, complete relevant error, expected/actual result, severity, and evidence.\n\n7. Retest only after Team B provides a fixed commit.\n\nDependency handling:\n\nThis task depends on MP-024. Do not begin dependency-sensitive implementation until the listed outputs are available. The owner may perform reading or a disposable spike earlier, but must re-check assumptions after dependencies merge.",
+      "beginner_learning_objective": [
+        "Execute a reproducible clean-install test.",
+        "Separate documentation defects from environment-specific failures.",
+        "Report exact commands and versions."
+      ],
+      "deliverables": [
+        "Completed installation/startup checklist",
+        "Environment and tested commit record",
+        "Separate bug/documentation issues for failures",
+        "Retest result"
+      ],
+      "acceptance_criteria": [
+        "A clean environment reaches the application or a reproducible blocking issue is filed.",
+        "README commands are executed exactly and deviations are reported.",
+        "Tests/CI expectations are compared with local behavior.",
+        "Evidence is sufficient for Team B to reproduce."
+      ],
+      "definition_of_done": [
+        "All acceptance criteria are demonstrated with evidence in the issue or pull request.",
+        "Relevant documentation is updated so another beginner can repeat the work.",
+        "No credentials, personal images, student emails, or raw volunteer recordings are committed.",
+        "The task owner records decisions, assumptions, unresolved limitations, and follow-up work.",
+        "Manual checks record environment, exact steps, expected result, actual result, severity, evidence, tested commit, and retest result.",
+        "The QA member does not implement feature code as part of this issue; defects are opened as separate bug issues for Team B."
+      ],
+      "dependencies": [
+        "MP-024"
+      ],
+      "related_tasks": [],
+      "blocking_status": "blocked",
+      "workstream": "QA",
+      "suggested_scrum_role": "developer",
+      "team": "MovePal QA",
+      "primary_assignee": "Tojan-Naiem",
+      "contributors": [],
+      "suggested_reviewer": "alaamadii",
+      "estimated_focused_work_hours": 3.5,
+      "investigation_buffer_hours": 0.5,
+      "review_buffer_hours": 0,
+      "qa_buffer_hours": 3.0,
+      "effort_allocation_hours": {
+        "Tojan-Naiem": 3.5
+      },
+      "priority": "P0",
+      "sprint_designation": "sprint-1",
+      "github_labels": [
+        "type:qa",
+        "area:testing",
+        "team:aidsign-qa",
+        "sprint:1"
+      ],
+      "milestone": "Sprint 1 — MovePal MVP",
+      "project_status": "New",
+      "risks": [
+        "The tested commit differs from the frozen release candidate.",
+        "Evidence is incomplete or contains private imagery.",
+        "A failure is described vaguely instead of reproducibly."
+      ],
+      "helpful_references": [
+        "`docs/qa_handoff.md`",
+        "QA issue template",
+        "Frozen release-candidate commit"
+      ],
+      "pull_request_required": false,
+      "suggested_branch_name": null,
+      "suggested_test_requirements": [
+        "Manual clean clone/install/test/start",
+        "Fallback page smoke test"
+      ],
+      "security_privacy_considerations": [
+        "Use included non-sensitive samples where possible.",
+        "Redact screenshots and never attach volunteer raw recordings or student emails."
+      ],
+      "demo_evidence_required": [
+        "Show the clean environment, startup command, and loaded application or blocking defect."
+      ],
+      "start_date": "2026-07-29",
+      "target_date": "2026-07-29",
+      "manual_testing_only": true,
+      "issue_body": "<!-- task-id: MP-028 -->\n# MP-028 — Final-day manual QA: clean installation, startup, and README sanity\n\n## Value\nIndependently verify that a beginner can obtain the frozen MovePal release candidate, create a clean environment, install dependencies, run tests, start Flask, and reach the application by following only the documented instructions. This task is intentionally bounded for beginners and includes explicit investigation, implementation or preparation, evidence, peer review, and documentation time rather than treating learning as unpaid overhead.\n\n## Detailed description and work sequence\nIndependently verify that a beginner can obtain the frozen MovePal release candidate, create a clean environment, install dependencies, run tests, start Flask, and reach the application by following only the documented instructions.\n\nWork sequence:\n\n1. Use a clean folder and new Python 3.11 virtual environment.\n\n2. Record OS, Python, Git, browser, and tested commit.\n\n3. Follow README clone/install/test/start commands without undocumented corrections.\n\n4. Confirm no secret, camera, private dataset, or raw recording is required to start.\n\n5. Open the application and fallback sample mode.\n\n6. For every failure, record command, complete relevant error, expected/actual result, severity, and evidence.\n\n7. Retest only after Team B provides a fixed commit.\n\nDependency handling:\n\nThis task depends on MP-024. Do not begin dependency-sensitive implementation until the listed outputs are available. The owner may perform reading or a disposable spike earlier, but must re-check assumptions after dependencies merge.\n\n## Beginner learning objectives\n- Execute a reproducible clean-install test.\n- Separate documentation defects from environment-specific failures.\n- Report exact commands and versions.\n\n## Deliverables\n- Completed installation/startup checklist\n- Environment and tested commit record\n- Separate bug/documentation issues for failures\n- Retest result\n\n## Acceptance criteria\n- A clean environment reaches the application or a reproducible blocking issue is filed.\n- README commands are executed exactly and deviations are reported.\n- Tests/CI expectations are compared with local behavior.\n- Evidence is sufficient for Team B to reproduce.\n\n## Definition of Done\n- All acceptance criteria are demonstrated with evidence in the issue or pull request.\n- Relevant documentation is updated so another beginner can repeat the work.\n- No credentials, personal images, student emails, or raw volunteer recordings are committed.\n- The task owner records decisions, assumptions, unresolved limitations, and follow-up work.\n- Manual checks record environment, exact steps, expected result, actual result, severity, evidence, tested commit, and retest result.\n- The QA member does not implement feature code as part of this issue; defects are opened as separate bug issues for Team B.\n\n## Dependencies and coordination\n- Blocking dependencies: MP-024\n- Related coordination tasks: None\n- Initial blocking status: blocked\n- Do not mark this issue In Progress until required dependency outputs are available, except for a time-boxed learning spike that is explicitly recorded here.\n\n## Ownership and review\n- Team: MovePal QA\n- Workstream: QA\n- Suggested Scrum role: developer\n- Primary assignee: Tojan-Naiem\n- Contributors: None planned\n- Suggested independent reviewer: alaamadii\n- Planned effort allocation: @Tojan-Naiem: 3.5 h\n- Pull request: Not required; evidence belongs in this issue and linked defects\n- Suggested branch: `not-applicable`\n\n## Beginner estimate and buffers\n- Focused-work estimate: 3.5 hours\n- Investigation/learning buffer included: 0.5 hours\n- Review/collaboration buffer included: 0 hours\n- QA/rework buffer included: 3 hours\n- This is a rough beginner estimate. Update the issue when new evidence changes the estimate; do not hide learning time.\n\n## Planning metadata\n- Priority: P0\n- Sprint designation: sprint-1\n- Milestone: Sprint 1 — MovePal MVP\n- Initial Project stage: New\n- Planned start: 2026-07-29\n- Planned target: 2026-07-29\n- Manual testing only: Yes\n\n## Suggested verification\n- Manual clean clone/install/test/start\n- Fallback page smoke test\n\n## Risks\n- The tested commit differs from the frozen release candidate.\n- Evidence is incomplete or contains private imagery.\n- A failure is described vaguely instead of reproducibly.\n\n## Security and privacy\n- Use included non-sensitive samples where possible.\n- Redact screenshots and never attach volunteer raw recordings or student emails.\n\n## Helpful documentation topics\n- `docs/qa_handoff.md`\n- QA issue template\n- Frozen release-candidate commit\n\n## Demo/evidence required\n- Show the clean environment, startup command, and loaded application or blocking defect.\n"
+    },
+    {
+      "task_id": "MP-029",
+      "position": 29,
+      "title": "Final-day manual QA: camera permission, no-camera, browser, and fallback sanity",
+      "value": "Verify that camera use is understandable and recoverable across permission granted, denied, unavailable, unsupported, or insecure-context situations, and that fallback mode remains fully usable. This task is intentionally bounded for beginners and includes explicit investigation, implementation or preparation, evidence, peer review, and documentation time rather than treating learning as unpaid overhead.",
+      "description": "Verify that camera use is understandable and recoverable across permission granted, denied, unavailable, unsupported, or insecure-context situations, and that fallback mode remains fully usable.\n\nWork sequence:\n\n1. Record OS, browser/version, device availability, and tested commit.\n\n2. Confirm camera permission is requested only after explicit user action.\n\n3. Test granted permission when a camera is available and confirm preview/stop behavior.\n\n4. Test denial or blocked permission and confirm a friendly recovery path.\n\n5. Test no-camera/unsupported behavior where feasible using browser/device controls.\n\n6. Complete at least one activity through fallback mode.\n\n7. Check privacy wording near camera controls and file separate defects for each distinct failure.\n\nDependency handling:\n\nThis task depends on MP-024. Do not begin dependency-sensitive implementation until the listed outputs are available. The owner may perform reading or a disposable spike earlier, but must re-check assumptions after dependencies merge.",
+      "beginner_learning_objective": [
+        "Test browser permission and device-failure paths.",
+        "Recognize privacy and recovery requirements.",
+        "Capture browser/version-specific evidence."
+      ],
+      "deliverables": [
+        "Permission/fallback matrix",
+        "Screenshots or notes with no identifiable imagery",
+        "Bug issues and retest results"
+      ],
+      "acceptance_criteria": [
+        "All tested permission states have an understandable result.",
+        "Denial/no-camera does not trap the user.",
+        "Fallback mode can continue the session.",
+        "Camera stops after session/end/navigation where observable.",
+        "Browser-specific limitations are documented."
+      ],
+      "definition_of_done": [
+        "All acceptance criteria are demonstrated with evidence in the issue or pull request.",
+        "Relevant documentation is updated so another beginner can repeat the work.",
+        "No credentials, personal images, student emails, or raw volunteer recordings are committed.",
+        "The task owner records decisions, assumptions, unresolved limitations, and follow-up work.",
+        "Manual checks record environment, exact steps, expected result, actual result, severity, evidence, tested commit, and retest result.",
+        "The QA member does not implement feature code as part of this issue; defects are opened as separate bug issues for Team B."
+      ],
+      "dependencies": [
+        "MP-024"
+      ],
+      "related_tasks": [],
+      "blocking_status": "blocked",
+      "workstream": "QA",
+      "suggested_scrum_role": "developer",
+      "team": "MovePal QA",
+      "primary_assignee": "SajaZenaty",
+      "contributors": [],
+      "suggested_reviewer": "JHT127",
+      "estimated_focused_work_hours": 3.5,
+      "investigation_buffer_hours": 0.5,
+      "review_buffer_hours": 0,
+      "qa_buffer_hours": 3.0,
+      "effort_allocation_hours": {
+        "SajaZenaty": 3.5
+      },
+      "priority": "P0",
+      "sprint_designation": "sprint-1",
+      "github_labels": [
+        "type:qa",
+        "area:testing",
+        "team:aidsign-qa",
+        "sprint:1"
+      ],
+      "milestone": "Sprint 1 — MovePal MVP",
+      "project_status": "New",
+      "risks": [
+        "The tested commit differs from the frozen release candidate.",
+        "Evidence is incomplete or contains private imagery.",
+        "A failure is described vaguely instead of reproducibly."
+      ],
+      "helpful_references": [
+        "`docs/qa_handoff.md`",
+        "QA issue template",
+        "Frozen release-candidate commit"
+      ],
+      "pull_request_required": false,
+      "suggested_branch_name": null,
+      "suggested_test_requirements": [
+        "Manual grant/deny/no-device/unsupported/fallback matrix"
+      ],
+      "security_privacy_considerations": [
+        "Use included non-sensitive samples where possible.",
+        "Redact screenshots and never attach volunteer raw recordings or student emails."
+      ],
+      "demo_evidence_required": [
+        "Show denial recovery and fallback completion."
+      ],
+      "start_date": "2026-07-29",
+      "target_date": "2026-07-29",
+      "manual_testing_only": true,
+      "issue_body": "<!-- task-id: MP-029 -->\n# MP-029 — Final-day manual QA: camera permission, no-camera, browser, and fallback sanity\n\n## Value\nVerify that camera use is understandable and recoverable across permission granted, denied, unavailable, unsupported, or insecure-context situations, and that fallback mode remains fully usable. This task is intentionally bounded for beginners and includes explicit investigation, implementation or preparation, evidence, peer review, and documentation time rather than treating learning as unpaid overhead.\n\n## Detailed description and work sequence\nVerify that camera use is understandable and recoverable across permission granted, denied, unavailable, unsupported, or insecure-context situations, and that fallback mode remains fully usable.\n\nWork sequence:\n\n1. Record OS, browser/version, device availability, and tested commit.\n\n2. Confirm camera permission is requested only after explicit user action.\n\n3. Test granted permission when a camera is available and confirm preview/stop behavior.\n\n4. Test denial or blocked permission and confirm a friendly recovery path.\n\n5. Test no-camera/unsupported behavior where feasible using browser/device controls.\n\n6. Complete at least one activity through fallback mode.\n\n7. Check privacy wording near camera controls and file separate defects for each distinct failure.\n\nDependency handling:\n\nThis task depends on MP-024. Do not begin dependency-sensitive implementation until the listed outputs are available. The owner may perform reading or a disposable spike earlier, but must re-check assumptions after dependencies merge.\n\n## Beginner learning objectives\n- Test browser permission and device-failure paths.\n- Recognize privacy and recovery requirements.\n- Capture browser/version-specific evidence.\n\n## Deliverables\n- Permission/fallback matrix\n- Screenshots or notes with no identifiable imagery\n- Bug issues and retest results\n\n## Acceptance criteria\n- All tested permission states have an understandable result.\n- Denial/no-camera does not trap the user.\n- Fallback mode can continue the session.\n- Camera stops after session/end/navigation where observable.\n- Browser-specific limitations are documented.\n\n## Definition of Done\n- All acceptance criteria are demonstrated with evidence in the issue or pull request.\n- Relevant documentation is updated so another beginner can repeat the work.\n- No credentials, personal images, student emails, or raw volunteer recordings are committed.\n- The task owner records decisions, assumptions, unresolved limitations, and follow-up work.\n- Manual checks record environment, exact steps, expected result, actual result, severity, evidence, tested commit, and retest result.\n- The QA member does not implement feature code as part of this issue; defects are opened as separate bug issues for Team B.\n\n## Dependencies and coordination\n- Blocking dependencies: MP-024\n- Related coordination tasks: None\n- Initial blocking status: blocked\n- Do not mark this issue In Progress until required dependency outputs are available, except for a time-boxed learning spike that is explicitly recorded here.\n\n## Ownership and review\n- Team: MovePal QA\n- Workstream: QA\n- Suggested Scrum role: developer\n- Primary assignee: SajaZenaty\n- Contributors: None planned\n- Suggested independent reviewer: JHT127\n- Planned effort allocation: @SajaZenaty: 3.5 h\n- Pull request: Not required; evidence belongs in this issue and linked defects\n- Suggested branch: `not-applicable`\n\n## Beginner estimate and buffers\n- Focused-work estimate: 3.5 hours\n- Investigation/learning buffer included: 0.5 hours\n- Review/collaboration buffer included: 0 hours\n- QA/rework buffer included: 3 hours\n- This is a rough beginner estimate. Update the issue when new evidence changes the estimate; do not hide learning time.\n\n## Planning metadata\n- Priority: P0\n- Sprint designation: sprint-1\n- Milestone: Sprint 1 — MovePal MVP\n- Initial Project stage: New\n- Planned start: 2026-07-29\n- Planned target: 2026-07-29\n- Manual testing only: Yes\n\n## Suggested verification\n- Manual grant/deny/no-device/unsupported/fallback matrix\n\n## Risks\n- The tested commit differs from the frozen release candidate.\n- Evidence is incomplete or contains private imagery.\n- A failure is described vaguely instead of reproducibly.\n\n## Security and privacy\n- Use included non-sensitive samples where possible.\n- Redact screenshots and never attach volunteer raw recordings or student emails.\n\n## Helpful documentation topics\n- `docs/qa_handoff.md`\n- QA issue template\n- Frozen release-candidate commit\n\n## Demo/evidence required\n- Show denial recovery and fallback completion.\n"
+    },
+    {
+      "task_id": "MP-030",
+      "position": 30,
+      "title": "Final-day manual QA: pose visibility and three-movement sanity",
+      "value": "Exercise pose and rule behavior for raise both arms, side reach left/right, and knee lift using included samples and, where safe, an adult tester. Focus on correct/incorrect, low-light, partial-body, multiple-person, side-direction, and low-confidence outcomes. This task is intentionally bounded for beginners and includes explicit investigation, implementation or preparation, evidence, peer review, and documentation time rather than treating learning as unpaid overhead.",
+      "description": "Exercise pose and rule behavior for raise both arms, side reach left/right, and knee lift using included samples and, where safe, an adult tester. Focus on correct/incorrect, low-light, partial-body, multiple-person, side-direction, and low-confidence outcomes.\n\nWork sequence:\n\n1. Record environment, commit, input source, camera placement, and lighting without identifying the tester.\n\n2. Verify all three movements with known-correct fallback samples.\n\n3. Try known-incorrect or near-correct examples and inspect feedback.\n\n4. Test left/right side reach and note mirrored-preview interpretation.\n\n5. Test partial body, person too close/far, low light, and low-confidence handling.\n\n6. Observe multiple-person behavior without claiming unsupported accuracy.\n\n7. File defects with movement, side, conditions, expected/actual, severity, evidence, and retest result.\n\nDependency handling:\n\nThis task depends on MP-024. Do not begin dependency-sensitive implementation until the listed outputs are available. The owner may perform reading or a disposable spike earlier, but must re-check assumptions after dependencies merge.",
+      "beginner_learning_objective": [
+        "Perform black-box testing of heuristic computer-vision behavior.",
+        "Distinguish expected limitation from defect.",
+        "Report reproducible input conditions."
+      ],
+      "deliverables": [
+        "Movement/condition QA matrix",
+        "Defect issues for false success, false failure, or unclear visibility feedback",
+        "Retest evidence"
+      ],
+      "acceptance_criteria": [
+        "Each movement has at least one success and one failure/near-correct check.",
+        "Left/right behavior is explicitly checked.",
+        "Visibility/framing failures produce useful feedback or are reported.",
+        "Known limitations are separated from regressions.",
+        "No child participates."
+      ],
+      "definition_of_done": [
+        "All acceptance criteria are demonstrated with evidence in the issue or pull request.",
+        "Relevant documentation is updated so another beginner can repeat the work.",
+        "No credentials, personal images, student emails, or raw volunteer recordings are committed.",
+        "The task owner records decisions, assumptions, unresolved limitations, and follow-up work.",
+        "Manual checks record environment, exact steps, expected result, actual result, severity, evidence, tested commit, and retest result.",
+        "The QA member does not implement feature code as part of this issue; defects are opened as separate bug issues for Team B."
+      ],
+      "dependencies": [
+        "MP-024"
+      ],
+      "related_tasks": [],
+      "blocking_status": "blocked",
+      "workstream": "QA",
+      "suggested_scrum_role": "developer",
+      "team": "MovePal QA",
+      "primary_assignee": "nezarYousef",
+      "contributors": [],
+      "suggested_reviewer": "myarnwas",
+      "estimated_focused_work_hours": 3.5,
+      "investigation_buffer_hours": 0.5,
+      "review_buffer_hours": 0,
+      "qa_buffer_hours": 3.0,
+      "effort_allocation_hours": {
+        "nezarYousef": 3.5
+      },
+      "priority": "P0",
+      "sprint_designation": "sprint-1",
+      "github_labels": [
+        "type:qa",
+        "area:testing",
+        "team:aidsign-qa",
+        "sprint:1"
+      ],
+      "milestone": "Sprint 1 — MovePal MVP",
+      "project_status": "New",
+      "risks": [
+        "The tested commit differs from the frozen release candidate.",
+        "Evidence is incomplete or contains private imagery.",
+        "A failure is described vaguely instead of reproducibly."
+      ],
+      "helpful_references": [
+        "`docs/qa_handoff.md`",
+        "QA issue template",
+        "Frozen release-candidate commit"
+      ],
+      "pull_request_required": false,
+      "suggested_branch_name": null,
+      "suggested_test_requirements": [
+        "Manual movement/visibility matrix"
+      ],
+      "security_privacy_considerations": [
+        "Use included non-sensitive samples where possible.",
+        "Redact screenshots and never attach volunteer raw recordings or student emails."
+      ],
+      "demo_evidence_required": [
+        "Show the completed matrix and one reproducible edge case."
+      ],
+      "start_date": "2026-07-29",
+      "target_date": "2026-07-29",
+      "manual_testing_only": true,
+      "issue_body": "<!-- task-id: MP-030 -->\n# MP-030 — Final-day manual QA: pose visibility and three-movement sanity\n\n## Value\nExercise pose and rule behavior for raise both arms, side reach left/right, and knee lift using included samples and, where safe, an adult tester. Focus on correct/incorrect, low-light, partial-body, multiple-person, side-direction, and low-confidence outcomes. This task is intentionally bounded for beginners and includes explicit investigation, implementation or preparation, evidence, peer review, and documentation time rather than treating learning as unpaid overhead.\n\n## Detailed description and work sequence\nExercise pose and rule behavior for raise both arms, side reach left/right, and knee lift using included samples and, where safe, an adult tester. Focus on correct/incorrect, low-light, partial-body, multiple-person, side-direction, and low-confidence outcomes.\n\nWork sequence:\n\n1. Record environment, commit, input source, camera placement, and lighting without identifying the tester.\n\n2. Verify all three movements with known-correct fallback samples.\n\n3. Try known-incorrect or near-correct examples and inspect feedback.\n\n4. Test left/right side reach and note mirrored-preview interpretation.\n\n5. Test partial body, person too close/far, low light, and low-confidence handling.\n\n6. Observe multiple-person behavior without claiming unsupported accuracy.\n\n7. File defects with movement, side, conditions, expected/actual, severity, evidence, and retest result.\n\nDependency handling:\n\nThis task depends on MP-024. Do not begin dependency-sensitive implementation until the listed outputs are available. The owner may perform reading or a disposable spike earlier, but must re-check assumptions after dependencies merge.\n\n## Beginner learning objectives\n- Perform black-box testing of heuristic computer-vision behavior.\n- Distinguish expected limitation from defect.\n- Report reproducible input conditions.\n\n## Deliverables\n- Movement/condition QA matrix\n- Defect issues for false success, false failure, or unclear visibility feedback\n- Retest evidence\n\n## Acceptance criteria\n- Each movement has at least one success and one failure/near-correct check.\n- Left/right behavior is explicitly checked.\n- Visibility/framing failures produce useful feedback or are reported.\n- Known limitations are separated from regressions.\n- No child participates.\n\n## Definition of Done\n- All acceptance criteria are demonstrated with evidence in the issue or pull request.\n- Relevant documentation is updated so another beginner can repeat the work.\n- No credentials, personal images, student emails, or raw volunteer recordings are committed.\n- The task owner records decisions, assumptions, unresolved limitations, and follow-up work.\n- Manual checks record environment, exact steps, expected result, actual result, severity, evidence, tested commit, and retest result.\n- The QA member does not implement feature code as part of this issue; defects are opened as separate bug issues for Team B.\n\n## Dependencies and coordination\n- Blocking dependencies: MP-024\n- Related coordination tasks: None\n- Initial blocking status: blocked\n- Do not mark this issue In Progress until required dependency outputs are available, except for a time-boxed learning spike that is explicitly recorded here.\n\n## Ownership and review\n- Team: MovePal QA\n- Workstream: QA\n- Suggested Scrum role: developer\n- Primary assignee: nezarYousef\n- Contributors: None planned\n- Suggested independent reviewer: myarnwas\n- Planned effort allocation: @nezarYousef: 3.5 h\n- Pull request: Not required; evidence belongs in this issue and linked defects\n- Suggested branch: `not-applicable`\n\n## Beginner estimate and buffers\n- Focused-work estimate: 3.5 hours\n- Investigation/learning buffer included: 0.5 hours\n- Review/collaboration buffer included: 0 hours\n- QA/rework buffer included: 3 hours\n- This is a rough beginner estimate. Update the issue when new evidence changes the estimate; do not hide learning time.\n\n## Planning metadata\n- Priority: P0\n- Sprint designation: sprint-1\n- Milestone: Sprint 1 — MovePal MVP\n- Initial Project stage: New\n- Planned start: 2026-07-29\n- Planned target: 2026-07-29\n- Manual testing only: Yes\n\n## Suggested verification\n- Manual movement/visibility matrix\n\n## Risks\n- The tested commit differs from the frozen release candidate.\n- Evidence is incomplete or contains private imagery.\n- A failure is described vaguely instead of reproducibly.\n\n## Security and privacy\n- Use included non-sensitive samples where possible.\n- Redact screenshots and never attach volunteer raw recordings or student emails.\n\n## Helpful documentation topics\n- `docs/qa_handoff.md`\n- QA issue template\n- Frozen release-candidate commit\n\n## Demo/evidence required\n- Show the completed matrix and one reproducible edge case.\n"
+    },
+    {
+      "task_id": "MP-031",
+      "position": 31,
+      "title": "Final-day manual QA: feedback, scoring, repeated session, reset, and summary",
+      "value": "Verify that feedback is friendly and consistent, points/stars are awarded correctly, repeated frames do not inflate scores, session restart/reset works, and the final summary matches the performed activities. This task is intentionally bounded for beginners and includes explicit investigation, implementation or preparation, evidence, peer review, and documentation time rather than treating learning as unpaid overhead.",
+      "description": "Verify that feedback is friendly and consistent, points/stars are awarded correctly, repeated frames do not inflate scores, session restart/reset works, and the final summary matches the performed activities.\n\nWork sequence:\n\n1. Start from a fresh session and record the tested commit.\n\n2. Check feedback for visibility, retry, hold, success, and movement-specific adjustment.\n\n3. Repeat a successful sample several times and observe whether points duplicate incorrectly.\n\n4. Complete activities in different orders where supported.\n\n5. Finish the session and compare summary activities/successes/points with observed actions.\n\n6. Reset/restart and verify old state does not leak.\n\n7. Repeat the session once and report any stale feedback, score, or summary.\n\nDependency handling:\n\nThis task depends on MP-024. Do not begin dependency-sensitive implementation until the listed outputs are available. The owner may perform reading or a disposable spike earlier, but must re-check assumptions after dependencies merge.",
+      "beginner_learning_objective": [
+        "Test stateful behavior and boundary transitions.",
+        "Detect duplicated awards and stale state.",
+        "Evaluate consistency of user-facing feedback."
+      ],
+      "deliverables": [
+        "State/scoring test log",
+        "Expected-versus-actual summary table",
+        "Defect and retest records"
+      ],
+      "acceptance_criteria": [
+        "Points follow the documented award rule.",
+        "Reset produces a clean state.",
+        "Summary totals match the session.",
+        "Messages remain friendly and non-medical.",
+        "Repeated sessions do not share stale state."
+      ],
+      "definition_of_done": [
+        "All acceptance criteria are demonstrated with evidence in the issue or pull request.",
+        "Relevant documentation is updated so another beginner can repeat the work.",
+        "No credentials, personal images, student emails, or raw volunteer recordings are committed.",
+        "The task owner records decisions, assumptions, unresolved limitations, and follow-up work.",
+        "Manual checks record environment, exact steps, expected result, actual result, severity, evidence, tested commit, and retest result.",
+        "The QA member does not implement feature code as part of this issue; defects are opened as separate bug issues for Team B."
+      ],
+      "dependencies": [
+        "MP-024"
+      ],
+      "related_tasks": [],
+      "blocking_status": "blocked",
+      "workstream": "QA",
+      "suggested_scrum_role": "developer",
+      "team": "MovePal QA",
+      "primary_assignee": "saliqasarwi",
+      "contributors": [],
+      "suggested_reviewer": "MennaAllah-Alatrsh",
+      "estimated_focused_work_hours": 3.5,
+      "investigation_buffer_hours": 0.5,
+      "review_buffer_hours": 0,
+      "qa_buffer_hours": 3.0,
+      "effort_allocation_hours": {
+        "saliqasarwi": 3.5
+      },
+      "priority": "P0",
+      "sprint_designation": "sprint-1",
+      "github_labels": [
+        "type:qa",
+        "area:testing",
+        "team:aidsign-qa",
+        "sprint:1"
+      ],
+      "milestone": "Sprint 1 — MovePal MVP",
+      "project_status": "New",
+      "risks": [
+        "The tested commit differs from the frozen release candidate.",
+        "Evidence is incomplete or contains private imagery.",
+        "A failure is described vaguely instead of reproducibly."
+      ],
+      "helpful_references": [
+        "`docs/qa_handoff.md`",
+        "QA issue template",
+        "Frozen release-candidate commit"
+      ],
+      "pull_request_required": false,
+      "suggested_branch_name": null,
+      "suggested_test_requirements": [
+        "Manual scoring/session state matrix"
+      ],
+      "security_privacy_considerations": [
+        "Use included non-sensitive samples where possible.",
+        "Redact screenshots and never attach volunteer raw recordings or student emails."
+      ],
+      "demo_evidence_required": [
+        "Show a completed session, reset, and clean second session."
+      ],
+      "start_date": "2026-07-29",
+      "target_date": "2026-07-29",
+      "manual_testing_only": true,
+      "issue_body": "<!-- task-id: MP-031 -->\n# MP-031 — Final-day manual QA: feedback, scoring, repeated session, reset, and summary\n\n## Value\nVerify that feedback is friendly and consistent, points/stars are awarded correctly, repeated frames do not inflate scores, session restart/reset works, and the final summary matches the performed activities. This task is intentionally bounded for beginners and includes explicit investigation, implementation or preparation, evidence, peer review, and documentation time rather than treating learning as unpaid overhead.\n\n## Detailed description and work sequence\nVerify that feedback is friendly and consistent, points/stars are awarded correctly, repeated frames do not inflate scores, session restart/reset works, and the final summary matches the performed activities.\n\nWork sequence:\n\n1. Start from a fresh session and record the tested commit.\n\n2. Check feedback for visibility, retry, hold, success, and movement-specific adjustment.\n\n3. Repeat a successful sample several times and observe whether points duplicate incorrectly.\n\n4. Complete activities in different orders where supported.\n\n5. Finish the session and compare summary activities/successes/points with observed actions.\n\n6. Reset/restart and verify old state does not leak.\n\n7. Repeat the session once and report any stale feedback, score, or summary.\n\nDependency handling:\n\nThis task depends on MP-024. Do not begin dependency-sensitive implementation until the listed outputs are available. The owner may perform reading or a disposable spike earlier, but must re-check assumptions after dependencies merge.\n\n## Beginner learning objectives\n- Test stateful behavior and boundary transitions.\n- Detect duplicated awards and stale state.\n- Evaluate consistency of user-facing feedback.\n\n## Deliverables\n- State/scoring test log\n- Expected-versus-actual summary table\n- Defect and retest records\n\n## Acceptance criteria\n- Points follow the documented award rule.\n- Reset produces a clean state.\n- Summary totals match the session.\n- Messages remain friendly and non-medical.\n- Repeated sessions do not share stale state.\n\n## Definition of Done\n- All acceptance criteria are demonstrated with evidence in the issue or pull request.\n- Relevant documentation is updated so another beginner can repeat the work.\n- No credentials, personal images, student emails, or raw volunteer recordings are committed.\n- The task owner records decisions, assumptions, unresolved limitations, and follow-up work.\n- Manual checks record environment, exact steps, expected result, actual result, severity, evidence, tested commit, and retest result.\n- The QA member does not implement feature code as part of this issue; defects are opened as separate bug issues for Team B.\n\n## Dependencies and coordination\n- Blocking dependencies: MP-024\n- Related coordination tasks: None\n- Initial blocking status: blocked\n- Do not mark this issue In Progress until required dependency outputs are available, except for a time-boxed learning spike that is explicitly recorded here.\n\n## Ownership and review\n- Team: MovePal QA\n- Workstream: QA\n- Suggested Scrum role: developer\n- Primary assignee: saliqasarwi\n- Contributors: None planned\n- Suggested independent reviewer: MennaAllah-Alatrsh\n- Planned effort allocation: @saliqasarwi: 3.5 h\n- Pull request: Not required; evidence belongs in this issue and linked defects\n- Suggested branch: `not-applicable`\n\n## Beginner estimate and buffers\n- Focused-work estimate: 3.5 hours\n- Investigation/learning buffer included: 0.5 hours\n- Review/collaboration buffer included: 0 hours\n- QA/rework buffer included: 3 hours\n- This is a rough beginner estimate. Update the issue when new evidence changes the estimate; do not hide learning time.\n\n## Planning metadata\n- Priority: P0\n- Sprint designation: sprint-1\n- Milestone: Sprint 1 — MovePal MVP\n- Initial Project stage: New\n- Planned start: 2026-07-29\n- Planned target: 2026-07-29\n- Manual testing only: Yes\n\n## Suggested verification\n- Manual scoring/session state matrix\n\n## Risks\n- The tested commit differs from the frozen release candidate.\n- Evidence is incomplete or contains private imagery.\n- A failure is described vaguely instead of reproducibly.\n\n## Security and privacy\n- Use included non-sensitive samples where possible.\n- Redact screenshots and never attach volunteer raw recordings or student emails.\n\n## Helpful documentation topics\n- `docs/qa_handoff.md`\n- QA issue template\n- Frozen release-candidate commit\n\n## Demo/evidence required\n- Show a completed session, reset, and clean second session.\n"
+    },
+    {
+      "task_id": "MP-032",
+      "position": 32,
+      "title": "Final-day manual QA: invalid input, oversized file, errors, privacy, and disclaimer",
+      "value": "Verify defensive behavior and visible privacy boundaries. Test malformed, unsupported, and oversized inputs, server/client errors, logging exposure, camera explanation, data-retention wording, and non-medical disclaimer visibility. This task is intentionally bounded for beginners and includes explicit investigation, implementation or preparation, evidence, peer review, and documentation time rather than treating learning as unpaid overhead.",
+      "description": "Verify defensive behavior and visible privacy boundaries. Test malformed, unsupported, and oversized inputs, server/client errors, logging exposure, camera explanation, data-retention wording, and non-medical disclaimer visibility.\n\nWork sequence:\n\n1. Record environment and tested commit.\n\n2. Submit missing, empty, unsupported, renamed, corrupted, and oversized files using safe test data.\n\n3. Observe status, message, recovery, and whether stack traces/internal paths are exposed.\n\n4. Inspect normal browser storage/network/log output for unexpected image, landmark, secret, or personal-data retention.\n\n5. Verify privacy notice and disclaimer are visible and understandable before or during input use.\n\n6. Confirm fallback samples do not contain personal data.\n\n7. File separate defects for security/privacy, error-message, and documentation problems.\n\nDependency handling:\n\nThis task depends on MP-024. Do not begin dependency-sensitive implementation until the listed outputs are available. The owner may perform reading or a disposable spike earlier, but must re-check assumptions after dependencies merge.",
+      "beginner_learning_objective": [
+        "Run negative testing safely.",
+        "Inspect privacy/security behavior without penetration testing.",
+        "Report information leakage and unclear errors."
+      ],
+      "deliverables": [
+        "Negative-input matrix",
+        "Privacy/disclaimer checklist",
+        "Redacted defect evidence and retest results"
+      ],
+      "acceptance_criteria": [
+        "Invalid input never crashes the normal UI.",
+        "No stack trace or secret is exposed.",
+        "Oversized input is rejected with a useful message.",
+        "No normal log/browser storage unexpectedly retains frames.",
+        "Non-medical disclaimer and no-child-data statement are visible."
+      ],
+      "definition_of_done": [
+        "All acceptance criteria are demonstrated with evidence in the issue or pull request.",
+        "Relevant documentation is updated so another beginner can repeat the work.",
+        "No credentials, personal images, student emails, or raw volunteer recordings are committed.",
+        "The task owner records decisions, assumptions, unresolved limitations, and follow-up work.",
+        "Manual checks record environment, exact steps, expected result, actual result, severity, evidence, tested commit, and retest result.",
+        "The QA member does not implement feature code as part of this issue; defects are opened as separate bug issues for Team B."
+      ],
+      "dependencies": [
+        "MP-024"
+      ],
+      "related_tasks": [],
+      "blocking_status": "blocked",
+      "workstream": "QA",
+      "suggested_scrum_role": "developer",
+      "team": "MovePal QA",
+      "primary_assignee": "SaadRayh",
+      "contributors": [],
+      "suggested_reviewer": "AhmadKollab",
+      "estimated_focused_work_hours": 3.5,
+      "investigation_buffer_hours": 0.5,
+      "review_buffer_hours": 0,
+      "qa_buffer_hours": 3.0,
+      "effort_allocation_hours": {
+        "SaadRayh": 3.5
+      },
+      "priority": "P0",
+      "sprint_designation": "sprint-1",
+      "github_labels": [
+        "type:qa",
+        "area:testing",
+        "team:aidsign-qa",
+        "sprint:1"
+      ],
+      "milestone": "Sprint 1 — MovePal MVP",
+      "project_status": "New",
+      "risks": [
+        "The tested commit differs from the frozen release candidate.",
+        "Evidence is incomplete or contains private imagery.",
+        "A failure is described vaguely instead of reproducibly."
+      ],
+      "helpful_references": [
+        "`docs/qa_handoff.md`",
+        "QA issue template",
+        "Frozen release-candidate commit"
+      ],
+      "pull_request_required": false,
+      "suggested_branch_name": null,
+      "suggested_test_requirements": [
+        "Manual negative-input/privacy checklist"
+      ],
+      "security_privacy_considerations": [
+        "Use included non-sensitive samples where possible.",
+        "Redact screenshots and never attach volunteer raw recordings or student emails."
+      ],
+      "demo_evidence_required": [
+        "Show safe rejection of one invalid and one oversized input plus visible disclaimer."
+      ],
+      "start_date": "2026-07-29",
+      "target_date": "2026-07-29",
+      "manual_testing_only": true,
+      "issue_body": "<!-- task-id: MP-032 -->\n# MP-032 — Final-day manual QA: invalid input, oversized file, errors, privacy, and disclaimer\n\n## Value\nVerify defensive behavior and visible privacy boundaries. Test malformed, unsupported, and oversized inputs, server/client errors, logging exposure, camera explanation, data-retention wording, and non-medical disclaimer visibility. This task is intentionally bounded for beginners and includes explicit investigation, implementation or preparation, evidence, peer review, and documentation time rather than treating learning as unpaid overhead.\n\n## Detailed description and work sequence\nVerify defensive behavior and visible privacy boundaries. Test malformed, unsupported, and oversized inputs, server/client errors, logging exposure, camera explanation, data-retention wording, and non-medical disclaimer visibility.\n\nWork sequence:\n\n1. Record environment and tested commit.\n\n2. Submit missing, empty, unsupported, renamed, corrupted, and oversized files using safe test data.\n\n3. Observe status, message, recovery, and whether stack traces/internal paths are exposed.\n\n4. Inspect normal browser storage/network/log output for unexpected image, landmark, secret, or personal-data retention.\n\n5. Verify privacy notice and disclaimer are visible and understandable before or during input use.\n\n6. Confirm fallback samples do not contain personal data.\n\n7. File separate defects for security/privacy, error-message, and documentation problems.\n\nDependency handling:\n\nThis task depends on MP-024. Do not begin dependency-sensitive implementation until the listed outputs are available. The owner may perform reading or a disposable spike earlier, but must re-check assumptions after dependencies merge.\n\n## Beginner learning objectives\n- Run negative testing safely.\n- Inspect privacy/security behavior without penetration testing.\n- Report information leakage and unclear errors.\n\n## Deliverables\n- Negative-input matrix\n- Privacy/disclaimer checklist\n- Redacted defect evidence and retest results\n\n## Acceptance criteria\n- Invalid input never crashes the normal UI.\n- No stack trace or secret is exposed.\n- Oversized input is rejected with a useful message.\n- No normal log/browser storage unexpectedly retains frames.\n- Non-medical disclaimer and no-child-data statement are visible.\n\n## Definition of Done\n- All acceptance criteria are demonstrated with evidence in the issue or pull request.\n- Relevant documentation is updated so another beginner can repeat the work.\n- No credentials, personal images, student emails, or raw volunteer recordings are committed.\n- The task owner records decisions, assumptions, unresolved limitations, and follow-up work.\n- Manual checks record environment, exact steps, expected result, actual result, severity, evidence, tested commit, and retest result.\n- The QA member does not implement feature code as part of this issue; defects are opened as separate bug issues for Team B.\n\n## Dependencies and coordination\n- Blocking dependencies: MP-024\n- Related coordination tasks: None\n- Initial blocking status: blocked\n- Do not mark this issue In Progress until required dependency outputs are available, except for a time-boxed learning spike that is explicitly recorded here.\n\n## Ownership and review\n- Team: MovePal QA\n- Workstream: QA\n- Suggested Scrum role: developer\n- Primary assignee: SaadRayh\n- Contributors: None planned\n- Suggested independent reviewer: AhmadKollab\n- Planned effort allocation: @SaadRayh: 3.5 h\n- Pull request: Not required; evidence belongs in this issue and linked defects\n- Suggested branch: `not-applicable`\n\n## Beginner estimate and buffers\n- Focused-work estimate: 3.5 hours\n- Investigation/learning buffer included: 0.5 hours\n- Review/collaboration buffer included: 0 hours\n- QA/rework buffer included: 3 hours\n- This is a rough beginner estimate. Update the issue when new evidence changes the estimate; do not hide learning time.\n\n## Planning metadata\n- Priority: P0\n- Sprint designation: sprint-1\n- Milestone: Sprint 1 — MovePal MVP\n- Initial Project stage: New\n- Planned start: 2026-07-29\n- Planned target: 2026-07-29\n- Manual testing only: Yes\n\n## Suggested verification\n- Manual negative-input/privacy checklist\n\n## Risks\n- The tested commit differs from the frozen release candidate.\n- Evidence is incomplete or contains private imagery.\n- A failure is described vaguely instead of reproducibly.\n\n## Security and privacy\n- Use included non-sensitive samples where possible.\n- Redact screenshots and never attach volunteer raw recordings or student emails.\n\n## Helpful documentation topics\n- `docs/qa_handoff.md`\n- QA issue template\n- Frozen release-candidate commit\n\n## Demo/evidence required\n- Show safe rejection of one invalid and one oversized input plus visible disclaimer.\n"
+    },
+    {
+      "task_id": "MP-033",
+      "position": 33,
+      "title": "Final-day manual QA: responsive accessibility sanity and consolidated QA report",
+      "value": "Run final responsive, keyboard, readability, browser-width, and end-to-end sanity checks, then consolidate Team A findings into a release-oriented QA summary without replacing the individual defect issues. This task is intentionally bounded for beginners and includes explicit investigation, implementation or preparation, evidence, peer review, and documentation time rather than treating learning as unpaid overhead.",
+      "description": "Run final responsive, keyboard, readability, browser-width, and end-to-end sanity checks, then consolidate Team A findings into a release-oriented QA summary without replacing the individual defect issues.\n\nWork sequence:\n\n1. Record environment, browser, viewport widths, and tested commit.\n\n2. Navigate activity selection, input choice, retry, next, summary, and reset using keyboard only.\n\n3. Check visible focus, labels, heading order, readable feedback, status announcements where available, and non-color-only meaning.\n\n4. Test desktop and approximately 360px mobile width for clipping or unusable controls.\n\n5. Run one complete fallback journey as a final sanity pass.\n\n6. Collect links to MP-028 through MP-032 findings and classify pass/fail/not tested.\n\n7. Write a concise QA summary with blockers, important defects, known limitations, and retest status for MP-025.\n\nDependency handling:\n\nThis task depends on MP-024. Do not begin dependency-sensitive implementation until the listed outputs are available. The owner may perform reading or a disposable spike earlier, but must re-check assumptions after dependencies merge.",
+      "beginner_learning_objective": [
+        "Perform an introductory accessibility/responsive sanity check.",
+        "Consolidate distributed QA evidence.",
+        "Communicate release risk and retest status."
+      ],
+      "deliverables": [
+        "Responsive/accessibility checklist",
+        "Final fallback sanity evidence",
+        "`docs/qa_final_report.md` or issue summary linking all findings"
+      ],
+      "acceptance_criteria": [
+        "Core controls are keyboard reachable or defects are filed.",
+        "Mobile-width layout remains usable or defects are filed.",
+        "One complete fallback journey is recorded.",
+        "The report links every QA issue and defect.",
+        "Blockers and retest status are unambiguous."
+      ],
+      "definition_of_done": [
+        "All acceptance criteria are demonstrated with evidence in the issue or pull request.",
+        "Relevant documentation is updated so another beginner can repeat the work.",
+        "No credentials, personal images, student emails, or raw volunteer recordings are committed.",
+        "The task owner records decisions, assumptions, unresolved limitations, and follow-up work.",
+        "Manual checks record environment, exact steps, expected result, actual result, severity, evidence, tested commit, and retest result.",
+        "The QA member does not implement feature code as part of this issue; defects are opened as separate bug issues for Team B."
+      ],
+      "dependencies": [
+        "MP-024"
+      ],
+      "related_tasks": [],
+      "blocking_status": "blocked",
+      "workstream": "QA",
+      "suggested_scrum_role": "developer",
+      "team": "MovePal QA",
+      "primary_assignee": "BaraahMazeen",
+      "contributors": [],
+      "suggested_reviewer": "IslamOuda85",
+      "estimated_focused_work_hours": 3.5,
+      "investigation_buffer_hours": 0.5,
+      "review_buffer_hours": 0,
+      "qa_buffer_hours": 3.0,
+      "effort_allocation_hours": {
+        "BaraahMazeen": 3.5
+      },
+      "priority": "P0",
+      "sprint_designation": "sprint-1",
+      "github_labels": [
+        "type:qa",
+        "area:testing",
+        "team:aidsign-qa",
+        "sprint:1"
+      ],
+      "milestone": "Sprint 1 — MovePal MVP",
+      "project_status": "New",
+      "risks": [
+        "The tested commit differs from the frozen release candidate.",
+        "Evidence is incomplete or contains private imagery.",
+        "A failure is described vaguely instead of reproducibly."
+      ],
+      "helpful_references": [
+        "`docs/qa_handoff.md`",
+        "QA issue template",
+        "Frozen release-candidate commit"
+      ],
+      "pull_request_required": false,
+      "suggested_branch_name": null,
+      "suggested_test_requirements": [
+        "Manual keyboard/mobile/final journey checklist"
+      ],
+      "security_privacy_considerations": [
+        "Use included non-sensitive samples where possible.",
+        "Redact screenshots and never attach volunteer raw recordings or student emails."
+      ],
+      "demo_evidence_required": [
+        "Present the consolidated QA status and release blockers/non-blockers."
+      ],
+      "start_date": "2026-07-29",
+      "target_date": "2026-07-29",
+      "manual_testing_only": true,
+      "issue_body": "<!-- task-id: MP-033 -->\n# MP-033 — Final-day manual QA: responsive accessibility sanity and consolidated QA report\n\n## Value\nRun final responsive, keyboard, readability, browser-width, and end-to-end sanity checks, then consolidate Team A findings into a release-oriented QA summary without replacing the individual defect issues. This task is intentionally bounded for beginners and includes explicit investigation, implementation or preparation, evidence, peer review, and documentation time rather than treating learning as unpaid overhead.\n\n## Detailed description and work sequence\nRun final responsive, keyboard, readability, browser-width, and end-to-end sanity checks, then consolidate Team A findings into a release-oriented QA summary without replacing the individual defect issues.\n\nWork sequence:\n\n1. Record environment, browser, viewport widths, and tested commit.\n\n2. Navigate activity selection, input choice, retry, next, summary, and reset using keyboard only.\n\n3. Check visible focus, labels, heading order, readable feedback, status announcements where available, and non-color-only meaning.\n\n4. Test desktop and approximately 360px mobile width for clipping or unusable controls.\n\n5. Run one complete fallback journey as a final sanity pass.\n\n6. Collect links to MP-028 through MP-032 findings and classify pass/fail/not tested.\n\n7. Write a concise QA summary with blockers, important defects, known limitations, and retest status for MP-025.\n\nDependency handling:\n\nThis task depends on MP-024. Do not begin dependency-sensitive implementation until the listed outputs are available. The owner may perform reading or a disposable spike earlier, but must re-check assumptions after dependencies merge.\n\n## Beginner learning objectives\n- Perform an introductory accessibility/responsive sanity check.\n- Consolidate distributed QA evidence.\n- Communicate release risk and retest status.\n\n## Deliverables\n- Responsive/accessibility checklist\n- Final fallback sanity evidence\n- `docs/qa_final_report.md` or issue summary linking all findings\n\n## Acceptance criteria\n- Core controls are keyboard reachable or defects are filed.\n- Mobile-width layout remains usable or defects are filed.\n- One complete fallback journey is recorded.\n- The report links every QA issue and defect.\n- Blockers and retest status are unambiguous.\n\n## Definition of Done\n- All acceptance criteria are demonstrated with evidence in the issue or pull request.\n- Relevant documentation is updated so another beginner can repeat the work.\n- No credentials, personal images, student emails, or raw volunteer recordings are committed.\n- The task owner records decisions, assumptions, unresolved limitations, and follow-up work.\n- Manual checks record environment, exact steps, expected result, actual result, severity, evidence, tested commit, and retest result.\n- The QA member does not implement feature code as part of this issue; defects are opened as separate bug issues for Team B.\n\n## Dependencies and coordination\n- Blocking dependencies: MP-024\n- Related coordination tasks: None\n- Initial blocking status: blocked\n- Do not mark this issue In Progress until required dependency outputs are available, except for a time-boxed learning spike that is explicitly recorded here.\n\n## Ownership and review\n- Team: MovePal QA\n- Workstream: QA\n- Suggested Scrum role: developer\n- Primary assignee: BaraahMazeen\n- Contributors: None planned\n- Suggested independent reviewer: IslamOuda85\n- Planned effort allocation: @BaraahMazeen: 3.5 h\n- Pull request: Not required; evidence belongs in this issue and linked defects\n- Suggested branch: `not-applicable`\n\n## Beginner estimate and buffers\n- Focused-work estimate: 3.5 hours\n- Investigation/learning buffer included: 0.5 hours\n- Review/collaboration buffer included: 0 hours\n- QA/rework buffer included: 3 hours\n- This is a rough beginner estimate. Update the issue when new evidence changes the estimate; do not hide learning time.\n\n## Planning metadata\n- Priority: P0\n- Sprint designation: sprint-1\n- Milestone: Sprint 1 — MovePal MVP\n- Initial Project stage: New\n- Planned start: 2026-07-29\n- Planned target: 2026-07-29\n- Manual testing only: Yes\n\n## Suggested verification\n- Manual keyboard/mobile/final journey checklist\n\n## Risks\n- The tested commit differs from the frozen release candidate.\n- Evidence is incomplete or contains private imagery.\n- A failure is described vaguely instead of reproducibly.\n\n## Security and privacy\n- Use included non-sensitive samples where possible.\n- Redact screenshots and never attach volunteer raw recordings or student emails.\n\n## Helpful documentation topics\n- `docs/qa_handoff.md`\n- QA issue template\n- Frozen release-candidate commit\n\n## Demo/evidence required\n- Present the consolidated QA status and release blockers/non-blockers.\n"
+    }
+  ]
+}

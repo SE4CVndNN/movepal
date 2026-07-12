@@ -1,0 +1,7 @@
+member_id,full_name,github_username,email,scrum_role,preferred_workstream,daily_capacity_hours
+B01,Student One,github-login-1,,scrum_master,devops_testing,3.5
+B02,Student Two,github-login-2,,product_owner,product_documentation,3.5
+B03,Student Three,github-login-3,,developer,backend,3.5
+B04,Student Four,github-login-4,,developer,computer_vision,3.5
+B05,Student Five,github-login-5,,developer,frontend_ux,3.5
+B06,Student Six,github-login-6,,developer,data_evaluation,3.5

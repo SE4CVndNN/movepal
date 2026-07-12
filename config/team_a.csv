@@ -1,0 +1,7 @@
+member_id,full_name,github_username,email,scrum_role,preferred_workstream,daily_capacity_hours
+A01,Tojan-Naiem,Tojan-Naiem,,scrum_master,devops_testing,3.5
+A02,SajaZenaty,SajaZenaty,,product_owner,product_documentation,3.5
+A03,nezarYousef,nezarYousef,,developer,backend,3.5
+A04,saliqasarwi,saliqasarwi,,developer,computer_vision,3.5
+A05,SaadRayh,SaadRayh,,developer,frontend_ux,3.5
+A06,BaraahMazeen,BaraahMazeen,,developer,data_evaluation,3.5

@@ -1,0 +1,31 @@
+:root {
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+body {
+  margin: 0;
+  background: #f7f8fb;
+  color: #172033;
+}
+
+.site-header,
+main,
+footer {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 10%);
+}
+
+button {
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  font: inherit;
+}

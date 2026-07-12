@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  quality-and-tests:
+    name: Python 3.11 — ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Run Ruff lint checks
+        run: python -m ruff check .
+
+      - name: Verify Ruff formatting
+        run: python -m ruff format --check .
+
+      - name: Run automated tests
+        run: python -m pytest
+
+      - name: Compile Python sources
+        run: python -m compileall app tests
+
+      - name: Import Flask application
+        run: python -c "from app import create_app; assert create_app().name == 'app'"

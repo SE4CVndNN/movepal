@@ -1,0 +1,65 @@
+name: QA bug report
+description: Report one reproducible MovePal defect found during manual or automated testing.
+title: "[QA] "
+labels: ["type:bug", "type:qa", "status:needs-review"]
+body:
+  - type: markdown
+    attributes:
+      value: "Do not attach child data, volunteer recordings, student emails, credentials, or unredacted personal information."
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Python version, browser/version, device information, and input mode.
+    validations:
+      required: true
+  - type: input
+    id: commit
+    attributes:
+      label: Affected version or commit
+      description: Exact release-candidate commit SHA or tag.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. ...\n2. ...\n3. ..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options: [Critical, High, Medium, Low]
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Redacted evidence
+      description: Add safe screenshots or log excerpts. Explain where evidence is unavailable for privacy reasons.
+  - type: dropdown
+    id: triage
+    attributes:
+      label: Team B triage
+      options: [Not triaged, Must fix in Sprint 1, Should fix, Future improvement, Invalid or needs information]
+    validations:
+      required: true
+  - type: textarea
+    id: retest
+    attributes:
+      label: Retest result
+      description: Record retested commit, tester, steps, and pass/fail after a fix.

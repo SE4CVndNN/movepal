@@ -1,0 +1,7 @@
+member_id,full_name,github_username,email,scrum_role,preferred_workstream,daily_capacity_hours
+B01,alaamadii,alaamadii,,scrum_master,devops_testing,3.5
+B02,IslamOuda85,IslamOuda85,,product_owner,product_documentation,3.5
+B03,AhmadKollab,AhmadKollab,,developer,backend,3.5
+B04,myarnwas,myarnwas,,developer,computer_vision,3.5
+B05,JHT127,JHT127,,developer,frontend_ux,3.5
+B06,MennaAllah-Alatrsh,MennaAllah-Alatrsh,,developer,data_evaluation,3.5

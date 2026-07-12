@@ -1,0 +1,40 @@
+name: Implementation or documentation task
+description: Track a planned MovePal task.
+title: "[MP-___] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: "Do not include student email addresses or private data."
+  - type: input
+    id: value
+    attributes:
+      label: User or technical value
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description and deliverables
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: "- [ ] Criterion one"
+    validations:
+      required: true
+  - type: input
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Use task IDs, or write None.
+    validations:
+      required: true
+  - type: textarea
+    id: tests
+    attributes:
+      label: Required tests and demo evidence
+    validations:
+      required: true

@@ -1,0 +1,102 @@
+name: Import MovePal Backlog
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: Select the backlog subset
+        required: true
+        type: choice
+        options: [all, sprint-1, qa, later]
+        default: all
+      dry_run:
+        description: Report intended changes without creating or updating issues
+        required: true
+        type: boolean
+        default: true
+      update_existing:
+        description: Reconcile existing marker-matched issues
+        required: true
+        type: boolean
+        default: false
+      assign_members:
+        description: Assign active organization members according to the backlog
+        required: true
+        type: boolean
+        default: true
+      add_to_project:
+        description: Add issues and set fields on the organization Project
+        required: true
+        type: boolean
+        default: true
+      task_id_start:
+        description: Optional inclusive task ID, for example MP-010
+        required: false
+        type: string
+      task_id_end:
+        description: Optional inclusive task ID, for example MP-020
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  import:
+    name: Validate and import issues
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.MOVEPAL_PROJECT_TOKEN }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Explain required organization Project credential
+        shell: bash
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "MOVEPAL_PROJECT_TOKEN is not configured."
+            echo "Initial import should be performed by scripts/bootstrap_org.ps1 under the owner account."
+            exit 1
+          fi
+
+      - name: Validate authoritative backlog
+        run: python scripts/validate_backlog.py --backlog backlog/product_backlog.json
+
+      - name: Import selected backlog
+        shell: bash
+        run: |
+          args=(
+            --organization SE4CVndNN
+            --repository movepal
+            --project-title "MovePal — Product and Sprint Board"
+            --backlog backlog/product_backlog.json
+            --source "${{ inputs.source }}"
+            --report bootstrap_reports/backlog_import_summary.json
+          )
+          if [ "${{ inputs.dry_run }}" = "false" ]; then args+=(--apply); fi
+          if [ "${{ inputs.update_existing }}" = "true" ]; then args+=(--update-existing); fi
+          if [ "${{ inputs.assign_members }}" = "false" ]; then args+=(--no-assign); fi
+          if [ "${{ inputs.add_to_project }}" = "false" ]; then args+=(--no-project); fi
+          if [ -n "${{ inputs.task_id_start }}" ]; then args+=(--task-id-start "${{ inputs.task_id_start }}"); fi
+          if [ -n "${{ inputs.task_id_end }}" ]; then args+=(--task-id-end "${{ inputs.task_id_end }}"); fi
+          python scripts/import_backlog.py "${args[@]}"
+
+      - name: Write workflow summary
+        if: always()
+        shell: bash
+        run: |
+          echo "## MovePal backlog import" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Source: ${{ inputs.source }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Dry run: ${{ inputs.dry_run }}" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f bootstrap_reports/backlog_import_summary.json ]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat bootstrap_reports/backlog_import_summary.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi

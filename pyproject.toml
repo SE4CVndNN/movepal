@@ -1,0 +1,21 @@
+[project]
+name = "movepal"
+version = "0.1.0"
+description = "A playful movement-practice prototype and software engineering training project."
+requires-python = ">=3.11,<3.13"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+exclude = [".venv", "data/private", "data/raw"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B", "UP"]
+
+[tool.ruff.format]
+line-ending = "auto"

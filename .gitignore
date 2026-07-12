@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+
+# Local configuration and secrets
+.env
+*.local
+
+# IDE and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Runtime data and private recordings
+data/raw/
+data/private/
+data/uploads/
+
+# Generated reports
+reports/
+
+# If this repository is ever made public, consider ignoring the real team CSVs
+# and retain only team_a.example.csv and team_b.example.csv.
+bootstrap_reports/

@@ -1,0 +1,266 @@
+{
+  "labels": [
+    {
+      "name": "type:feature",
+      "color": "1D76DB",
+      "description": "New user-facing or technical capability."
+    },
+    {
+      "name": "type:bug",
+      "color": "D73A4A",
+      "description": "Defect or incorrect behavior."
+    },
+    {
+      "name": "type:documentation",
+      "color": "0E8A16",
+      "description": "Documentation work."
+    },
+    {
+      "name": "type:test",
+      "color": "5319E7",
+      "description": "Automated test work."
+    },
+    {
+      "name": "type:research",
+      "color": "C5DEF5",
+      "description": "Investigation, experiment, or technical spike."
+    },
+    {
+      "name": "type:setup",
+      "color": "BFD4F2",
+      "description": "Environment or repository setup."
+    },
+    {
+      "name": "type:devops",
+      "color": "0052CC",
+      "description": "Automation, CI, or developer tooling."
+    },
+    {
+      "name": "type:qa",
+      "color": "FBCA04",
+      "description": "External or internal quality assurance."
+    },
+    {
+      "name": "type:security",
+      "color": "B60205",
+      "description": "Security-related work."
+    },
+    {
+      "name": "type:accessibility",
+      "color": "7057FF",
+      "description": "Accessibility-related work."
+    },
+    {
+      "name": "priority:P0",
+      "color": "B60205",
+      "description": "Critical: blocks the Sprint Goal or safe demonstration."
+    },
+    {
+      "name": "priority:P1",
+      "color": "D93F0B",
+      "description": "High priority for Sprint 1."
+    },
+    {
+      "name": "priority:P2",
+      "color": "FBCA04",
+      "description": "Normal priority."
+    },
+    {
+      "name": "priority:P3",
+      "color": "C2E0C6",
+      "description": "Low priority or improvement."
+    },
+    {
+      "name": "area:frontend",
+      "color": "A2EEEF",
+      "description": "Browser UI, templates, CSS, or JavaScript."
+    },
+    {
+      "name": "area:backend",
+      "color": "0366D6",
+      "description": "Flask routes, services, or server logic."
+    },
+    {
+      "name": "area:computer-vision",
+      "color": "6F42C1",
+      "description": "Pose estimation and landmark processing."
+    },
+    {
+      "name": "area:data",
+      "color": "D4C5F9",
+      "description": "Dataset, fixtures, annotation, or evaluation data."
+    },
+    {
+      "name": "area:testing",
+      "color": "BFDADC",
+      "description": "Unit, integration, regression, or manual testing."
+    },
+    {
+      "name": "area:documentation",
+      "color": "0075CA",
+      "description": "Project and user documentation."
+    },
+    {
+      "name": "area:devops",
+      "color": "0052CC",
+      "description": "CI, scripts, and repository automation."
+    },
+    {
+      "name": "area:ux",
+      "color": "E99695",
+      "description": "User experience and game interaction."
+    },
+    {
+      "name": "area:privacy",
+      "color": "B60205",
+      "description": "Privacy, consent, data minimization, or limitations."
+    },
+    {
+      "name": "status:blocked",
+      "color": "000000",
+      "description": "Work cannot proceed because a dependency is unresolved."
+    },
+    {
+      "name": "status:needs-review",
+      "color": "FBCA04",
+      "description": "Ready for peer review."
+    },
+    {
+      "name": "status:qa-ready",
+      "color": "0E8A16",
+      "description": "Ready for external QA."
+    },
+    {
+      "name": "status:needs-information",
+      "color": "D4C5F9",
+      "description": "Needs clarification or missing evidence."
+    },
+    {
+      "name": "team:movepal",
+      "color": "1D76DB",
+      "description": "Owned by the MovePal development team."
+    },
+    {
+      "name": "team:aidsign-qa",
+      "color": "5319E7",
+      "description": "Owned by the AidSign team acting as MovePal QA."
+    },
+    {
+      "name": "sprint:1",
+      "color": "0E8A16",
+      "description": "Selected for MovePal Sprint 1."
+    },
+    {
+      "name": "backlog:future",
+      "color": "C5DEF5",
+      "description": "Not planned for Sprint 1."
+    },
+    {
+      "name": "good-first-issue",
+      "color": "7057FF",
+      "description": "Suitable for a beginner with guidance."
+    }
+  ],
+  "milestones": [
+    {
+      "title": "Sprint 1 — MovePal MVP",
+      "description": "Two-week MovePal MVP sprint ending 29 July 2026.",
+      "due_on": "2026-07-29T21:59:59Z"
+    },
+    {
+      "title": "Post-Sprint Stabilization",
+      "description": "Defects, documentation improvements, and stabilization after Sprint 1.",
+      "due_on": null
+    },
+    {
+      "title": "Production Readiness",
+      "description": "Longer-term hardening; not a claim that the prototype is clinically or production validated.",
+      "due_on": null
+    },
+    {
+      "title": "Future Extensions",
+      "description": "Optional and future product capabilities beyond the narrow MVP.",
+      "due_on": null
+    }
+  ],
+  "project_fields": [
+    {
+      "name": "Workflow Stage",
+      "data_type": "SINGLE_SELECT",
+      "options": [
+        "Backlog",
+        "New",
+        "In Progress",
+        "In Review",
+        "QA",
+        "Blocked",
+        "Done"
+      ]
+    },
+    {
+      "name": "Sprint",
+      "data_type": "SINGLE_SELECT",
+      "options": [
+        "Sprint 1",
+        "Post-Sprint",
+        "Future",
+        "Optional"
+      ]
+    },
+    {
+      "name": "Priority",
+      "data_type": "SINGLE_SELECT",
+      "options": [
+        "P0",
+        "P1",
+        "P2",
+        "P3"
+      ]
+    },
+    {
+      "name": "Estimate Hours",
+      "data_type": "NUMBER"
+    },
+    {
+      "name": "Position",
+      "data_type": "NUMBER"
+    },
+    {
+      "name": "Workstream",
+      "data_type": "SINGLE_SELECT",
+      "options": [
+        "Product/Documentation",
+        "Backend",
+        "Frontend/UX",
+        "Computer Vision",
+        "Data/Evaluation",
+        "Testing/DevOps",
+        "QA"
+      ]
+    },
+    {
+      "name": "Team",
+      "data_type": "SINGLE_SELECT",
+      "options": [
+        "MovePal Development",
+        "MovePal QA"
+      ]
+    },
+    {
+      "name": "Task ID",
+      "data_type": "TEXT"
+    },
+    {
+      "name": "Dependency",
+      "data_type": "TEXT"
+    },
+    {
+      "name": "Start Date",
+      "data_type": "DATE"
+    },
+    {
+      "name": "Target Date",
+      "data_type": "DATE"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "organization": "SE4CVndNN",
+  "repository": {
+    "name": "movepal",
+    "description": "MovePal - a playful movement-practice prototype for children, developed as a software engineering training project.",
+    "visibility": "private",
+    "default_branch": "master"
+  },
+  "project": {
+    "title": "MovePal — Product and Sprint Board"
+  },
+  "teams": [
+    {
+      "name": "team-movepal",
+      "description": "MovePal development team and AidSign external QA team.",
+      "source_file": "config/team_b.csv",
+      "repository_permission": "push",
+      "responsibility": "MovePal development"
+    },
+    {
+      "name": "team-aidsign",
+      "description": "AidSign development team and MovePal external QA team.",
+      "source_file": "config/team_a.csv",
+      "repository_permission": "triage",
+      "responsibility": "MovePal external QA"
+    }
+  ],
+  "sprint": {
+    "kickoff_date": "2026-07-13",
+    "start_date": "2026-07-14",
+    "end_date": "2026-07-29",
+    "timezone": "Europe/Rome"
+  }
+}
