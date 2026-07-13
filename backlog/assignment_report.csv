@@ -1,34 +1,64 @@
-task_id,title,team,primary_assignee,contributors,reviewer,planned_hours,start_date,target_date,manual_testing_only
-MP-001,"Kickoff, Sprint Goal, and Scrum working agreement",MovePal Development,alaamadii,,IslamOuda85,4,2026-07-14,2026-07-14,False
-MP-002,"Product vision, user stories, MVP boundary, and ethical framing",MovePal Development,IslamOuda85,,alaamadii,6,2026-07-14,2026-07-15,False
-MP-003,"Git, GitHub, pull-request, and review rehearsal",MovePal Development,alaamadii,IslamOuda85;AhmadKollab;myarnwas;JHT127;MennaAllah-Alatrsh,Tojan-Naiem,6,2026-07-14,2026-07-15,False
-MP-004,Flask application-factory learning spike and architecture decision,MovePal Development,AhmadKollab,,alaamadii,6,2026-07-14,2026-07-15,False
-MP-005,MediaPipe Pose learning spike and computer-vision service contract,MovePal Development,myarnwas,IslamOuda85,AhmadKollab,6,2026-07-14,2026-07-15,False
-MP-006,"Game UX, webcam permission, and fallback-flow design spike",MovePal Development,JHT127,,IslamOuda85,6,2026-07-14,2026-07-15,False
-MP-007,"Movement specifications, landmark schema, and evaluation plan",MovePal Development,MennaAllah-Alatrsh,IslamOuda85,JHT127,6,2026-07-15,2026-07-16,False
-MP-008,"Repository skeleton, dependencies, and Flask application factory",MovePal Development,AhmadKollab,,alaamadii,6,2026-07-16,2026-07-17,False
-MP-009,"Initial README, contribution guide, privacy, and limitations",MovePal Development,IslamOuda85,,MennaAllah-Alatrsh,6,2026-07-16,2026-07-20,False
-MP-010,"Frame/upload API, input validation, and safe error handling",MovePal Development,AhmadKollab,,MennaAllah-Alatrsh,6,2026-07-17,2026-07-20,False
-MP-011,"Base game interface, avatar presentation, and accessible navigation",MovePal Development,JHT127,,IslamOuda85,7,2026-07-17,2026-07-21,False
-MP-012,Browser webcam capture and mandatory fallback sample mode,MovePal Development,JHT127,,alaamadii,8,2026-07-20,2026-07-22,False
-MP-013,"Pose service, landmark normalization, and visibility checks",MovePal Development,myarnwas,,AhmadKollab,8,2026-07-17,2026-07-21,False
-MP-014,"Raise-both-arms rule, feedback mapping, and tests",MovePal Development,myarnwas,MennaAllah-Alatrsh,JHT127,7,2026-07-21,2026-07-22,False
-MP-015,"Side-reach left/right rules, feedback, and tests",MovePal Development,myarnwas,MennaAllah-Alatrsh,AhmadKollab,7,2026-07-22,2026-07-23,False
-MP-016,"Knee-lift or step-in-place rule, feedback, and tests",MovePal Development,MennaAllah-Alatrsh,myarnwas,alaamadii,7,2026-07-22,2026-07-23,False
-MP-017,Friendly feedback orchestration and points/star scoring,MovePal Development,MennaAllah-Alatrsh,,IslamOuda85,7,2026-07-23,2026-07-24,False
-MP-018,Session state and end-of-session summary,MovePal Development,AhmadKollab,MennaAllah-Alatrsh,JHT127,7,2026-07-23,2026-07-24,False
-MP-019,End-to-end game loop integration,MovePal Development,JHT127,AhmadKollab,MennaAllah-Alatrsh,8,2026-07-23,2026-07-27,False
-MP-020,"Adult-only calibration protocol, consent template, and landmark extraction",MovePal Development,IslamOuda85,MennaAllah-Alatrsh,myarnwas,7,2026-07-21,2026-07-24,False
-MP-021,"Landmark fixtures, threshold calibration, and rule evaluation report",MovePal Development,MennaAllah-Alatrsh,myarnwas,JHT127,8,2026-07-23,2026-07-27,False
-MP-022,"Windows/Linux CI with lint, tests, compile, and Flask smoke check",MovePal Development,alaamadii,AhmadKollab,MennaAllah-Alatrsh,8,2026-07-20,2026-07-24,False
-MP-023,"Security, privacy, accessibility, and error-message hardening",MovePal Development,IslamOuda85,alaamadii;JHT127,myarnwas,7,2026-07-24,2026-07-27,False
-MP-024,"Integration regression, release-candidate freeze, and QA handoff",MovePal Development,alaamadii,AhmadKollab;myarnwas;JHT127,IslamOuda85,8,2026-07-27,2026-07-28,False
-MP-025,"Final-day QA triage, targeted fixes, retest, and release decision",MovePal Development,alaamadii,IslamOuda85;AhmadKollab;myarnwas;JHT127;MennaAllah-Alatrsh,Tojan-Naiem,7,2026-07-29,2026-07-29,False
-MP-026,"Final README, demonstration package, contribution record, and retrospective",MovePal Development,IslamOuda85,alaamadii,JHT127,7,2026-07-29,2026-07-29,False
-MP-027,Sprint rituals and instructor checkpoint checklist,MovePal Development,alaamadii,,IslamOuda85,4,2026-07-14,2026-07-29,False
-MP-028,"Final-day manual QA: clean installation, startup, and README sanity",MovePal QA,Tojan-Naiem,,alaamadii,3.5,2026-07-29,2026-07-29,True
-MP-029,"Final-day manual QA: camera permission, no-camera, browser, and fallback sanity",MovePal QA,SajaZenaty,,JHT127,3.5,2026-07-29,2026-07-29,True
-MP-030,Final-day manual QA: pose visibility and three-movement sanity,MovePal QA,nezarYousef,,myarnwas,3.5,2026-07-29,2026-07-29,True
-MP-031,"Final-day manual QA: feedback, scoring, repeated session, reset, and summary",MovePal QA,saliqasarwi,,MennaAllah-Alatrsh,3.5,2026-07-29,2026-07-29,True
-MP-032,"Final-day manual QA: invalid input, oversized file, errors, privacy, and disclaimer",MovePal QA,SaadRayh,,AhmadKollab,3.5,2026-07-29,2026-07-29,True
-MP-033,Final-day manual QA: responsive accessibility sanity and consolidated QA report,MovePal QA,BaraahMazeen,,IslamOuda85,3.5,2026-07-29,2026-07-29,True
+task_id,title,primary_assignee,contributors,suggested_reviewer,estimated_hours,start_date,target_date,sprint_designation
+MP-001,"Sprint operations setup, board readiness, and practical working agreement",alaamadii,,IslamOuda85,3,2026-07-14,2026-07-14,sprint-1
+MP-002,"MVP acceptance map, demo scenarios, and safe product wording",IslamOuda85,,alaamadii,5,2026-07-14,2026-07-15,sprint-1
+MP-003,First useful pull requests and peer-review rotation,alaamadii,IslamOuda85;AhmadKollab;myarnwas;JHT127;MennaAllah-Alatrsh,Tojan-Naiem,5,2026-07-14,2026-07-15,sprint-1
+MP-004,Executable Flask vertical-slice spike and architecture decision,AhmadKollab,,alaamadii,6,2026-07-14,2026-07-15,sprint-1
+MP-005,"Executable pose spike, offline fixture, and computer-vision service contract",myarnwas,IslamOuda85,AhmadKollab,6,2026-07-14,2026-07-15,sprint-1
+MP-006,Clickable game-flow prototype and camera/fallback browser probe,JHT127,,IslamOuda85,6,2026-07-14,2026-07-15,sprint-1
+MP-007,"Movement acceptance matrix, executable landmark schema, and evaluation plan",MennaAllah-Alatrsh,IslamOuda85,JHT127,6,2026-07-15,2026-07-16,sprint-1
+MP-008,"Repository skeleton, dependencies, and Flask application factory",AhmadKollab,,alaamadii,6,2026-07-16,2026-07-17,sprint-1
+MP-009,"Initial README, contribution guide, privacy, and limitations",IslamOuda85,,MennaAllah-Alatrsh,6,2026-07-16,2026-07-20,sprint-1
+MP-010,"Frame/upload API, input validation, and safe error handling",AhmadKollab,,MennaAllah-Alatrsh,6,2026-07-17,2026-07-20,sprint-1
+MP-011,"Base game interface, avatar presentation, and accessible navigation",JHT127,,IslamOuda85,7,2026-07-17,2026-07-21,sprint-1
+MP-012,Browser webcam capture and mandatory fallback sample mode,JHT127,,alaamadii,8,2026-07-20,2026-07-22,sprint-1
+MP-013,"Pose service, landmark normalization, and visibility checks",myarnwas,,AhmadKollab,8,2026-07-17,2026-07-21,sprint-1
+MP-014,First vertical slice: sample input to visible raise-arms feedback,myarnwas,AhmadKollab;JHT127;MennaAllah-Alatrsh,alaamadii,7,2026-07-21,2026-07-22,sprint-1
+MP-015,"Side-reach left/right rules, feedback, and tests",myarnwas,MennaAllah-Alatrsh,AhmadKollab,7,2026-07-22,2026-07-23,sprint-1
+MP-016,"Knee-lift or step-in-place rule, feedback, and tests",MennaAllah-Alatrsh,myarnwas,alaamadii,7,2026-07-22,2026-07-23,sprint-1
+MP-017,Friendly feedback orchestration and points/star scoring,MennaAllah-Alatrsh,,IslamOuda85,7,2026-07-23,2026-07-24,sprint-1
+MP-018,Session state and end-of-session summary,AhmadKollab,MennaAllah-Alatrsh,JHT127,7,2026-07-23,2026-07-24,sprint-1
+MP-019,End-to-end game loop integration,JHT127,AhmadKollab,MennaAllah-Alatrsh,8,2026-07-23,2026-07-27,sprint-1
+MP-020,"Adult-only calibration protocol, consent template, and landmark extraction",IslamOuda85,MennaAllah-Alatrsh,myarnwas,7,2026-07-21,2026-07-24,sprint-1
+MP-021,"Landmark fixtures, threshold calibration, and rule evaluation report",MennaAllah-Alatrsh,myarnwas,JHT127,8,2026-07-23,2026-07-27,sprint-1
+MP-022,"Windows/Linux CI with lint, tests, compile, and Flask smoke check",alaamadii,AhmadKollab,MennaAllah-Alatrsh,8,2026-07-20,2026-07-24,sprint-1
+MP-023,"Security, privacy, accessibility, and error-message hardening",IslamOuda85,alaamadii;JHT127,myarnwas,7,2026-07-24,2026-07-27,sprint-1
+MP-024,"Integration regression, release-candidate freeze, and QA handoff",alaamadii,AhmadKollab;myarnwas;JHT127,IslamOuda85,8,2026-07-27,2026-07-28,sprint-1
+MP-025,"Final-day QA triage, targeted fixes, retest, and release decision",alaamadii,IslamOuda85;AhmadKollab;myarnwas;JHT127;MennaAllah-Alatrsh,Tojan-Naiem,7,2026-07-29,2026-07-29,sprint-1
+MP-026,"Final README, demonstration package, contribution record, and retrospective",IslamOuda85,alaamadii,JHT127,7,2026-07-29,2026-07-29,sprint-1
+MP-027,"Maintain Sprint board, blocker log, and instructor-checkpoint evidence",alaamadii,,IslamOuda85,4,2026-07-14,2026-07-29,sprint-1
+MP-028,"Final-day manual QA: clean installation, startup, and README sanity",Tojan-Naiem,,alaamadii,3.5,2026-07-29,2026-07-29,sprint-1
+MP-029,"Final-day manual QA: camera permission, no-camera, browser, and fallback sanity",SajaZenaty,,JHT127,3.5,2026-07-29,2026-07-29,sprint-1
+MP-030,Final-day manual QA: pose visibility and three-movement sanity,nezarYousef,,myarnwas,3.5,2026-07-29,2026-07-29,sprint-1
+MP-031,"Final-day manual QA: feedback, scoring, repeated session, reset, and summary",saliqasarwi,,MennaAllah-Alatrsh,3.5,2026-07-29,2026-07-29,sprint-1
+MP-032,"Final-day manual QA: invalid input, oversized file, errors, privacy, and disclaimer",SaadRayh,,AhmadKollab,3.5,2026-07-29,2026-07-29,sprint-1
+MP-033,Final-day manual QA: responsive accessibility sanity and consolidated QA report,BaraahMazeen,,IslamOuda85,3.5,2026-07-29,2026-07-29,sprint-1
+MP-034,Cross-browser compatibility baseline and support matrix,,,,12,,,post-sprint
+MP-035,Performance profiling and response-time budget,,,,14,,,post-sprint
+MP-036,Production-like local packaging and configuration,,,,12,,,post-sprint
+MP-037,Persistent session storage design,,,,16,,,post-sprint
+MP-038,SQLite migration and data-access layer,,,,18,,,post-sprint
+MP-039,Localization architecture and message catalog,,,,14,,,future
+MP-040,Arabic translation and right-to-left interface,,,,18,,,future
+MP-041,Accessibility audit and remediation plan,,,,20,,,future
+MP-042,Progressive Web App and offline fallback investigation,,,,16,,,optional
+MP-043,Declarative custom-movement specification,,,,24,,,future
+MP-044,Educator-configured activity session,,,,22,,,future
+MP-045,Difficulty presets and adaptive thresholds investigation,,,,24,,,future
+MP-046,Expanded reward mechanics and session progression,,,,18,,,future
+MP-047,Avatar animation and asset pipeline,,,,20,,,future
+MP-048,Optional low-latency streaming feasibility study,,,,28,,,optional
+MP-049,Pose model and library version-management policy,,,,14,,,post-sprint
+MP-050,Structured logging and privacy-safe observability,,,,16,,,post-sprint
+MP-051,Threat model and automated security checks,,,,22,,,future
+MP-052,"Data retention, withdrawal, and deletion workflow",,,,14,,,future
+MP-053,Expanded adult-only dataset and bias analysis,,,,36,,,future
+MP-054,Evaluation metrics and reproducible benchmark suite,,,,24,,,future
+MP-055,Multiple-person detection and guidance,,,,20,,,future
+MP-056,Low-light and framing robustness improvements,,,,22,,,future
+MP-057,API contract documentation and schema validation,,,,16,,,post-sprint
+MP-058,Controlled cloud deployment investigation,,,,28,,,future
+MP-059,"Backup, restore, and recovery procedure",,,,16,,,future
+MP-060,Educator dashboard and aggregate session export,,,,28,,,future
+MP-061,"Release, compatibility, and deprecation policy",,,,12,,,future
+MP-062,Production-readiness evidence review,,,,30,,,future
+MP-063,Optional custom pose-model training research,,,,40,,,optional

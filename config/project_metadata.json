@@ -159,6 +159,41 @@
       "name": "good-first-issue",
       "color": "7057FF",
       "description": "Suitable for a beginner with guidance."
+    },
+    {
+      "name": "type:integration",
+      "color": "0052CC",
+      "description": "Integration of multiple components or contracts."
+    },
+    {
+      "name": "type:data",
+      "color": "D4C5F9",
+      "description": "Dataset, fixtures, schemas, annotation, or evaluation data."
+    },
+    {
+      "name": "area:integration",
+      "color": "0052CC",
+      "description": "Cross-component integration and contract compatibility."
+    },
+    {
+      "name": "status:ready-for-integration",
+      "color": "0E8A16",
+      "description": "Component is ready to be consumed by an integration task."
+    },
+    {
+      "name": "status:needs-retest",
+      "color": "FBCA04",
+      "description": "A reported defect or fix requires independent retesting."
+    },
+    {
+      "name": "backlog:post-sprint",
+      "color": "BFD4F2",
+      "description": "Planned stabilization work after Sprint 1."
+    },
+    {
+      "name": "backlog:optional",
+      "color": "EDEDED",
+      "description": "Optional work that is not required for the Sprint Goal."
     }
   ],
   "milestones": [
@@ -235,6 +270,7 @@
         "Computer Vision",
         "Data/Evaluation",
         "Testing/DevOps",
+        "Integration",
         "QA"
       ]
     },

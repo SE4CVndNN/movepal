@@ -54,7 +54,14 @@
           "security_privacy_considerations",
           "demo_evidence_required",
           "manual_testing_only",
-          "issue_body"
+          "issue_body",
+          "required_reading",
+          "practical_output",
+          "dependency_rationale",
+          "preparation_learning_hours",
+          "implementation_hours",
+          "testing_hours",
+          "handoff_to"
         ],
         "properties": {
           "task_id": {
@@ -107,6 +114,42 @@
             "additionalProperties": {
               "type": "number",
               "minimum": 0
+            }
+          },
+          "required_reading": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "practical_output": {
+            "type": "string",
+            "minLength": 5
+          },
+          "dependency_rationale": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "preparation_learning_hours": {
+            "type": "number",
+            "minimum": 0
+          },
+          "implementation_hours": {
+            "type": "number",
+            "minimum": 0
+          },
+          "testing_hours": {
+            "type": "number",
+            "minimum": 0
+          },
+          "handoff_to": {
+            "type": "array",
+            "items": {
+              "type": "string"
             }
           }
         }
