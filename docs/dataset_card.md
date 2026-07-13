@@ -1,36 +1,198 @@
-# MovePal landmark dataset card template
+# MovePal Landmark Dataset Card
 
-## Dataset purpose
+This document describes the small dataset/fixture collection used to calibrate and test MovePal’s transparent movement rules. Complete every section before derived adult-volunteer data is committed or shared.
 
-Describe the narrow prototype rule-calibration and testing purpose. State that it is not a clinical dataset and cannot establish treatment effectiveness.
+The dataset is not clinical, does not establish treatment effectiveness, and must not contain child data.
 
-## Data subjects and consent
+## 1. Dataset identity
 
-- Adults only
-- consent process and version
-- withdrawal/deletion contact and anonymous identifier process
-- explicit confirmation that no child data is included
+- **Name:**
+- **Version:**
+- **Status:** draft / internal / reviewed / releasable
+- **Responsible student(s):**
+- **Reviewer:**
+- **Creation date:**
+- **Last updated:**
+- **Related tasks/PRs:**
 
-## Data representation
+## 2. Intended purpose
 
-Document raw private recordings separately from publishable derived landmarks. List schema, coordinate system, visibility, movement label, requested side, expected outcome, collection condition, and provenance status.
+Describe the exact narrow purpose, for example:
 
-## Collection and annotation
+- verify the landmark schema;
+- test success/retry/framing behavior;
+- select prototype thresholds;
+- provide deterministic CI fixtures;
+- check regression behavior for three Sprint movements.
 
-Describe camera placement, lighting, correct/incorrect examples, annotator instructions, quality checks, and disagreement handling.
+Explicitly list prohibited uses:
 
-## Splits and evaluation use
+- clinical assessment;
+- diagnosis;
+- treatment evaluation;
+- unrestricted model training;
+- comparison of participant ability;
+- inference of health or disability;
+- use with children.
 
-Explain calibration/tuning versus held-out sanity fixtures and how leakage is avoided.
+## 3. Data sources and provenance
 
-## Privacy and security
+For each source category, record:
 
-Document storage location, access, retention, metadata removal, Git exclusions, deletion, and release review.
+| Source category | Count | Provenance | Permission/license | Raw media retained? | Releasable? |
+|---|---:|---|---|---|---|
+| Synthetic/hand-authored landmarks |  |  |  | No |  |
+| Licensed sample media |  |  |  |  |  |
+| Consented adult-derived landmarks |  |  |  |  |  |
 
-## Limitations and bias
+Do not include a source when permission or provenance is uncertain.
 
-Document sample size, convenience sampling, camera/environment coverage, body/clothing coverage, known failure modes, and prohibited interpretations.
+## 4. Data subjects and consent
 
-## Version history
+- Adults only: yes/no
+- Confirmation that no child data is included:
+- Consent-template version:
+- Consent storage location (private, not GitHub):
+- Anonymous-ID method:
+- Withdrawal/deletion contact/process:
+- Whether derived landmarks may be committed or published:
+- Whether raw media may be retained, and for how long:
 
-Record schema, rule threshold, consent, and release changes.
+Never put participant names or contact details in this file.
+
+## 5. Representation and schema
+
+Document the project landmark schema, including:
+
+- landmark names;
+- `x`, `y`, and `z` meaning/range;
+- visibility/confidence meaning;
+- anatomical left/right convention;
+- mirrored-camera handling;
+- missing-landmark representation;
+- frame or sequence representation;
+- units/normalization;
+- schema version.
+
+Each fixture should include or reference:
+
+```text
+fixture_id
+movement
+requested_side
+expected_completed
+expected_feedback_code
+category
+landmarks
+provenance_type
+consent_or_license_status
+collection_condition
+annotation_note
+schema_version
+```
+
+## 6. Movement and outcome coverage
+
+Record counts for each category:
+
+| Movement | Positive | Negative | Borderline | Missing/low visibility | Framing failure | Total |
+|---|---:|---:|---:|---:|---:|---:|
+| Raise both arms |  |  |  |  |  |  |
+| Side reach left |  |  |  |  |  |  |
+| Side reach right |  |  |  |  |  |  |
+| Knee lift/step left |  |  |  |  |  |  |
+| Knee lift/step right |  |  |  |  |  |  |
+
+Explain gaps rather than presenting a small incomplete sample as comprehensive.
+
+## 7. Collection conditions
+
+Summarize:
+
+- camera/device types;
+- resolution;
+- distance and camera height;
+- lighting variation;
+- background variation;
+- clothing variation;
+- standing/seated conditions;
+- occlusion cases;
+- whether multiple people were present;
+- instructions given to participants.
+
+Avoid documenting identifying locations.
+
+## 8. Annotation process
+
+Describe:
+
+- who assigned movement/outcome labels;
+- the annotation guide version;
+- how correct, incorrect, borderline, and framing cases were defined;
+- how ambiguous cases were resolved;
+- whether a second reviewer checked labels;
+- changes made after review.
+
+## 9. Split and evaluation policy
+
+Separate data used to choose thresholds from held-out sanity/regression fixtures where possible.
+
+Document:
+
+- calibration/tuning subset;
+- held-out subset;
+- duplicate/near-duplicate handling;
+- participant separation when adult-derived data is used;
+- how leakage was avoided;
+- metrics or case counts reported;
+- why the evaluation remains limited.
+
+Do not claim general accuracy from a tiny convenience sample.
+
+## 10. Privacy and security
+
+- Raw private storage location:
+- Derived-data storage location:
+- Access list/role:
+- Git exclusions checked:
+- Metadata removal process:
+- Temporary-file deletion process:
+- Retention period:
+- Withdrawal/deletion process:
+- Release/privacy review completed by:
+
+## 11. Known limitations and bias
+
+Discuss:
+
+- sample size;
+- convenience sampling;
+- participant/body variation;
+- camera/environment coverage;
+- clothing and occlusion coverage;
+- left/right balance;
+- rule-threshold sensitivity;
+- synthetic-fixture realism;
+- unsupported cases;
+- prohibited interpretations.
+
+## 12. Version history
+
+| Version | Date | Change | Related issue/PR | Reviewer |
+|---|---|---|---|---|
+|  |  |  |  |  |
+
+A schema, threshold, consent, provenance, or release change requires a new recorded version.
+
+## 13. Release checklist
+
+- [ ] No child data.
+- [ ] Every fixture has provenance.
+- [ ] Consent/license permits the intended use.
+- [ ] Raw private media is not in Git.
+- [ ] Schema and coordinate convention are documented.
+- [ ] Movement/outcome counts are reported.
+- [ ] Annotation review is complete.
+- [ ] Calibration and held-out use are distinguished.
+- [ ] Limitations and prohibited uses are explicit.
+- [ ] Privacy review is complete.
