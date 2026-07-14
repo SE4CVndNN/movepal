@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Back up current MovePal issue and Project state before applying planning updates."""
+
 from __future__ import annotations
 
 import argparse
@@ -29,20 +30,56 @@ def main() -> int:
     destination = args.output_dir / f"planning_enhancement_github_backup_{stamp}.json"
     destination.parent.mkdir(parents=True, exist_ok=True)
 
-    issues = run_gh([
-        "issue", "list", "--repo", args.repository, "--state", "all", "--limit", "1000",
-        "--json", "number,title,body,state,url,labels,assignees,milestone",
-    ])
-    project = run_gh([
-        "project", "view", str(args.project_number), "--owner", args.organization, "--format", "json",
-    ])
-    project_items = run_gh([
-        "project", "item-list", str(args.project_number), "--owner", args.organization,
-        "--limit", "1000", "--format", "json",
-    ])
-    labels = run_gh([
-        "label", "list", "--repo", args.repository, "--limit", "200", "--json", "name,color,description",
-    ])
+    issues = run_gh(
+        [
+            "issue",
+            "list",
+            "--repo",
+            args.repository,
+            "--state",
+            "all",
+            "--limit",
+            "1000",
+            "--json",
+            "number,title,body,state,url,labels,assignees,milestone",
+        ]
+    )
+    project = run_gh(
+        [
+            "project",
+            "view",
+            str(args.project_number),
+            "--owner",
+            args.organization,
+            "--format",
+            "json",
+        ]
+    )
+    project_items = run_gh(
+        [
+            "project",
+            "item-list",
+            str(args.project_number),
+            "--owner",
+            args.organization,
+            "--limit",
+            "1000",
+            "--format",
+            "json",
+        ]
+    )
+    labels = run_gh(
+        [
+            "label",
+            "list",
+            "--repo",
+            args.repository,
+            "--limit",
+            "200",
+            "--json",
+            "name,color,description",
+        ]
+    )
 
     payload = {
         "created_at_local": datetime.now().isoformat(timespec="seconds"),
@@ -52,7 +89,9 @@ def main() -> int:
         "project_items": project_items,
         "labels": labels,
     }
-    destination.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    destination.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
     print(f"GitHub state backup: {destination}")
     return 0
 
