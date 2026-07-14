@@ -78,16 +78,16 @@ their assigned issue in full.
 
 ## 5. Board Verification
 
-- [ ] Sprint 1 items are visible in the MovePal Project.
-- [ ] Sprint 1 assignments have been checked against the authoritative
+- [X] Sprint 1 items are visible in the MovePal Project.
+- [X] Sprint 1 assignments have been checked against the authoritative
       backlog.
-- [ ] Start and target dates are visible.
-- [ ] Workflow stages reflect the current state of the work.
-- [ ] Missing or incorrect assignments are recorded with an owner and next
+- [X] Start and target dates are visible.
+- [X] Workflow stages reflect the current state of the work.
+- [X] Missing or incorrect assignments are recorded with an owner and next
       action.
-- [ ] An independent reviewer is identified for each assigned task.
-- [ ] Verification date recorded: `YYYY-MM-DD`.
-- [ ] Verified by: `@username`.
+- [X] An independent reviewer is identified for each assigned task.
+- [X] Verification date recorded: `14-07-2026`.
+- [X] Verified by: `@alaamadii`.
 
 ## 6. Operating Rules
 
