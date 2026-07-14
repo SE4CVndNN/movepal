@@ -135,7 +135,9 @@ def main() -> int:
     team_b, errors_b = load_team(args.team_b, "B")
     errors = errors_a + errors_b
 
-    all_usernames = [member.github_username.casefold() for member in [*team_a, *team_b]]
+    all_usernames = [
+        member.github_username.casefold() for member in [*team_a, *team_b]
+    ]
     if len(all_usernames) != len(set(all_usernames)):
         errors.append("The same GitHub username appears in both teams.")
 
