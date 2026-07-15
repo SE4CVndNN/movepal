@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Validate the enhanced MovePal backlog and Sprint 1 resource plan."""
+
 from __future__ import annotations
 
 import argparse
@@ -11,26 +12,77 @@ from pathlib import Path
 
 TASK_ID = re.compile(r"^MP-(\d{3})$")
 SPRINT_VALUES = {"sprint-1", "post-sprint", "future", "optional"}
-TEAM_B = {"alaamadii", "IslamOuda85", "AhmadKollab", "myarnwas", "JHT127", "MennaAllah-Alatrsh"}
-TEAM_A = {"Tojan-Naiem", "SajaZenaty", "nezarYousef", "saliqasarwi", "SaadRayh", "BaraahMazeen"}
+TEAM_B = {
+    "alaamadii",
+    "IslamOuda85",
+    "AhmadKollab",
+    "myarnwas",
+    "JHT127",
+    "MennaAllah-Alatrsh",
+}
+TEAM_A = {
+    "Tojan-Naiem",
+    "SajaZenaty",
+    "nezarYousef",
+    "saliqasarwi",
+    "SaadRayh",
+    "BaraahMazeen",
+}
 REQUIRED = {
-    "task_id", "position", "title", "value", "description", "beginner_learning_objective",
-    "deliverables", "acceptance_criteria", "definition_of_done", "dependencies", "related_tasks",
-    "blocking_status", "workstream", "suggested_scrum_role", "team", "primary_assignee",
-    "contributors", "suggested_reviewer", "estimated_focused_work_hours",
-    "investigation_buffer_hours", "preparation_learning_hours", "implementation_hours",
-    "testing_hours", "review_buffer_hours", "qa_buffer_hours", "effort_allocation_hours",
-    "priority", "sprint_designation", "github_labels", "milestone", "project_status", "risks",
-    "helpful_references", "pull_request_required", "suggested_branch_name",
-    "suggested_test_requirements", "security_privacy_considerations", "demo_evidence_required",
-    "start_date", "target_date", "manual_testing_only", "required_reading", "practical_output",
-    "dependency_rationale", "handoff_to", "issue_body",
+    "task_id",
+    "position",
+    "title",
+    "value",
+    "description",
+    "beginner_learning_objective",
+    "deliverables",
+    "acceptance_criteria",
+    "definition_of_done",
+    "dependencies",
+    "related_tasks",
+    "blocking_status",
+    "workstream",
+    "suggested_scrum_role",
+    "team",
+    "primary_assignee",
+    "contributors",
+    "suggested_reviewer",
+    "estimated_focused_work_hours",
+    "investigation_buffer_hours",
+    "preparation_learning_hours",
+    "implementation_hours",
+    "testing_hours",
+    "review_buffer_hours",
+    "qa_buffer_hours",
+    "effort_allocation_hours",
+    "priority",
+    "sprint_designation",
+    "github_labels",
+    "milestone",
+    "project_status",
+    "risks",
+    "helpful_references",
+    "pull_request_required",
+    "suggested_branch_name",
+    "suggested_test_requirements",
+    "security_privacy_considerations",
+    "demo_evidence_required",
+    "start_date",
+    "target_date",
+    "manual_testing_only",
+    "required_reading",
+    "practical_output",
+    "dependency_rationale",
+    "handoff_to",
+    "issue_body",
 }
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--backlog", type=Path, default=Path("backlog/product_backlog.json"))
+    parser.add_argument(
+        "--backlog", type=Path, default=Path("backlog/product_backlog.json")
+    )
     args = parser.parse_args()
 
     data = json.loads(args.backlog.read_text(encoding="utf-8"))
@@ -67,13 +119,26 @@ def main() -> int:
             errors.append(f"{tid}: description/issue body is not sufficiently detailed")
         if f"<!-- task-id: {tid} -->" not in task["issue_body"]:
             errors.append(f"{tid}: stable marker missing")
-        if not task["required_reading"] or not task["practical_output"] or not task["dependency_rationale"]:
-            errors.append(f"{tid}: reading, practical output, and dependency rationale are required")
+        if (
+            not task["required_reading"]
+            or not task["practical_output"]
+            or not task["dependency_rationale"]
+        ):
+            errors.append(
+                f"{tid}: reading, practical output, and dependency rationale are required"
+            )
 
-        parts = sum(float(task[name]) for name in (
-            "investigation_buffer_hours", "preparation_learning_hours", "implementation_hours",
-            "testing_hours", "review_buffer_hours", "qa_buffer_hours",
-        ))
+        parts = sum(
+            float(task[name])
+            for name in (
+                "investigation_buffer_hours",
+                "preparation_learning_hours",
+                "implementation_hours",
+                "testing_hours",
+                "review_buffer_hours",
+                "qa_buffer_hours",
+            )
+        )
         if abs(parts - float(task["estimated_focused_work_hours"])) > 0.01:
             errors.append(
                 f"{tid}: effort breakdown {parts:g} does not equal estimate "
@@ -91,14 +156,28 @@ def main() -> int:
             elif ids[dep]["position"] >= task["position"]:
                 errors.append(f"{tid}: dependency {dep} is not numerically earlier")
 
-        allocations = {user: float(hours) for user, hours in task["effort_allocation_hours"].items()}
+        allocations = {
+            user: float(hours)
+            for user, hours in task["effort_allocation_hours"].items()
+        }
         if task["sprint_designation"] == "sprint-1":
             expected_team = TEAM_A if task["manual_testing_only"] else TEAM_B
-            if not task["primary_assignee"] or task["primary_assignee"] not in expected_team:
+            if (
+                not task["primary_assignee"]
+                or task["primary_assignee"] not in expected_team
+            ):
                 errors.append(f"{tid}: invalid Sprint assignee")
             if set(allocations) - expected_team:
-                errors.append(f"{tid}: allocation contains a member outside the responsible team")
-            if abs(sum(allocations.values()) - float(task["estimated_focused_work_hours"])) > 0.01:
+                errors.append(
+                    f"{tid}: allocation contains a member outside the responsible team"
+                )
+            if (
+                abs(
+                    sum(allocations.values())
+                    - float(task["estimated_focused_work_hours"])
+                )
+                > 0.01
+            ):
                 errors.append(f"{tid}: allocations do not sum to estimate")
             if task["suggested_reviewer"] in allocations:
                 errors.append(f"{tid}: reviewer is also an author/contributor")
@@ -106,10 +185,15 @@ def main() -> int:
             errors.append(f"{tid}: later task must remain unassigned")
 
         if task["manual_testing_only"]:
-            if task["start_date"] != "2026-07-29" or task["target_date"] != "2026-07-29":
+            if (
+                task["start_date"] != "2026-07-29"
+                or task["target_date"] != "2026-07-29"
+            ):
                 errors.append(f"{tid}: final QA date must be 2026-07-29")
             if task["dependencies"] != ["MP-024"]:
-                errors.append(f"{tid}: final QA must depend only on release-candidate freeze MP-024")
+                errors.append(
+                    f"{tid}: final QA must depend only on release-candidate freeze MP-024"
+                )
 
     # Explicit cycle check, even though ordered dependencies should already prevent cycles.
     visiting: set[str] = set()
@@ -132,7 +216,11 @@ def main() -> int:
         visit(tid)
 
     qa = [t for t in tasks if t["manual_testing_only"]]
-    dev = [t for t in tasks if t["sprint_designation"] == "sprint-1" and not t["manual_testing_only"]]
+    dev = [
+        t
+        for t in tasks
+        if t["sprint_designation"] == "sprint-1" and not t["manual_testing_only"]
+    ]
     later = [t for t in tasks if t["sprint_designation"] != "sprint-1"]
     if len(qa) != 6:
         errors.append(f"Expected 6 final-day QA tasks, found {len(qa)}")
@@ -148,7 +236,9 @@ def main() -> int:
     if set(loads) != TEAM_B:
         errors.append("All six Team B members need Sprint allocations")
     elif max(loads.values()) - min(loads.values()) > 4:
-        errors.append(f"Workload spread too large: {max(loads.values()) - min(loads.values()):.1f} h")
+        errors.append(
+            f"Workload spread too large: {max(loads.values()) - min(loads.values()):.1f} h"
+        )
 
     planned = sum(float(t["estimated_focused_work_hours"]) for t in dev)
     theoretical = 252.0
@@ -161,7 +251,10 @@ def main() -> int:
         errors.append("MP-014 must be the early integration vertical slice")
     if "MP-014" not in ids.get("MP-019", {}).get("dependencies", []):
         errors.append("MP-019 must depend on MP-014")
-    if ids.get("MP-034", {}).get("title") != "Cross-browser compatibility baseline and support matrix":
+    if (
+        ids.get("MP-034", {}).get("title")
+        != "Cross-browser compatibility baseline and support matrix"
+    ):
         errors.append("MP-034 must remain the later cross-browser task")
     for tid in ("MP-001", "MP-002", "MP-003"):
         if "Do not repeat documentation" not in ids[tid]["issue_body"]:
@@ -171,7 +264,9 @@ def main() -> int:
         f"Validated {len(tasks)} tasks: {len(dev)} Sprint 1 development, "
         f"{len(qa)} final-day QA, {len(later)} later backlog."
     )
-    print(f"Team B planned focused work: {planned:.1f}/{theoretical:.1f} hours ({ratio:.1%}).")
+    print(
+        f"Team B planned focused work: {planned:.1f}/{theoretical:.1f} hours ({ratio:.1%})."
+    )
     for user in sorted(TEAM_B):
         print(f"  {user}: {loads[user]:.1f} h")
 
