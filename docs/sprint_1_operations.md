@@ -66,12 +66,12 @@ is merged or the dependency is resolved through a recorded decision.
 
 | GitHub Username | Repository Access | Project Access | First Assigned Issue | Dependencies | Reviewer | Practical First Output | Status |
 |---|---|---|---|---|---|---|---|
-| `@alaamadii` | Pending | Pending | MP-001 | Pending | `@IslamOuda85` | Pending | In Progress |
-| `@IslamOuda85` | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
-| `@AhmadKollab` | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
-| `@myarnwas` | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
-| `@JHT127` | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
-| `@MennaAllah-Alatrsh` | Pending | Pending | Pending | Pending | Pending | Pending | Pending |
+| `@alaamadii` | Confirmed | Confirmed | MP-001 | None | `@IslamOuda85` | Verified Sprint 1 board with correct assignments and visible dates | In Progress |
+| `@IslamOuda85` | Confirmed | Confirmed | MP-002 | MP-001 | `@alaamadii` | `docs/mvp_acceptance_map.md` mapping capabilities to evidence and owners | Ready; waiting for dependency |
+| `@AhmadKollab` | Confirmed | Confirmed | MP-004 | MP-002, MP-003 | `@alaamadii` | Executable page and JSON route in the repository | Ready; waiting for dependencies |
+| `@myarnwas` | Confirmed | Confirmed | MP-005 | MP-002, MP-003 | `@AhmadKollab` | Interface schema and mock fixtures for the MediaPipe Pose service contract | Ready; waiting for dependencies |
+| `@JHT127` | Confirmed | Confirmed | MP-006 | MP-002, MP-003 | `@IslamOuda85` | Clickable low-fidelity game flow in Jinja/static assets | Ready; waiting for dependencies |
+| `@MennaAllah-Alatrsh` | Confirmed | Confirmed | MP-007 | MP-005, MP-006 | `@JHT127` | Updated `docs/movement_specification.md` | Ready; waiting for dependencies |
 
 Each member should acknowledge their row after confirming access and reading
 their assigned issue in full.
