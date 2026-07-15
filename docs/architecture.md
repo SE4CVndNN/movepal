@@ -294,3 +294,20 @@ A task that changes a public service interface, JSON response, data schema, coor
 5. avoid merging incompatible contracts without coordinated updates.
 
 Favor the simplest design that meets Sprint 1 acceptance criteria.
+
+
+## 14. MP-004 Flask vertical slice structure
+
+The initial Flask vertical slice follows this flow:
+
+```text
+Browser
+   |
+   v
+Flask Route (routes/)
+   |
+   v
+Service Module (services/)
+   |
+   v
+Response (HTML/JSON)
