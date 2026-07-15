@@ -5,6 +5,7 @@ Dry-run is the default. Existing issues are identified only by the stable marker
 `<!-- task-id: MP-NNN -->`, not by title. Student email addresses are never read
 or printed by this script.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -18,7 +19,9 @@ from typing import Any
 API_VERSION = "2022-11-28"
 
 
-def run(args: list[str], *, check: bool = True, json_input: dict[str, Any] | None = None) -> subprocess.CompletedProcess[str]:
+def run(
+    args: list[str], *, check: bool = True, json_input: dict[str, Any] | None = None
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["gh", *args],
         input=json.dumps(json_input) if json_input is not None else None,
@@ -51,7 +54,15 @@ def records(raw: Any, *keys: str) -> list[dict[str, Any]]:
 def active_member(org: str, username: str, cache: dict[str, bool]) -> bool:
     if username in cache:
         return cache[username]
-    result = run(["api", f"orgs/{org}/memberships/{username}", "-H", f"X-GitHub-Api-Version: {API_VERSION}"], check=False)
+    result = run(
+        [
+            "api",
+            f"orgs/{org}/memberships/{username}",
+            "-H",
+            f"X-GitHub-Api-Version: {API_VERSION}",
+        ],
+        check=False,
+    )
     if result.returncode != 0:
         cache[username] = False
     else:
@@ -63,25 +74,66 @@ def active_member(org: str, username: str, cache: dict[str, bool]) -> bool:
 
 
 def find_project(org: str, title: str) -> dict[str, Any] | None:
-    raw = gh_json(["project", "list", "--owner", org, "--limit", "100", "--format", "json"], default={})
-    return next((p for p in records(raw, "projects", "items") if p.get("title") == title), None)
+    raw = gh_json(
+        ["project", "list", "--owner", org, "--limit", "100", "--format", "json"],
+        default={},
+    )
+    return next(
+        (p for p in records(raw, "projects", "items") if p.get("title") == title), None
+    )
 
 
-def project_context(org: str, number: int) -> tuple[str, dict[str, dict[str, Any]], dict[int, str]]:
-    project = gh_json(["project", "view", str(number), "--owner", org, "--format", "json"])
+def project_context(
+    org: str, number: int
+) -> tuple[str, dict[str, dict[str, Any]], dict[int, str]]:
+    project = gh_json(
+        ["project", "view", str(number), "--owner", org, "--format", "json"]
+    )
     project_id = project["id"]
-    raw_fields = gh_json(["project", "field-list", str(number), "--owner", org, "--limit", "100", "--format", "json"], default={})
+    raw_fields = gh_json(
+        [
+            "project",
+            "field-list",
+            str(number),
+            "--owner",
+            org,
+            "--limit",
+            "100",
+            "--format",
+            "json",
+        ],
+        default={},
+    )
     fields = {f.get("name"): f for f in records(raw_fields, "fields", "items")}
-    raw_items = gh_json(["project", "item-list", str(number), "--owner", org, "--limit", "1000", "--format", "json"], default={})
+    raw_items = gh_json(
+        [
+            "project",
+            "item-list",
+            str(number),
+            "--owner",
+            org,
+            "--limit",
+            "1000",
+            "--format",
+            "json",
+        ],
+        default={},
+    )
     item_by_issue: dict[int, str] = {}
     for item in records(raw_items, "items"):
         content = item.get("content") or {}
-        if isinstance(content, dict) and isinstance(content.get("number"), int) and item.get("id"):
+        if (
+            isinstance(content, dict)
+            and isinstance(content.get("number"), int)
+            and item.get("id")
+        ):
             item_by_issue[content["number"]] = item["id"]
     return project_id, fields, item_by_issue
 
 
-def run_retry(args: list[str], *, attempts: int = 3, delay_seconds: float = 2.0) -> subprocess.CompletedProcess[str]:
+def run_retry(
+    args: list[str], *, attempts: int = 3, delay_seconds: float = 2.0
+) -> subprocess.CompletedProcess[str]:
     """Run an idempotent gh edit command with limited retries for transient network failures."""
     result: subprocess.CompletedProcess[str] | None = None
     for attempt in range(1, attempts + 1):
@@ -106,13 +158,26 @@ def set_project_value(
     if value in (None, ""):
         return True
     field_name = field.get("name", "<unknown>")
-    args = ["project", "item-edit", "--id", item_id, "--project-id", project_id, "--field-id", field["id"]]
+    args = [
+        "project",
+        "item-edit",
+        "--id",
+        item_id,
+        "--project-id",
+        project_id,
+        "--field-id",
+        field["id"],
+    ]
     # `gh project field-list --format json` may expose only the GraphQL object
     # type (for example, ProjectV2Field), not the underlying NUMBER/DATE/TEXT
     # data type. Prefer the authoritative metadata configuration when present.
-    data_type = (expected_data_type or field.get("dataType") or field.get("type") or "").upper()
+    data_type = (
+        expected_data_type or field.get("dataType") or field.get("type") or ""
+    ).upper()
     if data_type in {"SINGLE_SELECT", "SINGLESELECT"} or field.get("options"):
-        option = next((o for o in field.get("options", []) if o.get("name") == str(value)), None)
+        option = next(
+            (o for o in field.get("options", []) if o.get("name") == str(value)), None
+        )
         if not option:
             print(f"[WARN] Project field '{field_name}' has no option '{value}'.")
             return False
@@ -128,7 +193,9 @@ def set_project_value(
         return True
     result = run_retry(args)
     if result.returncode != 0:
-        print(f"[WARN] Could not set Project field {field_name}: {result.stderr.strip() or result.stdout.strip()}")
+        print(
+            f"[WARN] Could not set Project field {field_name}: {result.stderr.strip() or result.stdout.strip()}"
+        )
         return False
     return True
 
@@ -138,16 +205,26 @@ def main() -> int:
     parser.add_argument("--organization", default="SE4CVndNN")
     parser.add_argument("--repository", default="movepal")
     parser.add_argument("--project-title", default="MovePal — Product and Sprint Board")
-    parser.add_argument("--backlog", type=Path, default=Path("backlog/product_backlog.json"))
-    parser.add_argument("--metadata", type=Path, default=Path("config/project_metadata.json"))
-    parser.add_argument("--source", choices=["all", "sprint-1", "qa", "later"], default="all")
+    parser.add_argument(
+        "--backlog", type=Path, default=Path("backlog/product_backlog.json")
+    )
+    parser.add_argument(
+        "--metadata", type=Path, default=Path("config/project_metadata.json")
+    )
+    parser.add_argument(
+        "--source", choices=["all", "sprint-1", "qa", "later"], default="all"
+    )
     parser.add_argument("--task-id-start")
     parser.add_argument("--task-id-end")
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--update-existing", action="store_true")
     parser.add_argument("--no-assign", action="store_true")
     parser.add_argument("--no-project", action="store_true")
-    parser.add_argument("--report", type=Path, default=Path("bootstrap_reports/backlog_import_summary.json"))
+    parser.add_argument(
+        "--report",
+        type=Path,
+        default=Path("bootstrap_reports/backlog_import_summary.json"),
+    )
     args = parser.parse_args()
 
     data = json.loads(args.backlog.read_text(encoding="utf-8"))
@@ -170,7 +247,21 @@ def main() -> int:
         tasks = [t for t in tasks if t["task_id"] <= args.task_id_end]
 
     repo = f"{args.organization}/{args.repository}"
-    existing_raw = gh_json(["issue", "list", "--repo", repo, "--state", "all", "--limit", "1000", "--json", "number,title,body,url"], default=[])
+    existing_raw = gh_json(
+        [
+            "issue",
+            "list",
+            "--repo",
+            repo,
+            "--state",
+            "all",
+            "--limit",
+            "1000",
+            "--json",
+            "number,title,body,url",
+        ],
+        default=[],
+    )
     existing: dict[str, dict[str, Any]] = {}
     for issue in existing_raw or []:
         body = issue.get("body") or ""
@@ -179,31 +270,58 @@ def main() -> int:
                 existing[task["task_id"]] = issue
                 break
 
-    milestones_raw = gh_json(["api", f"repos/{repo}/milestones?state=all&per_page=100", "-H", f"X-GitHub-Api-Version: {API_VERSION}"], default=[])
+    milestones_raw = gh_json(
+        [
+            "api",
+            f"repos/{repo}/milestones?state=all&per_page=100",
+            "-H",
+            f"X-GitHub-Api-Version: {API_VERSION}",
+        ],
+        default=[],
+    )
     milestones = {m["title"]: m["number"] for m in milestones_raw or []}
     member_cache: dict[str, bool] = {}
 
-    project = None if args.no_project else find_project(args.organization, args.project_title)
-    project_number = int(project["number"]) if project and project.get("number") is not None else None
+    project = (
+        None if args.no_project else find_project(args.organization, args.project_title)
+    )
+    project_number = (
+        int(project["number"])
+        if project and project.get("number") is not None
+        else None
+    )
     project_id: str | None = None
     fields: dict[str, dict[str, Any]] = {}
     item_by_issue: dict[int, str] = {}
     if project_number is not None:
-        project_id, fields, item_by_issue = project_context(args.organization, project_number)
+        project_id, fields, item_by_issue = project_context(
+            args.organization, project_number
+        )
     elif not args.no_project:
-        print(f"[WARN] Organization Project '{args.project_title}' does not exist yet; Project item operations will be skipped in this run.")
+        print(
+            f"[WARN] Organization Project '{args.project_title}' does not exist yet; Project item operations will be skipped in this run."
+        )
 
     summary: dict[str, Any] = {
-        "mode": "apply" if args.apply else "dry-run", "source": args.source,
-        "selected": len(tasks), "created": 0, "updated": 0, "skipped": 0,
-        "failed": 0, "assignment_warnings": [], "project_field_warnings": 0, "issue_type_warnings": 0,
+        "mode": "apply" if args.apply else "dry-run",
+        "source": args.source,
+        "selected": len(tasks),
+        "created": 0,
+        "updated": 0,
+        "skipped": 0,
+        "failed": 0,
+        "assignment_warnings": [],
+        "project_field_warnings": 0,
+        "issue_type_warnings": 0,
         "tasks": [],
     }
 
     for task in tasks:
         tid = task["task_id"]
         title = f"{tid} — {task['title']}"
-        desired_users = [] if args.no_assign else list(task["effort_allocation_hours"].keys())
+        desired_users = (
+            [] if args.no_assign else list(task["effort_allocation_hours"].keys())
+        )
         assignable: list[str] = []
         for username in desired_users:
             if active_member(args.organization, username, member_cache):
@@ -231,12 +349,29 @@ def main() -> int:
         try:
             if issue is None:
                 if not args.apply:
-                    print(f"[DRY-RUN] Create {title}; assignees={assignable or ['unassigned']}")
+                    print(
+                        f"[DRY-RUN] Create {title}; assignees={assignable or ['unassigned']}"
+                    )
                     issue = {"number": -1, "url": None}
                 else:
-                    result = run(["api", "-X", "POST", f"repos/{repo}/issues", "-H", f"X-GitHub-Api-Version: {API_VERSION}", "--input", "-"], check=False, json_input=payload)
+                    result = run(
+                        [
+                            "api",
+                            "-X",
+                            "POST",
+                            f"repos/{repo}/issues",
+                            "-H",
+                            f"X-GitHub-Api-Version: {API_VERSION}",
+                            "--input",
+                            "-",
+                        ],
+                        check=False,
+                        json_input=payload,
+                    )
                     if result.returncode != 0:
-                        raise RuntimeError(result.stderr.strip() or result.stdout.strip())
+                        raise RuntimeError(
+                            result.stderr.strip() or result.stdout.strip()
+                        )
                     created = json.loads(result.stdout)
                     issue = {"number": created["number"], "url": created["html_url"]}
                 summary["created"] += 1
@@ -245,24 +380,57 @@ def main() -> int:
                 if not args.apply:
                     print(f"[DRY-RUN] Update existing #{issue['number']} for {tid}")
                 else:
-                    result = run(["api", "-X", "PATCH", f"repos/{repo}/issues/{issue['number']}", "-H", f"X-GitHub-Api-Version: {API_VERSION}", "--input", "-"], check=False, json_input=payload)
+                    result = run(
+                        [
+                            "api",
+                            "-X",
+                            "PATCH",
+                            f"repos/{repo}/issues/{issue['number']}",
+                            "-H",
+                            f"X-GitHub-Api-Version: {API_VERSION}",
+                            "--input",
+                            "-",
+                        ],
+                        check=False,
+                        json_input=payload,
+                    )
                     if result.returncode != 0:
-                        raise RuntimeError(result.stderr.strip() or result.stdout.strip())
+                        raise RuntimeError(
+                            result.stderr.strip() or result.stdout.strip()
+                        )
                     updated = json.loads(result.stdout)
                     issue["url"] = updated["html_url"]
                 summary["updated"] += 1
                 action = "updated"
             else:
-                print(f"[INFO] Skip existing #{issue['number']} for {tid}; use --update-existing to reconcile it.")
+                print(
+                    f"[INFO] Skip existing #{issue['number']} for {tid}; use --update-existing to reconcile it."
+                )
                 summary["skipped"] += 1
 
-            issue_type = "Feature" if "type:feature" in task["github_labels"] else ("Bug" if "type:bug" in task["github_labels"] else "Task")
+            issue_type = (
+                "Feature"
+                if "type:feature" in task["github_labels"]
+                else ("Bug" if "type:bug" in task["github_labels"] else "Task")
+            )
             if int(issue["number"]) < 0:
                 print(f"[DRY-RUN] Set issue type for {tid} to {issue_type}")
             elif args.apply:
-                type_result = run_retry(["issue", "edit", str(issue["number"]), "--repo", repo, "--type", issue_type])
+                type_result = run_retry(
+                    [
+                        "issue",
+                        "edit",
+                        str(issue["number"]),
+                        "--repo",
+                        repo,
+                        "--type",
+                        issue_type,
+                    ]
+                )
                 if type_result.returncode != 0:
-                    print(f"[WARN] Could not set issue type {issue_type} for {tid}: {type_result.stderr.strip() or type_result.stdout.strip()}")
+                    print(
+                        f"[WARN] Could not set issue type {issue_type} for {tid}: {type_result.stderr.strip() or type_result.stdout.strip()}"
+                    )
                     summary["issue_type_warnings"] += 1
 
             if not args.no_project and project_number is not None:
@@ -272,12 +440,29 @@ def main() -> int:
                     if not args.apply:
                         print(f"[DRY-RUN] Add {tid} to Project #{project_number}")
                     else:
-                        added = gh_json(["project", "item-add", str(project_number), "--owner", args.organization, "--url", issue["url"], "--format", "json"])
+                        added = gh_json(
+                            [
+                                "project",
+                                "item-add",
+                                str(project_number),
+                                "--owner",
+                                args.organization,
+                                "--url",
+                                issue["url"],
+                                "--format",
+                                "json",
+                            ]
+                        )
                         item_id = added.get("id")
                         if item_id:
                             item_by_issue[issue_number] = item_id
                 if item_id and project_id:
-                    sprint_value = {"sprint-1": "Sprint 1", "post-sprint": "Post-Sprint", "future": "Future", "optional": "Optional"}[task["sprint_designation"]]
+                    sprint_value = {
+                        "sprint-1": "Sprint 1",
+                        "post-sprint": "Post-Sprint",
+                        "future": "Future",
+                        "optional": "Optional",
+                    }[task["sprint_designation"]]
                     values = {
                         "Workflow Stage": task["project_status"],
                         "Sprint": sprint_value,
@@ -308,18 +493,38 @@ def main() -> int:
                         ):
                             summary["project_field_warnings"] += 1
                 elif not args.apply and issue_number < 0:
-                    print(f"[DRY-RUN] Set all configured Project fields for {tid} after issue creation.")
+                    print(
+                        f"[DRY-RUN] Set all configured Project fields for {tid} after issue creation."
+                    )
 
-            summary["tasks"].append({"task_id": tid, "action": action, "issue_number": issue.get("number")})
-        except (RuntimeError, subprocess.CalledProcessError, json.JSONDecodeError) as exc:
+            summary["tasks"].append(
+                {"task_id": tid, "action": action, "issue_number": issue.get("number")}
+            )
+        except (
+            RuntimeError,
+            subprocess.CalledProcessError,
+            json.JSONDecodeError,
+        ) as exc:
             summary["failed"] += 1
-            summary["tasks"].append({"task_id": tid, "action": "failed", "error": str(exc)})
+            summary["tasks"].append(
+                {"task_id": tid, "action": "failed", "error": str(exc)}
+            )
             print(f"[ERROR] {tid}: {exc}", file=sys.stderr)
 
     args.report.parent.mkdir(parents=True, exist_ok=True)
-    args.report.write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    args.report.write_text(
+        json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
     print("\nBacklog import summary")
-    for key in ("selected", "created", "updated", "skipped", "failed", "project_field_warnings", "issue_type_warnings"):
+    for key in (
+        "selected",
+        "created",
+        "updated",
+        "skipped",
+        "failed",
+        "project_field_warnings",
+        "issue_type_warnings",
+    ):
         print(f"- {key}: {summary[key]}")
     print(f"- assignment warnings: {len(summary['assignment_warnings'])}")
     print(f"- report: {args.report}")
