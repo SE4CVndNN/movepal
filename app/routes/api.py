@@ -1,6 +1,7 @@
 """JSON API routes."""
 
 from flask import Blueprint, jsonify
+
 from app.services.health import get_health_status
 
 api_bp = Blueprint("api", __name__)
