@@ -1,6 +1,6 @@
 # MovePal Content Baseline
 
-This document contains the approved, finalized text strings for the MovePal user interface. Developers must copy these text strings exactly to maintain safe, non-medical boundaries.
+This document outlines the approved text strings for the MovePal user interface, including safety disclaimers and user feedback messages..
 
 ---
 
