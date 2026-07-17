@@ -29,3 +29,27 @@ button {
   padding: 0.5rem 1rem;
   font: inherit;
 }
+
+[hidden] {
+  display: none !important;
+}
+
+.activity-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+#camera-preview {
+  width: 100%;
+  max-width: 24rem;
+  border-radius: 0.75rem;
+  background: black;
+}
+
+/* keep touch targets comfortably large on narrow screens */
+@media (max-width: 30rem) {
+  button {
+    width: 100%;
+  }
+}
