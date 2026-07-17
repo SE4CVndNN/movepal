@@ -38,23 +38,22 @@ const preview = document.querySelector("#camera-preview");
 
 document.querySelector("#use-webcam-btn")?.addEventListener("click", async () => {
   cameraStatus.textContent = "Requesting camera access…";
+  const fallbackReason = document.querySelector("#fallback-reason");
   try {
     activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
     preview.srcObject = activeStream;
     cameraStatus.textContent = "Webcam connected successfully! Prepare to move.";
     showScreen("camera-live");
   } catch (error) {
+    let reason;
     if (error.name === "NotAllowedError") {
-      cameraStatus.textContent =
-        "Camera access was denied. Please enable camera permissions in your browser settings to continue.";
+      reason = "Camera access was denied. Please enable camera permissions in your browser settings to continue.";
     } else if (error.name === "NotFoundError") {
-      cameraStatus.textContent =
-        "No camera was detected. Please connect a webcam or use the local demo sample.";
+      reason = "No camera was detected. Please connect a webcam or use the local demo sample.";
     } else {
-      cameraStatus.textContent =
-        "No camera was detected. Please connect a webcam or use the local demo sample.";
+      reason = "No camera was detected. Please connect a webcam or use the local demo sample.";
     }
-    // Fail safe: always land on the fallback path when the camera can't be used.
+    if (fallbackReason) fallbackReason.textContent = reason;
     showScreen("camera-fallback");
   }
 });
