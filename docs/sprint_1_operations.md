@@ -18,9 +18,9 @@ an available independent reviewer.
 | `@alaamadii` | `@IslamOuda85` | `@AhmadKollab` |
 | `@IslamOuda85` | `@AhmadKollab` | `@myarnwas` |
 | `@AhmadKollab` | `@myarnwas` | `@JHT127` |
-| `@myarnwas` | `@JHT127` | `@MennaAllah-Alatrsh` |
-| `@JHT127` | `@MennaAllah-Alatrsh` | `@alaamadii` |
-| `@MennaAllah-Alatrsh` | `@alaamadii` | `@IslamOuda85` |
+| `@myarnwas` | `@JHT127` | `@fatimarajab12` |
+| `@JHT127` | `@fatimarajab12` | `@alaamadii` |
+| `@fatimarajab12` | `@alaamadii` | `@IslamOuda85` |
 
 Reviewer rules:
 
@@ -71,7 +71,7 @@ is merged or the dependency is resolved through a recorded decision.
 | `@AhmadKollab` | Confirmed | Confirmed | MP-004 | MP-002, MP-003 | `@alaamadii` | Executable page and JSON route in the repository | Ready; waiting for dependencies |
 | `@myarnwas` | Confirmed | Confirmed | MP-005 | MP-002, MP-003 | `@AhmadKollab` | Interface schema and mock fixtures for the MediaPipe Pose service contract | Ready; waiting for dependencies |
 | `@JHT127` | Confirmed | Confirmed | MP-006 | MP-002, MP-003 | `@IslamOuda85` | Clickable low-fidelity game flow in Jinja/static assets | Ready; waiting for dependencies |
-| `@MennaAllah-Alatrsh` | Confirmed | Confirmed | MP-007 | MP-005, MP-006 | `@JHT127` | Updated `docs/movement_specification.md` | Ready; waiting for dependencies |
+| `@fatimarajab12` | Pending confirmation | Pending confirmation | MP-007 | MP-005, MP-006 | `@JHT127` | Updated `docs/movement_specification.md` | Onboarding; access confirmation required |
 
 Each member should acknowledge their row after confirming access and reading
 their assigned issue in full.
@@ -113,3 +113,14 @@ This operational record complements:
 
 Those documents remain authoritative for their respective topics. This file
 records only the Sprint 1 team decisions needed to apply them in daily work.
+
+## 8. Team Membership Continuity
+
+On 18 July 2026, `@fatimarajab12` replaced `@MennaAllah-Alatrsh` in the
+active MovePal development team. Open and future ownership, contribution, and
+review assignments transfer to the new member after repository and Project
+access are confirmed. Existing commits, reviews, merged pull requests, and
+completed-task history remain attributed to their original authors.
+
+The Scrum Master must record the new member's repository and Project access
+confirmation before marking the membership handoff complete.

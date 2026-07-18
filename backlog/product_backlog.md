@@ -67,7 +67,7 @@ Produce a reusable browser prototype that validates the complete interaction flo
 ## MP-007 — Movement acceptance matrix, executable landmark schema, and evaluation plan
 
 - **Sprint:** sprint-1
-- **Owner:** MennaAllah-Alatrsh
+- **Owner:** fatimarajab12
 - **Estimate:** 6 h
 - **Dependencies:** MP-005, MP-006
 - **Practical first output:** Updated `docs/movement_specification.md`
@@ -157,7 +157,7 @@ Implement side reach with explicit left and right variants, consistent camera/us
 ## MP-016 — Knee-lift or step-in-place rule, feedback, and tests
 
 - **Sprint:** sprint-1
-- **Owner:** MennaAllah-Alatrsh
+- **Owner:** fatimarajab12
 - **Estimate:** 7 h
 - **Dependencies:** MP-007, MP-013, MP-014
 - **Practical first output:** Knee-lift evaluator
@@ -167,7 +167,7 @@ Implement the third movement rule using relative knee/hip/ankle geometry and vis
 ## MP-017 — Friendly feedback orchestration and points/star scoring
 
 - **Sprint:** sprint-1
-- **Owner:** MennaAllah-Alatrsh
+- **Owner:** fatimarajab12
 - **Estimate:** 7 h
 - **Dependencies:** MP-014, MP-015, MP-016, MP-002
 - **Practical first output:** Feedback service
@@ -207,7 +207,7 @@ Prepare a small, ethically bounded calibration/testing process using adults only
 ## MP-021 — Landmark fixtures, threshold calibration, and rule evaluation report
 
 - **Sprint:** sprint-1
-- **Owner:** MennaAllah-Alatrsh
+- **Owner:** fatimarajab12
 - **Estimate:** 8 h
 - **Dependencies:** MP-014, MP-015, MP-016, MP-020
 - **Practical first output:** Versioned anonymized landmark fixtures
