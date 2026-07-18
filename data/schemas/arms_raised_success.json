@@ -1,0 +1,18 @@
+{
+"fixture_id": "arms_raised_success",
+"movement_code": "raise_both_arms",
+"requested_side": null,
+"category": "positive",
+"expected_completion_result": true,
+"expected_feedback_code": "great",
+"landmarks": [
+{ "name": "left_shoulder", "x": 0.40, "y": 0.40, "z": 0.00, "visibility": 0.99 },
+{ "name": "right_shoulder", "x": 0.60, "y": 0.40, "z": 0.00, "visibility": 0.99 },
+{ "name": "left_elbow", "x": 0.35, "y": 0.25, "z": -0.05, "visibility": 0.98 },
+{ "name": "right_elbow", "x": 0.65, "y": 0.25, "z": -0.05, "visibility": 0.98 },
+{ "name": "left_wrist", "x": 0.38, "y": 0.15, "z": -0.10, "visibility": 0.97 },
+{ "name": "right_wrist", "x": 0.62, "y": 0.15, "z": -0.10, "visibility": 0.97 },
+{ "name": "left_hip", "x": 0.42, "y": 0.65, "z": 0.00, "visibility": 0.99 },
+{ "name": "right_hip", "x": 0.58, "y": 0.65, "z": 0.00, "visibility": 0.99 }
+]
+}
