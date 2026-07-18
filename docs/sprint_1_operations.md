@@ -122,5 +122,5 @@ review assignments transfer to the new member after repository and Project
 access are confirmed. Existing commits, reviews, merged pull requests, and
 completed-task history remain attributed to their original authors.
 
-The Scrum Master must record the new member's access confirmation and MP-003
-contribution/review evidence before marking onboarding or MP-003 complete.
+The Scrum Master must record the new member's repository and Project access
+confirmation before marking the membership handoff complete.
