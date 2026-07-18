@@ -37,6 +37,6 @@ The Product Owner does not rewrite the product vision repeatedly and does not ap
 - `AhmadKollab`: Flask/backend/API/session plus early vertical-slice integration.
 - `myarnwas`: pose estimation, normalization, visibility, and movement-rule continuity.
 - `JHT127`: UI, camera/fallback browser behavior, and complete game-loop continuity.
-- `MennaAllah-Alatrsh`: movement specifications, fixtures, scoring, calibration, and evaluation.
+- `fatimarajab12`: movement specifications, fixtures, scoring, calibration, and evaluation.
 
 Feature ownership continues from investigation through implementation and initial tests. Owners still review work outside their own authorship.

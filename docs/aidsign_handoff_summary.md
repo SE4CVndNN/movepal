@@ -17,7 +17,12 @@ Members:
 - `AhmadKollab`
 - `myarnwas`
 - `JHT127`
-- `MennaAllah-Alatrsh`
+- `fatimarajab12`
+
+Membership continuity note: `@fatimarajab12` replaced
+`@MennaAllah-Alatrsh` in the active MovePal team on 18 July 2026. Existing
+commits, reviews, and completed-task history remain attributed to their
+original authors.
 
 Responsibilities:
 

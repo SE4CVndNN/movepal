@@ -18,7 +18,7 @@ TEAM_B = {
     "AhmadKollab",
     "myarnwas",
     "JHT127",
-    "MennaAllah-Alatrsh",
+    "fatimarajab12",
 }
 TEAM_A = {
     "Tojan-Naiem",
