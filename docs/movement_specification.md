@@ -230,6 +230,22 @@ A single-frame knee-lift rule may use:
 
 A short-sequence step rule may compare the same landmark across sampled frames. Do not claim to recognize a dynamic step from one ambiguous still image without documenting that limitation.
 
+### Example procedure: left or right knee lift
+
+1. The game selects and displays an anatomical side: `left` or `right`.
+2. The player stands where the selected hip, knee, ankle, opposite hip, and opposite ankle remain visible. A mirrored preview may reverse the display, but it does not change the selected anatomical side.
+3. The player lifts the selected knee while keeping the other leg available as a reference.
+4. For each sampled pose, the rule checks visibility first, then compares the selected knee's vertical position with that side's hip-to-ankle scale:
+
+   ```text
+   leg_scale = distance(selected_hip, selected_ankle)
+   knee_lifted = selected_knee.y <= selected_hip.y + 0.35 * leg_scale
+   ```
+
+5. When `knee_lifted` is true for two consecutive evaluated samples, return `great`. If it is true for fewer than two samples, return `hold`. If the selected knee is not raised enough, return `lift_knee`; missing or low-visibility required landmarks return `full_body_missing` before any movement correction.
+
+For example, in a left-knee fixture with `left_hip.y = 0.50` and `distance(left_hip, left_ankle) = 0.20`, the initial cutoff is `0.57`. A `left_knee.y` of `0.56` passes; `0.58` retries. This is a configurable prototype heuristic, not a measure of movement quality or safety.
+
 ### Feedback examples
 
 - clear knee-lift condition → `great`
@@ -292,3 +308,41 @@ A reviewer should confirm:
 - [ ] Tests do not use a real camera.
 - [ ] Limitations are documented.
 - [ ] No claim of medical correctness is made.
+
+## 12. MP-007 executable acceptance matrix
+
+The checked-in synthetic fixture set is split by activity: [`raise_both_arms_fixtures.json`](../data/landmarks/raise_both_arms_fixtures.json), [`side_reach_fixtures.json`](../data/landmarks/side_reach_fixtures.json), and [`knee_lift_fixtures.json`](../data/landmarks/knee_lift_fixtures.json). Each is an MP-005-compatible JSON array with success, failure, borderline, and low-visibility cases. Every fixture has MP-005's `fixture_id`, source/provenance, `description`, `expected_status`, `annotator`, and a name-keyed `landmarks` object, with MP-007 movement outcome fields added. Its loadable contract is [`data/schemas/landmark_fixture.schema.json`](../data/schemas/landmark_fixture.schema.json). These values are initial, configurable game heuristics for deterministic tests only; they are not clinical measures and must be rechecked after the MP-005 pose-adapter decision and adult-only MP-021 calibration.
+
+| Activity | Start / visibility prerequisites | Progress measurement | Success and hold | Retry outcome |
+|---|---|---|---|---|
+| Raise both arms | Both shoulders, wrists, elbows, and hips present; visibility >= 0.50 | Each wrist is at least `0.40 * shoulder_width` above its matching shoulder (`y` decreases upward) | Both conditions true for 2 consecutive evaluated samples | `raise_arms`; visibility/framing failure takes precedence |
+| Side reach — left | Both shoulders, left elbow/wrist, and hips present; visibility >= 0.50 | Left wrist is outward by >= `0.85 * shoulder_width`; its vertical offset is <= `0.50 * shoulder_width` | Condition true for 2 consecutive samples | `reach_left`; a right-arm reach does not satisfy the request |
+| Side reach — right | Both shoulders, right elbow/wrist, and hips present; visibility >= 0.50 | Right wrist is outward by >= `0.85 * shoulder_width`; its vertical offset is <= `0.50 * shoulder_width` | Condition true for 2 consecutive samples | `reach_right`; a left-arm reach does not satisfy the request |
+| Knee lift / step — requested side | Target hip, knee, ankle, opposite hip, and opposite ankle present; visibility >= 0.50 | `knee.y <= hip.y + 0.35 * distance(hip, ankle)` | Condition true for 2 consecutive samples | `lift_knee`; a still frame cannot independently prove a dynamic step |
+
+`shoulder_width` is Euclidean distance between anatomical left and right shoulders. A zero or unavailable scale is a framing failure. The pose adapter must preserve the fixture convention: `x` grows toward the viewer's right, `y` grows downward, and `left`/`right` always mean the user's anatomical side. Mirroring changes only the preview, never the rule input or requested side.
+
+### Result and friendly-feedback mapping
+
+Rules must use this precedence: missing/low-visibility required landmark or unusable scale → `full_body_missing`; insufficient consecutive samples after a valid condition → `hold`; otherwise the activity-specific retry code; success → `great`.
+
+| Code | Approved wording source |
+|---|---|
+| `great` | “Awesome job! You've earned ⭐ 1 Star!” |
+| `raise_arms`, `reach_left`, `reach_right`, `lift_knee` | “Please adjust your pose slightly.” |
+| `hold` | “Please hold a bit longer for better validation.” |
+| `full_body_missing` | “We lost track of you! Please step back so your full body is visible in the frame.” |
+
+The wording is intentionally centralized in `feedback.py`; MP-017 should add the new side/knee code mappings without changing their meanings.
+
+### Evaluation plan
+
+| Evaluation stage | Data | Pass criterion | Limitation |
+|---|---|---|---|
+| Schema regression | All checked-in synthetic fixtures | Fixture load and structural validation pass in CI | Valid JSON does not prove pose accuracy |
+| Rule regression | Positive, borderline, negative, and low-visibility fixtures per family | Returned `completed` and feedback code equal fixture expectation | Synthetic geometry is not representative calibration |
+| Boundary checks | Values immediately below, at, and above each threshold | Inclusive/exclusive comparison matches this table | Floating-point tolerance must be explicit in rule tests |
+| Adult-only calibration (MP-021) | Consent-approved derived landmarks, separate from held-out fixtures | Record per-movement counts and all mismatches before changing thresholds | Small convenience sample cannot establish general accuracy |
+| Manual mirrored-preview check | Left/right synthetic fixtures and UI labels | Backend anatomical-side result is unchanged by mirror setting | Does not replace usability study |
+
+Side-specific fixtures use `requested_side: "left"` or `requested_side: "right"` for both side reach and knee lift; they are never represented by a generic side case. Open limitations: no dynamic sequence fixture is included because the Sprint-1 rule is a two-sample knee-lift hold, not a claim that a single frame recognizes a step. Fixture labels are pending independent review; do not promote them to calibrated evidence until that review and MP-005/MP-006 dependency recheck are complete.
