@@ -36,7 +36,11 @@ EXPECTED_STATUS_VALUES = {"success", "retry", "low_visibility"}
 def test_movement_fixtures_follow_mp005_structure_and_keep_sides_explicit():
     """Validate all fixture files without a camera or optional schema package."""
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-    fixture_paths = sorted(FIXTURES_DIRECTORY.glob("*_fixtures.json"))
+    fixture_paths = [
+        FIXTURES_DIRECTORY / filename
+        for filename in MOVEMENT_FILE_CONTRACTS
+    ]
+    assert all(path.is_file() for path in fixture_paths)
     fixtures_by_path = {
         path.name: json.loads(path.read_text(encoding="utf-8"))
         for path in fixture_paths
