@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://movepal.example/schemas/movement_fixture.schema.json",
+  "title": "MovePal MP-005-compatible movement fixtures",
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "required": [
+      "fixture_id", "schema_version", "source_type", "provenance_reference",
+      "description", "expected_status", "annotator", "movement", "requested_side",
+      "expected_completed", "expected_feedback_code", "category",
+      "observed_consecutive_samples", "landmarks"
+    ],
+    "properties": {
+      "fixture_id": {"type": "string", "pattern": "^synthetic_[a-z0-9_]+$"},
+      "schema_version": {"const": "1.0"},
+      "source_type": {"const": "synthetic"},
+      "provenance_reference": {"type": "string", "minLength": 1},
+      "description": {"type": "string", "minLength": 1},
+      "expected_status": {"enum": ["success", "retry", "low_visibility"]},
+      "annotator": {"type": "string", "minLength": 1},
+      "movement": {"enum": ["raise_both_arms", "side_reach", "knee_lift_or_step"]},
+      "requested_side": {"enum": ["left", "right", "both"]},
+      "expected_completed": {"type": "boolean"},
+      "expected_feedback_code": {"enum": ["great", "raise_arms", "reach_left", "reach_right", "lift_knee", "full_body_missing"]},
+      "category": {"enum": ["positive", "negative", "borderline", "low_visibility"]},
+      "observed_consecutive_samples": {"type": "integer", "minimum": 0},
+      "landmarks": {
+        "type": "object",
+        "propertyNames": {"pattern": "^(left|right)_(shoulder|elbow|wrist|hip|knee|ankle)$"},
+        "additionalProperties": {
+          "type": "object",
+          "required": ["x", "y", "z", "visibility"],
+          "properties": {
+            "x": {"type": "number", "minimum": 0, "maximum": 1},
+            "y": {"type": "number", "minimum": 0, "maximum": 1},
+            "z": {"type": "number", "minimum": -1, "maximum": 1},
+            "visibility": {"type": "number", "minimum": 0, "maximum": 1}
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "additionalProperties": false
+  }
+}
