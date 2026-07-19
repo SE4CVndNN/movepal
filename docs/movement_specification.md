@@ -32,6 +32,16 @@ The pose service must document and test:
 
 The agreed convention must be encoded in fixtures so that frontend labels, pose output, and movement rules cannot silently disagree.
 
+### Confirmed convention (MP-005 spike)
+
+`app/services/pose_tracking.py` implements and tests this convention; see [`docs/adr/002-pose-estimator.md`](adr/002-pose-estimator.md) for the full compatibility investigation.
+
+- Supported landmark names: `left_shoulder`, `right_shoulder`, `left_elbow`, `right_elbow`, `left_wrist`, `right_wrist`, `left_hip`, `right_hip`, `left_knee`, `right_knee`, `left_ankle`, `right_ankle` (`TRACKED_LANDMARK_NAMES`).
+- `x`, `y` are normalized to `[0, 1]` from the top-left of the raw (unmirrored) frame; `y` increases downward, so a raised wrist has a *smaller* `y` than the shoulder. `z` is roughly hip-relative depth on a similar scale; Sprint 1 rules do not depend on it.
+- `left_*` / `right_*` refer to the subject's anatomical side in that raw frame, matching the pose provider's own convention. A mirrored ("selfie") preview must stay a display-only concern in the frontend; the frame sent for processing must not be flipped, or the anatomical labels would swap.
+- A missing landmark is simply absent from the result's `landmarks` dict — callers must not assume every name is present; checking that a specific movement's required landmarks are present is the movement rule's job, not the pose service's.
+- Provider confidence maps directly to project `visibility` (`0.0`-`1.0`, unmodified).
+
 ## 3. Common evaluation order
 
 Rules should evaluate conditions in this order:

@@ -1,0 +1,98 @@
+[
+  {
+    "fixture_id": "synthetic_full_visibility_standing_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-005",
+    "description": "Standing pose, arms at sides, all tracked landmarks clearly visible.",
+    "expected_status": "success",
+    "annotator": "myarnwas",
+    "landmarks": {
+      "left_shoulder": {"x": 0.42, "y": 0.30, "z": -0.02, "visibility": 0.99},
+      "right_shoulder": {"x": 0.58, "y": 0.30, "z": -0.02, "visibility": 0.99},
+      "left_elbow": {"x": 0.40, "y": 0.45, "z": -0.01, "visibility": 0.97},
+      "right_elbow": {"x": 0.60, "y": 0.45, "z": -0.01, "visibility": 0.97},
+      "left_wrist": {"x": 0.39, "y": 0.58, "z": 0.0, "visibility": 0.95},
+      "right_wrist": {"x": 0.61, "y": 0.58, "z": 0.0, "visibility": 0.95},
+      "left_hip": {"x": 0.45, "y": 0.60, "z": 0.0, "visibility": 0.99},
+      "right_hip": {"x": 0.55, "y": 0.60, "z": 0.0, "visibility": 0.99},
+      "left_knee": {"x": 0.45, "y": 0.78, "z": 0.0, "visibility": 0.97},
+      "right_knee": {"x": 0.55, "y": 0.78, "z": 0.0, "visibility": 0.97},
+      "left_ankle": {"x": 0.45, "y": 0.95, "z": 0.0, "visibility": 0.90},
+      "right_ankle": {"x": 0.55, "y": 0.95, "z": 0.0, "visibility": 0.90}
+    }
+  },
+  {
+    "fixture_id": "synthetic_full_visibility_arms_raised_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-005",
+    "description": "Both wrists raised above their shoulders (smaller y = higher). Directly reusable by MP-007's raise_both_arms positive fixture.",
+    "expected_status": "success",
+    "annotator": "myarnwas",
+    "landmarks": {
+      "left_shoulder": {"x": 0.42, "y": 0.30, "z": -0.02, "visibility": 0.99},
+      "right_shoulder": {"x": 0.58, "y": 0.30, "z": -0.02, "visibility": 0.99},
+      "left_elbow": {"x": 0.40, "y": 0.20, "z": -0.01, "visibility": 0.97},
+      "right_elbow": {"x": 0.60, "y": 0.20, "z": -0.01, "visibility": 0.97},
+      "left_wrist": {"x": 0.41, "y": 0.10, "z": 0.0, "visibility": 0.95},
+      "right_wrist": {"x": 0.59, "y": 0.10, "z": 0.0, "visibility": 0.95},
+      "left_hip": {"x": 0.45, "y": 0.60, "z": 0.0, "visibility": 0.99},
+      "right_hip": {"x": 0.55, "y": 0.60, "z": 0.0, "visibility": 0.99},
+      "left_knee": {"x": 0.45, "y": 0.78, "z": 0.0, "visibility": 0.97},
+      "right_knee": {"x": 0.55, "y": 0.78, "z": 0.0, "visibility": 0.97},
+      "left_ankle": {"x": 0.45, "y": 0.95, "z": 0.0, "visibility": 0.90},
+      "right_ankle": {"x": 0.55, "y": 0.95, "z": 0.0, "visibility": 0.90}
+    }
+  },
+  {
+    "fixture_id": "synthetic_no_pose_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-005",
+    "description": "No person detected in frame; provider returns zero pose landmark sets.",
+    "expected_status": "no_pose",
+    "annotator": "myarnwas",
+    "landmarks": {}
+  },
+  {
+    "fixture_id": "synthetic_low_visibility_dark_room_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-005",
+    "description": "Pose detected but all tracked landmarks fall below the visibility threshold (e.g. poor lighting or heavy occlusion).",
+    "expected_status": "low_visibility",
+    "annotator": "myarnwas",
+    "landmarks": {
+      "left_shoulder": {"x": 0.42, "y": 0.30, "z": -0.02, "visibility": 0.30},
+      "right_shoulder": {"x": 0.58, "y": 0.30, "z": -0.02, "visibility": 0.28},
+      "left_elbow": {"x": 0.40, "y": 0.45, "z": -0.01, "visibility": 0.22},
+      "right_elbow": {"x": 0.60, "y": 0.45, "z": -0.01, "visibility": 0.20},
+      "left_wrist": {"x": 0.39, "y": 0.58, "z": 0.0, "visibility": 0.18},
+      "right_wrist": {"x": 0.61, "y": 0.58, "z": 0.0, "visibility": 0.19},
+      "left_hip": {"x": 0.45, "y": 0.60, "z": 0.0, "visibility": 0.35},
+      "right_hip": {"x": 0.55, "y": 0.60, "z": 0.0, "visibility": 0.33},
+      "left_knee": {"x": 0.45, "y": 0.78, "z": 0.0, "visibility": 0.25},
+      "right_knee": {"x": 0.55, "y": 0.78, "z": 0.0, "visibility": 0.24},
+      "left_ankle": {"x": 0.45, "y": 0.95, "z": 0.0, "visibility": 0.15},
+      "right_ankle": {"x": 0.55, "y": 0.95, "z": 0.0, "visibility": 0.14}
+    }
+  },
+  {
+    "fixture_id": "synthetic_partial_upper_body_only_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-005",
+    "description": "Camera framing cuts off the lower body; hip/knee/ankle landmarks are absent rather than low-visibility. Movement rules that need lower-body landmarks must check for presence themselves -- overall status here stays success because the landmarks that ARE present are clearly visible.",
+    "expected_status": "success",
+    "annotator": "myarnwas",
+    "landmarks": {
+      "left_shoulder": {"x": 0.42, "y": 0.30, "z": -0.02, "visibility": 0.98},
+      "right_shoulder": {"x": 0.58, "y": 0.30, "z": -0.02, "visibility": 0.98},
+      "left_elbow": {"x": 0.40, "y": 0.45, "z": -0.01, "visibility": 0.96},
+      "right_elbow": {"x": 0.60, "y": 0.45, "z": -0.01, "visibility": 0.96},
+      "left_wrist": {"x": 0.39, "y": 0.58, "z": 0.0, "visibility": 0.94},
+      "right_wrist": {"x": 0.61, "y": 0.58, "z": 0.0, "visibility": 0.94}
+    }
+  }
+]
