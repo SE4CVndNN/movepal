@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flask import Flask
+from flask import Flask, render_template
 
 from app.config import DevelopmentConfig
 from app.routes.api import api_bp
@@ -19,4 +19,13 @@ def create_app(test_config: dict[str, object] | None = None) -> Flask:
 
     app.register_blueprint(pages_bp)
     app.register_blueprint(api_bp, url_prefix="/api")
+
+    @app.errorhandler(404)
+    def page_not_found(error):
+        return render_template("errors/404.html"), 404
+
+    @app.errorhandler(413)
+    def request_entity_too_large(error):
+        return render_template("errors/413.html"), 413
+
     return app
