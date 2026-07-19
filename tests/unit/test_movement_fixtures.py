@@ -5,11 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-
 REPOSITORY_ROOT = Path(__file__).parents[2]
-SCHEMA_PATH = (
-    REPOSITORY_ROOT / "data" / "schemas" / "movement_fixture.schema.json"
-)
+SCHEMA_PATH = REPOSITORY_ROOT / "data" / "schemas" / "movement_fixture.schema.json"
 FIXTURES_DIRECTORY = REPOSITORY_ROOT / "data" / "landmarks"
 MOVEMENT_FILE_CONTRACTS = {
     "raise_both_arms_fixtures.json": "raise_both_arms",
@@ -56,7 +53,10 @@ EXPECTED_STATUS_VALUES = {"success", "retry", "low_visibility"}
 def test_movement_fixtures_follow_mp005_structure_and_keep_sides_explicit():
     """Validate all fixture files without a camera or optional schema package."""
     schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-    fixture_paths = sorted(FIXTURES_DIRECTORY.glob("*_fixtures.json"))
+    fixture_paths = [
+        FIXTURES_DIRECTORY / filename for filename in MOVEMENT_FILE_CONTRACTS
+    ]
+    assert all(path.is_file() for path in fixture_paths)
     fixtures_by_path = {
         path.name: json.loads(path.read_text(encoding="utf-8"))
         for path in fixture_paths
