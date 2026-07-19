@@ -9,6 +9,7 @@ def test_health_endpoint(client):
     assert response.status_code == 200
     assert response.get_json() == {"service": "movepal", "status": "ok"}
 
+
 def test_not_found_page(client):
     response = client.get("/missing-page")
 
