@@ -1,0 +1,226 @@
+[
+  {
+    "fixture_id": "synthetic_raise_arms_positive_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-007",
+    "description": "Both wrists are clearly above their matching shoulders.",
+    "expected_status": "success",
+    "annotator": "MP-007 team",
+    "movement": "raise_both_arms",
+    "requested_side": "both",
+    "expected_completed": true,
+    "expected_feedback_code": "great",
+    "category": "positive",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {
+        "x": 0.42,
+        "y": 0.3,
+        "z": -0.02,
+        "visibility": 0.99
+      },
+      "right_shoulder": {
+        "x": 0.58,
+        "y": 0.3,
+        "z": -0.02,
+        "visibility": 0.99
+      },
+      "left_elbow": {
+        "x": 0.4,
+        "y": 0.2,
+        "z": -0.01,
+        "visibility": 0.97
+      },
+      "right_elbow": {
+        "x": 0.6,
+        "y": 0.2,
+        "z": -0.01,
+        "visibility": 0.97
+      },
+      "left_wrist": {
+        "x": 0.41,
+        "y": 0.1,
+        "z": 0,
+        "visibility": 0.95
+      },
+      "right_wrist": {
+        "x": 0.59,
+        "y": 0.1,
+        "z": 0,
+        "visibility": 0.95
+      },
+      "left_hip": {
+        "x": 0.45,
+        "y": 0.6,
+        "z": 0,
+        "visibility": 0.99
+      },
+      "right_hip": {
+        "x": 0.55,
+        "y": 0.6,
+        "z": 0,
+        "visibility": 0.99
+      }
+    }
+  },
+  {
+    "fixture_id": "synthetic_raise_arms_negative_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-007",
+    "description": "Arms remain down.",
+    "expected_status": "retry",
+    "annotator": "MP-007 team",
+    "movement": "raise_both_arms",
+    "requested_side": "both",
+    "expected_completed": false,
+    "expected_feedback_code": "raise_arms",
+    "category": "negative",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {
+        "x": 0.3,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_shoulder": {
+        "x": 0.7,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_wrist": {
+        "x": 0.3,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_wrist": {
+        "x": 0.7,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_hip": {
+        "x": 0.35,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_hip": {
+        "x": 0.65,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      }
+    }
+  },
+  {
+    "fixture_id": "synthetic_raise_arms_borderline_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-007",
+    "description": "Both wrists are just below the configured scaled shoulder margin.",
+    "expected_status": "retry",
+    "annotator": "MP-007 team",
+    "movement": "raise_both_arms",
+    "requested_side": "both",
+    "expected_completed": false,
+    "expected_feedback_code": "raise_arms",
+    "category": "borderline",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {
+        "x": 0.3,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_shoulder": {
+        "x": 0.7,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_wrist": {
+        "x": 0.3,
+        "y": 0.25,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_wrist": {
+        "x": 0.7,
+        "y": 0.25,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_hip": {
+        "x": 0.35,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_hip": {
+        "x": 0.65,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      }
+    }
+  },
+  {
+    "fixture_id": "synthetic_raise_arms_low_visibility_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-007",
+    "description": "A required wrist is below the visibility threshold.",
+    "expected_status": "low_visibility",
+    "annotator": "MP-007 team",
+    "movement": "raise_both_arms",
+    "requested_side": "both",
+    "expected_completed": false,
+    "expected_feedback_code": "full_body_missing",
+    "category": "low_visibility",
+    "observed_consecutive_samples": 0,
+    "landmarks": {
+      "left_shoulder": {
+        "x": 0.3,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_shoulder": {
+        "x": 0.7,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_wrist": {
+        "x": 0.2,
+        "y": 0.2,
+        "z": 0,
+        "visibility": 0.2
+      },
+      "right_wrist": {
+        "x": 0.8,
+        "y": 0.2,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_hip": {
+        "x": 0.35,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_hip": {
+        "x": 0.65,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      }
+    }
+  }
+]
