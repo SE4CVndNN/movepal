@@ -1,9 +1,9 @@
 """Structural regression checks for MP-005-compatible movement fixtures."""
 
-from __future__ import annotations
 
 import json
 from pathlib import Path
+from __future__ import annotations
 
 
 REPOSITORY_ROOT = Path(__file__).parents[2]
