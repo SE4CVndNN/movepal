@@ -3,6 +3,37 @@
   line-height: 1.5;
 }
 
+:root {
+  /* Palette — warm, high-contrast, playful */
+  --color-bg: #fef6e4;
+  --color-surface: #ffffff;
+  --color-primary: #f582ae;
+  --color-primary-dark: #d1477e;
+  --color-secondary: #8bd3dd;
+  --color-secondary-dark: #3a9ba8;
+  --color-success: #4caf50;
+  --color-success-dark: #2e7d32;
+  --color-retry: #ff9f43;
+  --color-retry-dark: #c9700a;
+  --color-text: #172033;
+  --color-text-muted: #5c6478;
+  --color-focus: #172033;
+
+  /* Shape and spacing */
+  --radius-lg: 1.5rem;
+  --radius-md: 1rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+
+  /* Typography */
+  --font-body: "Comic Sans MS", "Segoe UI Rounded", system-ui, sans-serif;
+  --font-size-base: 1.125rem;
+  --font-size-lg: 1.5rem;
+  --font-size-xl: 2rem;
+}
+
 body {
   margin: 0;
   background: #f7f8fb;
