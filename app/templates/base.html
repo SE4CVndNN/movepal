@@ -8,7 +8,13 @@
   </head>
   <body>
     <header class="site-header">
-      <h1>MovePal</h1>
+      <div class="header-row">
+        <h1>MovePal</h1>
+        <div id="score-region" class="score-badge" role="status" aria-live="polite" aria-label="Stars earned this session">
+          <span aria-hidden="true">⭐</span>
+          <span id="score-count">0</span>
+        </div>
+      </div>
       <p>Play, move, and collect stars.</p>
     </header>
     <main>{% block content %}{% endblock %}</main>

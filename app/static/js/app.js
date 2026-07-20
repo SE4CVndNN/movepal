@@ -1,6 +1,6 @@
 "use strict";
 
-// --- existing health check (kept from the starter app) ---
+// --- health check (kept from the starter app) ---
 const healthButton = document.querySelector("#health-check");
 const healthResult = document.querySelector("#health-result");
 
@@ -17,17 +17,45 @@ healthButton?.addEventListener("click", async () => {
   }
 });
 
+// --- persistent score region ---
+let totalStars = 0;
+const scoreCount = document.querySelector("#score-count");
+
+function addStars(amount) {
+  totalStars += amount;
+  if (scoreCount) scoreCount.textContent = totalStars;
+}
+
 // --- clickable flow state machine ---
 const screens = document.querySelectorAll("[data-screen]");
+
+const SCREEN_TO_STATE = {
+  start: "idle",
+  activity: "idle",
+  "camera-choice": "preparing",
+  "camera-live": "capturing",
+  "camera-fallback": "capturing",
+  feedback: "evaluating",
+  summary: "summary",
+};
 
 function showScreen(name) {
   screens.forEach((section) => {
     section.hidden = section.dataset.screen !== name;
   });
+  document.body.dataset.appState = SCREEN_TO_STATE[name] ?? "idle";
 }
 
 document.querySelectorAll("[data-goto]").forEach((button) => {
-  button.addEventListener("click", () => showScreen(button.dataset.goto));
+  button.addEventListener("click", () => {
+    // Placeholder: award a star whenever the feedback screen is reached.
+    // Replaced once real scoring logic (scoring.py) is wired up in a
+    // later task.
+    if (button.dataset.goto === "feedback") {
+      addStars(1);
+    }
+    showScreen(button.dataset.goto);
+  });
 });
 
 // --- camera / fallback probe ---
@@ -35,10 +63,10 @@ let activeStream = null;
 
 const cameraStatus = document.querySelector("#camera-status");
 const preview = document.querySelector("#camera-preview");
+const fallbackReason = document.querySelector("#fallback-reason");
 
 document.querySelector("#use-webcam-btn")?.addEventListener("click", async () => {
   cameraStatus.textContent = "Requesting camera access…";
-  const fallbackReason = document.querySelector("#fallback-reason");
   try {
     activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
     preview.srcObject = activeStream;
@@ -47,11 +75,11 @@ document.querySelector("#use-webcam-btn")?.addEventListener("click", async () =>
   } catch (error) {
     let reason;
     if (error.name === "NotAllowedError") {
-      reason = "Camera access was denied. Please enable camera permissions in your browser settings to continue.";
-    } else if (error.name === "NotFoundError") {
-      reason = "No camera was detected. Please connect a webcam or use the local demo sample.";
+      reason =
+        "Camera access was denied. Please enable camera permissions in your browser settings to continue.";
     } else {
-      reason = "No camera was detected. Please connect a webcam or use the local demo sample.";
+      reason =
+        "No camera was detected. Please connect a webcam or use the local demo sample.";
     }
     if (fallbackReason) fallbackReason.textContent = reason;
     showScreen("camera-fallback");
@@ -59,7 +87,9 @@ document.querySelector("#use-webcam-btn")?.addEventListener("click", async () =>
 });
 
 document.querySelector("#use-fallback-btn")?.addEventListener("click", () => {
-  cameraStatus.textContent = "Using local demo feed. No camera access required.";
+  if (fallbackReason) {
+    fallbackReason.textContent = "Using local demo feed. No camera access required.";
+  }
   showScreen("camera-fallback");
 });
 
@@ -74,5 +104,4 @@ document.querySelector("#stop-camera-btn")?.addEventListener("click", () => {
   showScreen("camera-choice");
 });
 
-// Safety net: stop the camera if the user navigates away without clicking "Stop".
 window.addEventListener("beforeunload", stopCamera);

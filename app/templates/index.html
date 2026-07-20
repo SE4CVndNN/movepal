@@ -3,6 +3,7 @@
 {% block content %}
 
 <section class="card" data-screen="start">
+  {% include "partials/_avatar.html" %}
   <h2>Movement practice prototype</h2>
   <p>MovePal is a playful movement-practice prototype created for software-engineering education. It is not a medical device, diagnostic tool, rehabilitation system, treatment, or replacement for a physiotherapist or healthcare professional.</p>
   <p>A success result means only that the current pose landmarks satisfied the project's configured game rules. It does not establish that a movement is medically correct, safe for a particular person, or beneficial for a health condition.</p>
@@ -10,6 +11,7 @@
 </section>
 
 <section class="card" data-screen="activity" hidden>
+  {% include "partials/_avatar.html" %}
   <h2>Choose an activity</h2>
   <div class="activity-list">
     <button type="button" data-activity="raise_both_arms" data-goto="camera-choice">Raise both arms</button>
@@ -48,6 +50,7 @@
 </section>
 
 <section class="card" data-screen="summary" hidden>
+  {% include "partials/_avatar.html" %}
   <h2>Session Complete!</h2>
   <p id="summary-text">You successfully completed your movements today and earned a total of ⭐ 1 Stars! Thanks for playing with MovePal!</p>
   <button type="button" data-goto="start">Play again</button>

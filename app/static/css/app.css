@@ -1,9 +1,4 @@
 :root {
-  font-family: system-ui, sans-serif;
-  line-height: 1.5;
-}
-
-:root {
   /* Palette — warm, high-contrast, playful */
   --color-bg: #fef6e4;
   --color-surface: #ffffff;
@@ -19,7 +14,6 @@
   --color-text-muted: #5c6478;
   --color-focus: #172033;
 
-  /* Shape and spacing */
   --radius-lg: 1.5rem;
   --radius-md: 1rem;
   --space-sm: 0.5rem;
@@ -27,38 +21,102 @@
   --space-lg: 1.5rem;
   --space-xl: 2.5rem;
 
-  /* Typography */
   --font-body: "Comic Sans MS", "Segoe UI Rounded", system-ui, sans-serif;
   --font-size-base: 1.125rem;
   --font-size-lg: 1.5rem;
   --font-size-xl: 2rem;
+
+  line-height: 1.6;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  background: #f7f8fb;
-  color: #172033;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
 }
 
 .site-header,
 main,
 footer {
-  max-width: 60rem;
+  max-width: 40rem;
   margin: 0 auto;
-  padding: 1rem;
+  padding: var(--space-md);
+}
+
+h1, h2 {
+  color: var(--color-primary-dark);
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.score-badge {
+  background: var(--color-secondary);
+  color: var(--color-text);
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .card {
-  background: white;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 10%);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 8%);
+  text-align: center;
+}
+
+.avatar {
+  width: 8rem;
+  height: 8rem;
+  display: block;
+  margin: 0 auto var(--space-md);
 }
 
 button {
-  min-height: 2.75rem;
-  padding: 0.5rem 1rem;
   font: inherit;
+  font-size: var(--font-size-base);
+  font-weight: bold;
+  min-height: 3.5rem;
+  padding: var(--space-sm) var(--space-lg);
+  margin: var(--space-sm);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary);
+  color: white;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+button:hover,
+button:active {
+  transform: scale(1.04);
+}
+
+#use-fallback-btn,
+#stop-camera-btn {
+  background: var(--color-secondary-dark);
+}
+
+:focus-visible {
+  outline: 0.25rem solid var(--color-focus);
+  outline-offset: 0.25rem;
+  border-radius: var(--radius-md);
 }
 
 [hidden] {
@@ -68,19 +126,30 @@ button {
 .activity-list {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 0.75rem;
 }
 
 #camera-preview {
   width: 100%;
   max-width: 24rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-md);
   background: black;
 }
 
-/* keep touch targets comfortably large on narrow screens */
-@media (max-width: 30rem) {
+body[data-app-state="capturing"] .score-badge {
+  outline: 0.2rem solid var(--color-secondary-dark);
+}
+
+body[data-app-state="summary"] .score-badge {
+  outline: 0.2rem solid var(--color-success);
+}
+
+@media (max-width: 22.5rem) {
   button {
     width: 100%;
+  }
+  .site-header, main, footer {
+    padding: var(--space-sm);
   }
 }
