@@ -20,11 +20,17 @@ REQUIRED_FIXTURE_FIELDS = {
     "landmarks",
 }
 
+REQUIRED_FIXTURE_IDS = {
+    "synthetic_full_visibility_standing_001",
+    "synthetic_full_visibility_arms_raised_001",
+    "synthetic_no_pose_001",
+    "synthetic_low_visibility_dark_room_001",
+    "synthetic_partial_upper_body_only_001",
+}
+
 
 def test_fixtures_are_schema_valid():
     fixtures = load_pose_fixtures()
-    assert len(fixtures) >= 3
-
     seen_ids = set()
     for fixture in fixtures:
         assert REQUIRED_FIXTURE_FIELDS.issubset(fixture.keys())
@@ -33,19 +39,16 @@ def test_fixtures_are_schema_valid():
         assert fixture["expected_status"] in {status.value for status in PoseStatus}
         for values in fixture["landmarks"].values():
             assert "x" in values and "y" in values and "visibility" in values
+            assert 0.0 <= values["x"] <= 1.0
+            assert 0.0 <= values["y"] <= 1.0
             assert 0.0 <= values["visibility"] <= 1.0
 
+    # Guards against accidentally dropping one of the five scenarios MP-005
+    # introduced (success, arms-raised, no-pose, low-visibility, partial-body).
+    assert REQUIRED_FIXTURE_IDS.issubset(seen_ids)
 
-@pytest.mark.parametrize(
-    "fixture_id",
-    [
-        "synthetic_full_visibility_standing_001",
-        "synthetic_full_visibility_arms_raised_001",
-        "synthetic_no_pose_001",
-        "synthetic_low_visibility_dark_room_001",
-        "synthetic_partial_upper_body_only_001",
-    ],
-)
+
+@pytest.mark.parametrize("fixture_id", sorted(REQUIRED_FIXTURE_IDS))
 def test_fixture_status_matches_expected(fixture_id):
     fixtures = {item["fixture_id"]: item for item in load_pose_fixtures()}
     fixture = fixtures[fixture_id]
