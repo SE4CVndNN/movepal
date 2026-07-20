@@ -1,5 +1,4 @@
 :root {
-  /* Palette — warm, high-contrast, playful */
   --color-bg: #fef6e4;
   --color-surface: #ffffff;
   --color-primary: #f582ae;
@@ -16,6 +15,7 @@
 
   --radius-lg: 1.5rem;
   --radius-md: 1rem;
+  --radius-pill: 999px;
   --space-sm: 0.5rem;
   --space-md: 1rem;
   --space-lg: 1.5rem;
@@ -24,7 +24,7 @@
   --font-body: "Comic Sans MS", "Segoe UI Rounded", system-ui, sans-serif;
   --font-size-base: 1.125rem;
   --font-size-lg: 1.5rem;
-  --font-size-xl: 2rem;
+  --font-size-xl: 2.25rem;
 
   line-height: 1.6;
 }
@@ -33,9 +33,18 @@
   box-sizing: border-box;
 }
 
+html {
+  min-height: 100%;
+  background:
+    radial-gradient(38rem 38rem at 100% 0%, rgb(245 130 174 / 35%), transparent 60%),
+    radial-gradient(42rem 42rem at 0% 100%, rgb(139 211 221 / 35%), transparent 60%),
+    var(--color-bg);
+}
+
 body {
   margin: 0;
-  background: var(--color-bg);
+  min-height: 100vh;
+  background: transparent;
   color: var(--color-text);
   font-family: var(--font-body);
   font-size: var(--font-size-base);
@@ -50,8 +59,27 @@ footer {
   padding: var(--space-md);
 }
 
-h1, h2 {
+.site-header {
+  padding-top: var(--space-lg);
+}
+
+.site-header p {
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  margin-top: 0.25rem;
+}
+
+h1 {
+  font-size: var(--font-size-xl);
   color: var(--color-primary-dark);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: var(--font-size-lg);
+  color: var(--color-primary-dark);
+  margin-top: 0;
 }
 
 .header-row {
@@ -67,50 +95,63 @@ h1, h2 {
   font-size: var(--font-size-lg);
   font-weight: bold;
   padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-pill);
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  box-shadow: 0 0.15rem 0.4rem rgb(0 0 0 / 10%);
 }
 
 .card {
   background: var(--color-surface);
   border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-  box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 8%);
+  padding: var(--space-xl) var(--space-lg);
+  box-shadow: 0 0.75rem 2rem rgb(23 32 51 / 10%);
   text-align: center;
+  margin-top: var(--space-lg);
+}
+
+.card p {
+  color: var(--color-text-muted);
+  max-width: 32rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .avatar {
-  width: 8rem;
-  height: 8rem;
+  width: 7rem;
+  height: 7rem;
   display: block;
   margin: 0 auto var(--space-md);
+  filter: drop-shadow(0 0.4rem 0.5rem rgb(23 32 51 / 15%));
 }
 
 button {
   font: inherit;
-  font-size: var(--font-size-base);
+  font-size: 1rem;
   font-weight: bold;
   min-height: 3.5rem;
   padding: var(--space-sm) var(--space-lg);
-  margin: var(--space-sm);
+  margin: var(--space-sm) 0.4rem 0;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-pill);
   background: var(--color-primary);
   color: white;
   cursor: pointer;
-  transition: transform 0.1s ease;
+  box-shadow: 0 0.3rem 0.6rem rgb(209 71 126 / 30%);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 button:hover,
 button:active {
-  transform: scale(1.04);
+  transform: translateY(-0.1rem) scale(1.03);
+  box-shadow: 0 0.45rem 0.9rem rgb(209 71 126 / 35%);
 }
 
 #use-fallback-btn,
 #stop-camera-btn {
   background: var(--color-secondary-dark);
+  box-shadow: 0 0.3rem 0.6rem rgb(58 155 168 / 30%);
 }
 
 :focus-visible {
@@ -128,6 +169,7 @@ button:active {
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.75rem;
+  margin-top: var(--space-md);
 }
 
 #camera-preview {
@@ -135,6 +177,7 @@ button:active {
   max-width: 24rem;
   border-radius: var(--radius-md);
   background: black;
+  margin-top: var(--space-md);
 }
 
 body[data-app-state="capturing"] .score-badge {
@@ -148,8 +191,13 @@ body[data-app-state="summary"] .score-badge {
 @media (max-width: 22.5rem) {
   button {
     width: 100%;
+    margin-left: 0;
+    margin-right: 0;
   }
   .site-header, main, footer {
     padding: var(--space-sm);
+  }
+  h1 {
+    font-size: 1.75rem;
   }
 }

@@ -20,10 +20,29 @@ healthButton?.addEventListener("click", async () => {
 // --- persistent score region ---
 let totalStars = 0;
 const scoreCount = document.querySelector("#score-count");
+const summaryStarCount = document.querySelector("#summary-star-count");
+const feedbackMessage = document.querySelector("#feedback-message");
+
+function updateScoreDisplays() {
+  if (scoreCount) scoreCount.textContent = totalStars;
+  if (summaryStarCount) summaryStarCount.textContent = totalStars;
+}
+
+function updateFeedbackMessage(amount) {
+  if (feedbackMessage) {
+    feedbackMessage.textContent = `Awesome job! You've earned ⭐ ${amount} Star${amount === 1 ? "" : "s"}!`;
+  }
+}
+
+function getAttemptStarReward() {
+  // Placeholder reward logic for the current movement attempt.
+  // Replace with real scoring logic once pose evaluation is wired up.
+  return Math.floor(Math.random() * 3) + 1;
+}
 
 function addStars(amount) {
   totalStars += amount;
-  if (scoreCount) scoreCount.textContent = totalStars;
+  updateScoreDisplays();
 }
 
 // --- clickable flow state machine ---
@@ -52,7 +71,9 @@ document.querySelectorAll("[data-goto]").forEach((button) => {
     // Replaced once real scoring logic (scoring.py) is wired up in a
     // later task.
     if (button.dataset.goto === "feedback") {
-      addStars(1);
+      const earnedStars = getAttemptStarReward();
+      addStars(earnedStars);
+      updateFeedbackMessage(earnedStars);
     }
     showScreen(button.dataset.goto);
   });
@@ -65,30 +86,34 @@ const cameraStatus = document.querySelector("#camera-status");
 const preview = document.querySelector("#camera-preview");
 const fallbackReason = document.querySelector("#fallback-reason");
 
-document.querySelector("#use-webcam-btn")?.addEventListener("click", async () => {
-  cameraStatus.textContent = "Requesting camera access…";
-  try {
-    activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
-    preview.srcObject = activeStream;
-    cameraStatus.textContent = "Webcam connected successfully! Prepare to move.";
-    showScreen("camera-live");
-  } catch (error) {
-    let reason;
-    if (error.name === "NotAllowedError") {
-      reason =
-        "Camera access was denied. Please enable camera permissions in your browser settings to continue.";
-    } else {
-      reason =
-        "No camera was detected. Please connect a webcam or use the local demo sample.";
+document
+  .querySelector("#use-webcam-btn")
+  ?.addEventListener("click", async () => {
+    cameraStatus.textContent = "Requesting camera access…";
+    try {
+      activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      preview.srcObject = activeStream;
+      cameraStatus.textContent =
+        "Webcam connected successfully! Prepare to move.";
+      showScreen("camera-live");
+    } catch (error) {
+      let reason;
+      if (error.name === "NotAllowedError") {
+        reason =
+          "Camera access was denied. Please enable camera permissions in your browser settings to continue.";
+      } else {
+        reason =
+          "No camera was detected. Please connect a webcam or use the local demo sample.";
+      }
+      if (fallbackReason) fallbackReason.textContent = reason;
+      showScreen("camera-fallback");
     }
-    if (fallbackReason) fallbackReason.textContent = reason;
-    showScreen("camera-fallback");
-  }
-});
+  });
 
 document.querySelector("#use-fallback-btn")?.addEventListener("click", () => {
   if (fallbackReason) {
-    fallbackReason.textContent = "Using local demo feed. No camera access required.";
+    fallbackReason.textContent =
+      "Using local demo feed. No camera access required.";
   }
   showScreen("camera-fallback");
 });
