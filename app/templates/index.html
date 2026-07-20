@@ -1,58 +1,83 @@
-{% extends "base.html" %}
-{% block title %}MovePal — Sprint 1{% endblock %}
-{% block content %}
+{% extends "base.html" %} {% block title %}MovePal — Sprint 1{% endblock %} {%
+block content %}
 
 <section class="card" data-screen="start">
   {% include "partials/_avatar.html" %}
-  <h2>Movement practice prototype</h2>
-  <p>MovePal is a playful movement-practice prototype created for software-engineering education. It is not a medical device, diagnostic tool, rehabilitation system, treatment, or replacement for a physiotherapist or healthcare professional.</p>
-  <p>A success result means only that the current pose landmarks satisfied the project's configured game rules. It does not establish that a movement is medically correct, safe for a particular person, or beneficial for a health condition.</p>
-  <button type="button" data-goto="activity">Start</button>
+  <h2>Let's move and collect stars!</h2>
+  <p>
+    Welcome to MovePal. Pick a fun move, follow along, and earn stars while you
+    play.
+  </p>
+  <p>
+    Each movement is a chance to practice and feel great. The app helps you play
+    safely and celebrates your wins.
+  </p>
+  <button type="button" data-goto="activity">Let's play!</button>
 </section>
 
 <section class="card" data-screen="activity" hidden>
   {% include "partials/_avatar.html" %}
-  <h2>Choose an activity</h2>
+  <h2>Pick your favorite move</h2>
+  <p>Tap a move, then choose how you want to play.</p>
   <div class="activity-list">
-    <button type="button" data-activity="raise_both_arms" data-goto="camera-choice">Raise both arms</button>
-    <button type="button" data-activity="side_reach" data-goto="camera-choice">Side reach</button>
-    <button type="button" data-activity="knee_lift" data-goto="camera-choice">Knee lift / step in place</button>
+    <button
+      type="button"
+      data-activity="raise_both_arms"
+      data-goto="camera-choice"
+    >
+      Raise both arms
+    </button>
+    <button type="button" data-activity="side_reach" data-goto="camera-choice">
+      Reach to the side
+    </button>
+    <button type="button" data-activity="knee_lift" data-goto="camera-choice">
+      Knee lift
+    </button>
   </div>
 </section>
 
 <section class="card" data-screen="camera-choice" hidden>
-  <h2>Choose Your Input Method</h2>
-  <p>Please allow live camera access so you can have a live experience with MovePal.</p>
-  <button type="button" id="use-webcam-btn">Use Live Webcam</button>
-  <button type="button" id="use-fallback-btn">Use Local Demo Sample (No Camera)</button>
+  <h2>How do you want to play?</h2>
+  <p>
+    Use the webcam to move with live feedback, or use demo mode to practice
+    without a camera.
+  </p>
+  <button type="button" id="use-webcam-btn">Use live webcam</button>
+  <button type="button" id="use-fallback-btn">Use demo mode</button>
   <p id="camera-status" role="status" aria-live="polite"></p>
 </section>
 
 <section class="card" data-screen="camera-live" hidden>
-  <h2>Live camera</h2>
+  <h2>Ready to move!</h2>
   <video id="camera-preview" autoplay playsinline muted></video>
-  <p>Camera frames are processed temporarily and are not stored by default.</p>
-  <p>Please click on Stop Camera or Reset to stop recording.</p>
-  <button type="button" id="stop-camera-btn">Stop Camera</button>
-  <button type="button" data-goto="feedback">Simulate attempt</button>
+  <p>
+    Your moves are checked in real time. Keep your body visible so MovePal can
+    help you earn stars.
+  </p>
+  <p>Tap the button when you want to finish this attempt.</p>
+  <button type="button" id="stop-camera-btn">Stop camera</button>
+  <button type="button" data-goto="feedback">Finish attempt</button>
 </section>
 
 <section class="card" data-screen="camera-fallback" hidden>
-  <h2>Using local demo feed. No camera access required.</h2>
+  <h2>Practice with demo mode</h2>
   <p id="fallback-reason" role="status" aria-live="polite"></p>
-  <button type="button" data-goto="feedback">Simulate attempt</button>
+  <button type="button" data-goto="feedback">Finish attempt</button>
 </section>
 
 <section class="card" data-screen="feedback" hidden>
   <h2 id="feedback-message">Awesome job! You've earned ⭐ 1 Star!</h2>
-  <button type="button" data-goto="activity">Try another movement</button>
-  <button type="button" data-goto="summary">Finish session</button>
+  <button type="button" data-goto="activity">Try another move</button>
+  <button type="button" data-goto="summary">See my total stars</button>
 </section>
 
 <section class="card" data-screen="summary" hidden>
   {% include "partials/_avatar.html" %}
-  <h2>Session Complete!</h2>
-  <p id="summary-text">You successfully completed your movements today and earned a total of ⭐ <span id="summary-star-count">0</span> Stars! Thanks for playing with MovePal!</p>
+  <h2>You've finished the session!</h2>
+  <p id="summary-text">
+    Great job! You earned ⭐ <span id="summary-star-count">0</span> Stars in
+    this play session. Ready for another round?
+  </p>
   <button type="button" data-goto="start">Play again</button>
 </section>
 

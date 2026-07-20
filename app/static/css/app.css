@@ -36,8 +36,16 @@
 html {
   min-height: 100%;
   background:
-    radial-gradient(38rem 38rem at 100% 0%, rgb(245 130 174 / 35%), transparent 60%),
-    radial-gradient(42rem 42rem at 0% 100%, rgb(139 211 221 / 35%), transparent 60%),
+    radial-gradient(
+      38rem 38rem at 100% 0%,
+      rgb(245 130 174 / 35%),
+      transparent 60%
+    ),
+    radial-gradient(
+      42rem 42rem at 0% 100%,
+      rgb(139 211 221 / 35%),
+      transparent 60%
+    ),
     var(--color-bg);
 }
 
@@ -54,9 +62,24 @@ body {
 .site-header,
 main,
 footer {
-  max-width: 40rem;
+  max-width: 44rem;
   margin: 0 auto;
   padding: var(--space-md);
+}
+
+body {
+  background:
+    radial-gradient(
+      12rem 12rem at 10% 10%,
+      rgba(255, 216, 133, 0.7),
+      transparent 32%
+    ),
+    radial-gradient(
+      10rem 10rem at 90% 20%,
+      rgba(139, 211, 221, 0.6),
+      transparent 30%
+    ),
+    linear-gradient(180deg, #fffbf2 0%, #fef6e4 40%, #fff3f8 100%);
 }
 
 .site-header {
@@ -70,14 +93,15 @@ footer {
 }
 
 h1 {
-  font-size: var(--font-size-xl);
+  font-size: calc(var(--font-size-xl) + 0.25rem);
   color: var(--color-primary-dark);
   margin: 0;
   letter-spacing: -0.02em;
+  text-shadow: 0 0.25rem 0.5rem rgba(245, 130, 174, 0.2);
 }
 
 h2 {
-  font-size: var(--font-size-lg);
+  font-size: calc(var(--font-size-lg) + 0.1rem);
   color: var(--color-primary-dark);
   margin-top: 0;
 }
@@ -128,24 +152,28 @@ h2 {
 
 button {
   font: inherit;
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: bold;
-  min-height: 3.5rem;
-  padding: var(--space-sm) var(--space-lg);
+  min-height: 4rem;
+  padding: 0.9rem 1.5rem;
   margin: var(--space-sm) 0.4rem 0;
   border: none;
-  border-radius: var(--radius-pill);
-  background: var(--color-primary);
+  border-radius: 1.5rem;
+  background: linear-gradient(135deg, var(--color-primary), #ff8ab3);
   color: white;
   cursor: pointer;
-  box-shadow: 0 0.3rem 0.6rem rgb(209 71 126 / 30%);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 0.35rem 0.8rem rgb(209 71 126 / 30%);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease;
 }
 
 button:hover,
 button:active {
-  transform: translateY(-0.1rem) scale(1.03);
-  box-shadow: 0 0.45rem 0.9rem rgb(209 71 126 / 35%);
+  transform: translateY(-0.08rem) scale(1.025);
+  box-shadow: 0 0.55rem 1rem rgb(209 71 126 / 35%);
+  filter: brightness(1.03);
 }
 
 #use-fallback-btn,
@@ -175,9 +203,10 @@ button:active {
 #camera-preview {
   width: 100%;
   max-width: 24rem;
-  border-radius: var(--radius-md);
+  border-radius: 1.5rem;
   background: black;
   margin-top: var(--space-md);
+  box-shadow: 0 0.75rem 1.8rem rgb(23 32 51 / 12%);
 }
 
 body[data-app-state="capturing"] .score-badge {
@@ -194,7 +223,9 @@ body[data-app-state="summary"] .score-badge {
     margin-left: 0;
     margin-right: 0;
   }
-  .site-header, main, footer {
+  .site-header,
+  main,
+  footer {
     padding: var(--space-sm);
   }
   h1 {

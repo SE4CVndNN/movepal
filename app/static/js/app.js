@@ -30,14 +30,15 @@ function updateScoreDisplays() {
 
 function updateFeedbackMessage(amount) {
   if (feedbackMessage) {
-    feedbackMessage.textContent = `Awesome job! You've earned ⭐ ${amount} Star${amount === 1 ? "" : "s"}!`;
+    const totalLabel = totalStars === 1 ? "1 Star" : `${totalStars} Stars`;
+    feedbackMessage.textContent = `Awesome job! You earned ⭐ ${amount} Star${amount === 1 ? "" : "s"} this round. Your total is ${totalLabel}.`;
   }
 }
 
 function getAttemptStarReward() {
   // Placeholder reward logic for the current movement attempt.
   // Replace with real scoring logic once pose evaluation is wired up.
-  return Math.floor(Math.random() * 3) + 1;
+  return 1;
 }
 
 function addStars(amount) {
