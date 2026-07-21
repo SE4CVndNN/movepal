@@ -1,0 +1,51 @@
+{
+  "name": "movepal",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.0.0"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es2021": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+      "ecmaVersion": 13,
+      "sourceType": "module"
+    },
+    "rules": {
+      "no-console": "off",
+      "indent": [
+        "error",
+        2
+      ],
+      "linebreak-style": [
+        "error",
+        "windows"
+      ],
+      "quotes": [
+        "error",
+        "double"
+      ],
+      "semi": [
+        "error",
+        "always"
+      ]
+    }
+  },
+  "scripts": {
+    "lint:js": "eslint app/static/js/app.js",
+    "format:js": "prettier --write app/static/js/app.js",
+    "format:check:js": "prettier --check app/static/js/app.js"
+  },
+  "prettier": {
+    "singleQuote": false,
+    "trailingComma": "es5",
+    "printWidth": 88,
+    "semi": true,
+    "endOfLine": "auto"
+  }
+}

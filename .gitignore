@@ -20,6 +20,9 @@ venv/
 .DS_Store
 Thumbs.db
 
+# Node dependencies
+node_modules/
+
 # Runtime data and private recordings
 data/raw/
 data/private/

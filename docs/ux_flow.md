@@ -23,12 +23,15 @@ start → activity choice → camera choice → (live camera | fallback sample) 
 | start, activity              | idle       |
 | camera-choice                | preparing  |
 | camera-live, camera-fallback | capturing  |
-| feedback                     | evaluating |
+| feedback (processing)        | evaluating |
+| feedback (success)           | success    |
+| feedback (retry)             | retry      |
 | summary                      | summary    |
 
-Success/retry states are not split yet — that depends on MP-014 providing
-real pass/fail evaluation results instead of the current placeholder
-"Simulate attempt" button.
+The app now includes separate placeholder `success` and `retry` states for
+feedback. The `evaluating` state is used while waiting for the current
+attempt result, and the final feedback state switches to `success` or
+`retry` once the placeholder result is known.
 
 ## Avatar asset
 

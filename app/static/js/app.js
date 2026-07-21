@@ -78,11 +78,15 @@ const SCREEN_TO_STATE = {
   summary: "summary",
 };
 
+function setAppState(state) {
+  document.body.dataset.appState = state;
+}
+
 function showScreen(name) {
   screens.forEach((section) => {
     section.hidden = section.dataset.screen !== name;
   });
-  document.body.dataset.appState = SCREEN_TO_STATE[name] ?? "idle";
+  setAppState(SCREEN_TO_STATE[name] ?? "idle");
 }
 
 document.querySelectorAll("[data-goto]").forEach((button) => {
@@ -90,6 +94,7 @@ document.querySelectorAll("[data-goto]").forEach((button) => {
     const target = button.dataset.goto;
     const mode = button.dataset.feedback || "success";
     if (target === "feedback") {
+      setAppState("evaluating");
       if (mode === "success") {
         const earnedStars = getAttemptStarReward();
         addStars(earnedStars);
@@ -105,6 +110,9 @@ document.querySelectorAll("[data-goto]").forEach((button) => {
       updateScoreDisplays();
     }
     showScreen(target);
+    if (target === "feedback") {
+      setAppState(mode);
+    }
   });
 });
 
@@ -115,34 +123,30 @@ const cameraStatus = document.querySelector("#camera-status");
 const preview = document.querySelector("#camera-preview");
 const fallbackReason = document.querySelector("#fallback-reason");
 
-document
-  .querySelector("#use-webcam-btn")
-  ?.addEventListener("click", async () => {
-    cameraStatus.textContent = "Requesting camera access…";
-    try {
-      activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
-      preview.srcObject = activeStream;
-      cameraStatus.textContent =
-        "Webcam connected successfully! Prepare to move.";
-      showScreen("camera-live");
-    } catch (error) {
-      let reason;
-      if (error.name === "NotAllowedError") {
-        reason =
-          "Camera access was denied. Please enable camera permissions in your browser settings to continue.";
-      } else {
-        reason =
-          "No camera was detected. Please connect a webcam or use the local demo sample.";
-      }
-      if (fallbackReason) fallbackReason.textContent = reason;
-      showScreen("camera-fallback");
+document.querySelector("#use-webcam-btn")?.addEventListener("click", async () => {
+  cameraStatus.textContent = "Requesting camera access…";
+  try {
+    activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    preview.srcObject = activeStream;
+    cameraStatus.textContent = "Webcam connected successfully! Prepare to move.";
+    showScreen("camera-live");
+  } catch (error) {
+    let reason;
+    if (error.name === "NotAllowedError") {
+      reason =
+        "Camera access was denied. Please enable camera permissions in your browser settings to continue.";
+    } else {
+      reason =
+        "No camera was detected. Please connect a webcam or use the local demo sample.";
     }
-  });
+    if (fallbackReason) fallbackReason.textContent = reason;
+    showScreen("camera-fallback");
+  }
+});
 
 document.querySelector("#use-fallback-btn")?.addEventListener("click", () => {
   if (fallbackReason) {
-    fallbackReason.textContent =
-      "Using local demo feed. No camera access required.";
+    fallbackReason.textContent = "Using local demo feed. No camera access required.";
   }
   showScreen("camera-fallback");
 });
