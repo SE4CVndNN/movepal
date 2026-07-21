@@ -202,3 +202,33 @@ Negative / follow-up:
 - `pytest tests/unit/test_pose_tracking.py` — schema validation, all
   five fixtures' expected statuses, and the offline error path pass
   without network access.
+
+## MP-013 follow-up
+
+MP-013 wired `MediaPipePoseAdapter` into `POST /api/frame`
+(`app/routes/api.py`, `app/services/frame_processing.py`) and closed the two
+items this ADR had left open:
+
+- **Model provisioning:** documented as a one-time local download in
+  `README.md` ("Pose model file"); `pose_landmarker*.task` is added to
+  `.gitignore` so it can never be committed. `POSE_MODEL_PATH`
+  (`app/config.py`) can point elsewhere.
+- **`MediaPipePoseAdapter` CI coverage:** still intentionally not exercised
+  by automated tests, and a model-gated `pytest` case for the real
+  decode-failure path was tried and reverted here: with a real downloaded
+  model, `MediaPipePoseAdapter().estimate()` on corrupt bytes reliably
+  returns `PoseStatus.ERROR` (`error="Failed to load image from file"`,
+  confirmed via a standalone `python -c` script — no exception escapes
+  `estimate()`), but the identical call reproducibly hung under `pytest`
+  in this environment, which confirms this ADR's original "may be slow or
+  not thread-safe" risk rather than contradicting it. The manual repro
+  above (`scripts/pose_adapter_demo.py`, or a standalone script) remains
+  the supported way to check the real adapter; do not add a `pytest` case
+  that constructs a real `PoseLandmarker` without first confirming it does
+  not hang in CI.
+
+Also added `landmark_distance()` (normalized x/y Euclidean distance) to
+`app/services/pose_tracking.py` as a shared helper for the body-scale-relative
+ratios (`shoulder_width`, `leg_scale`, reach ratio) that
+docs/movement_specification.md's per-movement rules need, so each future
+movement-rule task does not reimplement the same distance math.

@@ -142,6 +142,19 @@ def visible_landmarks(
     return [item for item in landmarks if item.visibility >= minimum_visibility]
 
 
+def landmark_distance(first: Landmark, second: Landmark) -> float:
+    """Euclidean distance between two landmarks in normalized x/y space.
+
+    ``z`` is excluded because docs/movement_specification.md's relative
+    measurements (``shoulder_width``, ``leg_scale``, reach ratios, ...) are
+    all defined in the normalized image plane. Movement rules use this to
+    turn raw coordinates into body-scale-relative ratios, which stay
+    meaningful across different camera distances and framing -- unlike a
+    raw pixel/coordinate distance on its own.
+    """
+    return ((first.x - second.x) ** 2 + (first.y - second.y) ** 2) ** 0.5
+
+
 def _status_for_landmarks(
     landmarks: dict[str, Landmark],
     minimum_visibility: float,

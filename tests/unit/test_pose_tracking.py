@@ -5,6 +5,7 @@ from app.services.pose_tracking import (
     Landmark,
     MediaPipePoseAdapter,
     PoseStatus,
+    landmark_distance,
     load_pose_fixture,
     load_pose_fixtures,
     visible_landmarks,
@@ -104,3 +105,30 @@ def test_adapter_returns_error_result_without_raising(tmp_path):
     assert result.status == PoseStatus.ERROR
     assert result.error
     assert result.landmarks == {}
+
+
+def test_landmark_distance_is_translation_invariant():
+    a = Landmark(name="left_shoulder", x=0.4, y=0.3, z=0.0, visibility=1.0)
+    b = Landmark(name="right_shoulder", x=0.6, y=0.3, z=0.0, visibility=1.0)
+    shift_x, shift_y = 0.1, -0.2
+    a_shifted = Landmark(
+        name=a.name, x=a.x + shift_x, y=a.y + shift_y, z=0.0, visibility=1.0
+    )
+    b_shifted = Landmark(
+        name=b.name, x=b.x + shift_x, y=b.y + shift_y, z=0.0, visibility=1.0
+    )
+
+    assert landmark_distance(a, b) == pytest.approx(0.2)
+    assert landmark_distance(a_shifted, b_shifted) == pytest.approx(
+        landmark_distance(a, b)
+    )
+
+
+def test_landmark_distance_matches_fixture_shoulder_width():
+    result = load_pose_fixture("synthetic_full_visibility_standing_001")
+
+    width = landmark_distance(
+        result.landmarks["left_shoulder"], result.landmarks["right_shoulder"]
+    )
+
+    assert width > 0

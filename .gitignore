@@ -25,6 +25,9 @@ data/raw/
 data/private/
 data/uploads/
 
+# Downloaded pose-estimation model assets (see docs/adr/002-pose-estimator.md)
+pose_landmarker*.task
+
 # Generated reports
 reports/
 
