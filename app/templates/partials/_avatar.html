@@ -1,8 +1,110 @@
-<svg class="avatar" viewBox="0 0 200 200" role="img" aria-label="MovePal's friendly helper character" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="100" cy="110" r="70" fill="var(--color-primary)" />
-  <circle cx="75" cy="95" r="12" fill="var(--color-text)" />
-  <circle cx="125" cy="95" r="12" fill="var(--color-text)" />
-  <path d="M70 130 Q100 160 130 130" stroke="var(--color-text)" stroke-width="6" fill="none" stroke-linecap="round" />
-  <circle cx="55" cy="120" r="10" fill="var(--color-retry)" opacity="0.6" />
-  <circle cx="145" cy="120" r="10" fill="var(--color-retry)" opacity="0.6" />
+<svg
+  class="avatar"
+  viewBox="0 0 200 200"
+  role="img"
+  aria-label="MovePal's dancing robot mascot"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <linearGradient id="robotBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8dd9e6" />
+      <stop offset="100%" stop-color="#5f9ee0" />
+    </linearGradient>
+    <linearGradient id="robotFace" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f4f2ff" />
+    </linearGradient>
+    <linearGradient id="robotLeg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffb3d1" />
+      <stop offset="100%" stop-color="#f582ae" />
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="90" fill="rgba(255, 255, 255, 0.6)" />
+  <rect
+    x="60"
+    y="40"
+    width="80"
+    height="80"
+    rx="18"
+    fill="url(#robotBody)"
+    stroke="var(--color-primary-dark)"
+    stroke-width="4"
+  />
+  <rect
+    x="70"
+    y="70"
+    width="60"
+    height="38"
+    rx="10"
+    fill="url(#robotFace)"
+    stroke="var(--color-primary-dark)"
+    stroke-width="2"
+  />
+  <circle cx="88" cy="90" r="8" fill="var(--color-text)" />
+  <circle cx="112" cy="90" r="8" fill="var(--color-text)" />
+  <path
+    d="M88 105 Q100 118 112 105"
+    stroke="var(--color-text)"
+    stroke-width="5"
+    fill="none"
+    stroke-linecap="round"
+  />
+  <circle cx="100" cy="60" r="10" fill="var(--color-secondary)" />
+  <line
+    x1="100"
+    y1="35"
+    x2="100"
+    y2="50"
+    stroke="var(--color-primary-dark)"
+    stroke-width="4"
+    stroke-linecap="round"
+  />
+  <line
+    x1="60"
+    y1="95"
+    x2="42"
+    y2="95"
+    stroke="var(--color-primary-dark)"
+    stroke-width="8"
+    stroke-linecap="round"
+  />
+  <line
+    x1="140"
+    y1="95"
+    x2="158"
+    y2="90"
+    stroke="var(--color-primary-dark)"
+    stroke-width="8"
+    stroke-linecap="round"
+  />
+  <rect
+    x="72"
+    y="120"
+    width="22"
+    height="42"
+    rx="8"
+    fill="var(--color-secondary)"
+  />
+  <rect
+    x="106"
+    y="120"
+    width="22"
+    height="42"
+    rx="8"
+    fill="var(--color-secondary)"
+  />
+  <rect x="75" y="140" width="14" height="24" rx="6" fill="url(#robotLeg)" />
+  <rect x="111" y="140" width="14" height="24" rx="6" fill="url(#robotLeg)" />
+  <rect x="82" y="48" width="12" height="8" rx="4" fill="var(--color-retry)" />
+  <rect x="106" y="48" width="12" height="8" rx="4" fill="var(--color-retry)" />
+  <circle cx="35" cy="45" r="8" fill="var(--color-secondary)" opacity="0.8" />
+  <circle cx="165" cy="45" r="7" fill="var(--color-success)" opacity="0.8" />
+  <circle cx="40" cy="155" r="6" fill="var(--color-retry)" opacity="0.75" />
+  <circle
+    cx="160"
+    cy="160"
+    r="6"
+    fill="var(--color-secondary-dark)"
+    opacity="0.75"
+  />
 </svg>
