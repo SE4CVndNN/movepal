@@ -5,12 +5,16 @@ block content %}
   {% include "partials/_avatar.html" %}
   <h2>Let's move and collect stars!</h2>
   <p>
-    Welcome to MovePal. Pick a fun move, follow along, and earn stars while you
-    play.
+    MovePal is a playful movement-practice prototype created for
+    software-engineering education. It is not a medical device, diagnostic tool,
+    rehabilitation system, treatment, or replacement for a physiotherapist or
+    healthcare professional.
   </p>
   <p>
-    Each movement is a chance to practice and feel great. The app helps you play
-    safely and celebrates your wins.
+    A success result means only that the current pose landmarks satisfied the
+    project’s configured game rules. It does not establish that a movement is
+    medically correct, safe for a particular person, or beneficial for a health
+    condition.
   </p>
   <button type="button" data-goto="activity">Let's play!</button>
 </section>
@@ -37,26 +41,25 @@ block content %}
 </section>
 
 <section class="card" data-screen="camera-choice" hidden>
-  <h2>How do you want to play?</h2>
+  <h2>Choose Your Input Method</h2>
   <p>
-    Use the webcam to move with live feedback, or use demo mode to practice
-    without a camera.
+    Please allow live camera access so you can have a live experience with
+    MovePal.
   </p>
-  <button type="button" id="use-webcam-btn">Use live webcam</button>
-  <button type="button" id="use-fallback-btn">Use demo mode</button>
+  <button type="button" id="use-webcam-btn">Use Live Webcam</button>
+  <button type="button" id="use-fallback-btn">
+    Use Local Demo Sample (No Camera)
+  </button>
   <p id="camera-status" role="status" aria-live="polite"></p>
 </section>
 
 <section class="card" data-screen="camera-live" hidden>
-  <h2>Ready to move!</h2>
+  <h2>Live camera</h2>
   <video id="camera-preview" autoplay playsinline muted></video>
-  <p>
-    Your moves are checked in real time. Keep your body visible so MovePal can
-    help you earn stars.
-  </p>
-  <p>Tap the button when you want to finish this attempt.</p>
-  <button type="button" id="stop-camera-btn">Stop camera</button>
-  <button type="button" data-goto="feedback">Finish attempt</button>
+  <p>Camera frames are processed temporarily and are not stored by default.</p>
+  <p>Please click on Stop Camera or Reset to stop recording.</p>
+  <button type="button" id="stop-camera-btn">Stop Camera</button>
+  <button type="button" data-goto="feedback">Simulate attempt</button>
 </section>
 
 <section class="card" data-screen="camera-fallback" hidden>
@@ -73,10 +76,11 @@ block content %}
 
 <section class="card" data-screen="summary" hidden>
   {% include "partials/_avatar.html" %}
-  <h2>You've finished the session!</h2>
+  <h2>Session Complete!</h2>
   <p id="summary-text">
-    Great job! You earned ⭐ <span id="summary-star-count">0</span> Stars in
-    this play session. Ready for another round?
+    You successfully completed your movements today and earned a total of ⭐
+    <span id="summary-star-count">0</span> Stars! Thanks for playing with
+    MovePal!
   </p>
   <button type="button" data-goto="start">Play again</button>
 </section>
