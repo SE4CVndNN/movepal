@@ -57,6 +57,7 @@ is connected to the actual game flow.
 - Initially wrote the permission-denied message into `#camera-status` on the camera-choice screen, but that screen gets hidden immediately when switching to the fallback screen, so the message was never visible. Fixed by adding a dedicated `#fallback-reason` element on the fallback screen itself.
 - Visual/child-friendly design (MP-011) builds directly on the MP-006 flow rather than replacing it — same screens, same state machine, restyled and extended.
 - Kept core flow wording aligned with `docs/content_baseline.md` for input selection, live-camera guidance, and session summary copy. Slightly friendlier start-screen wording remains only in the welcome header, to preserve a lightweight child-friendly tone while retaining the approved disclaimer text.
+- Chose soft pastel colors, rounded shapes, and bright button accents to make the interface feel playful and approachable rather than clinical. The color palette is intentionally gentle and energetic, supporting a kid-friendly mood without reducing text readability.
 - Chose a Comic Sans-first font stack for readability/dyslexia-friendliness; flagged for review since it's also a common design joke — easy to swap by editing one line in `app.css`.
 
 ## Known limitations / follow-up
