@@ -17,6 +17,9 @@ class BaseConfig:
     LANDMARK_DATA_DIR = BASE_DIR / "data" / "landmarks"
     ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png"}
     ALLOWED_VIDEO_EXTENSIONS = {"mp4", "webm"}
+    POSE_MODEL_PATH = Path(
+        os.getenv("POSE_MODEL_PATH", BASE_DIR / "pose_landmarker_lite.task")
+    )
 
 
 class DevelopmentConfig(BaseConfig):

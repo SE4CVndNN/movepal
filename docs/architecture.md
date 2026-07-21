@@ -77,6 +77,76 @@ Defines JSON endpoints. Responsibilities include:
 
 Routes should not contain pose mathematics, movement thresholds, or score rules.
 
+#### API Endpoints Contract
+
+##### 1. Health Check: `GET /api/health`
+- **Response (200 OK):** `{"status": "ok", "service": "movepal"}`
+
+##### 2. Frame Processing: `POST /api/frame`
+Receives a single image frame, processes it transiently with the pose tracking service, and returns deterministic JSON.
+
+- **Request Format:** `multipart/form-data`
+  - Field: `image` (uploaded JPG/JPEG/PNG file)
+- **Supported Formats:** `.jpg`, `.jpeg`, `.png` (MIME types: `image/jpeg`, `image/png`, `image/jpg`)
+- **Size Limit:** Constrained by `MAX_CONTENT_LENGTH` in configuration.
+
+- **Successful / Informational Responses (HTTP 200):**
+  - **Pose Detected (`success`):**
+    ```json
+    {
+      "status": "success",
+      "message": "Frame processed successfully.",
+      "pose_status": "success"
+    }
+    ```
+  - **No Pose (`no_pose`):**
+    ```json
+    {
+      "status": "success",
+      "message": "No pose detected.",
+      "pose_status": "no_pose"
+    }
+    ```
+  - **Low Visibility (`low_visibility`):**
+    ```json
+    {
+      "status": "success",
+      "message": "Pose visibility is too low.",
+      "pose_status": "low_visibility"
+    }
+    ```
+
+- **Error Responses:**
+  - **Missing Image (HTTP 400):**
+    ```json
+    {
+      "status": "error",
+      "message": "No image file provided."
+    }
+    ```
+  - **Unsupported Format (HTTP 415):**
+    ```json
+    {
+      "status": "error",
+      "message": "Unsupported image format."
+    }
+    ```
+  - **Oversized Upload (HTTP 413):**
+    ```json
+    {
+      "status": "error",
+      "message": "File too large."
+    }
+    ```
+  - **Pose Service Failure (HTTP 500):**
+    ```json
+    {
+      "status": "error",
+      "message": "Unable to process frame.",
+      "pose_status": "error"
+    }
+    ```
+
 ### `app/services/pose_tracking.py`
 
 Provides the adapter between MediaPipe or another approved pose provider and MovePal’s project-level landmark representation.
