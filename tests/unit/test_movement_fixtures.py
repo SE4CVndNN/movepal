@@ -32,7 +32,7 @@ def _validate_fixture(
     categories_by_movement: dict[str, set[str]],
 ) -> None:
     """Validate individual fixture structure, unique IDs, and field enums."""
-    fixture_id = fixture["id"]
+    fixture_id = fixture["fixture_id"]
     assert fixture_id not in fixture_ids, f"Duplicate fixture ID found: {fixture_id}"
     fixture_ids.add(fixture_id)
 
@@ -54,7 +54,10 @@ def test_movement_fixtures_follow_mp005_structure_and_keep_sides_explicit():
     fixture_paths = [
         FIXTURES_DIRECTORY / filename for filename in MOVEMENT_FILE_CONTRACTS
     ]
-    assert all(path.is_file() for path in fixture_paths)
+
+    missing_files = [path.name for path in fixture_paths if not path.is_file()]
+    assert not missing_files, f"Missing required fixture file(s) in '{FIXTURES_DIRECTORY}': {missing_files}"
+
     fixtures_by_path = {
         path.name: json.loads(path.read_text(encoding="utf-8"))
         for path in fixture_paths
