@@ -2,7 +2,7 @@
 block content %}
 
 <section class="card" data-screen="start">
-  {% set avatar_uid = 'start' %} {% include "partials/_avatar.html" %}
+  {% set avatar_suffix = 'start' %} {% include "partials/_avatar.html" %}
   <h2>Let's move and collect stars!</h2>
   <p>
     MovePal is a playful movement-practice prototype created for
@@ -20,7 +20,7 @@ block content %}
 </section>
 
 <section class="card" data-screen="activity" hidden>
-  {% set avatar_uid = 'activity' %} {% include "partials/_avatar.html" %}
+  {% set avatar_suffix = 'activity' %} {% include "partials/_avatar.html" %}
   <h2>Pick your favorite move</h2>
   <p>Choose a move, then choose how you want to play.</p>
   <div class="activity-list">
@@ -93,7 +93,7 @@ block content %}
 </section>
 
 <section class="card" data-screen="summary" hidden>
-  {% set avatar_uid = 'summary' %} {% include "partials/_avatar.html" %}
+  {% set avatar_suffix = 'summary' %} {% include "partials/_avatar.html" %}
   <h2>Session Complete!</h2>
   <p id="summary-text">
     You successfully completed your movements today and earned a total of ⭐
