@@ -76,3 +76,39 @@ document.querySelector("#stop-camera-btn")?.addEventListener("click", () => {
 
 // Safety net: stop the camera if the user navigates away without clicking "Stop".
 window.addEventListener("beforeunload", stopCamera);
+
+// --- MP-014 vertical slice: fixture -> /api/movement -> friendly feedback ---
+const FALLBACK_FIXTURE_ID = "synthetic_raise_arms_positive_001";
+
+const feedbackMessage = document.querySelector("#feedback-message");
+const fallbackError = document.querySelector("#fallback-error");
+
+document.querySelector("#simulate-fallback-btn")?.addEventListener("click", async () => {
+  if (fallbackError) fallbackError.textContent = "Checking your pose…";
+  try {
+    const response = await fetch("/api/movement", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        movement: "raise_both_arms",
+        fixture_id: FALLBACK_FIXTURE_ID,
+      }),
+    });
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.message || "The movement could not be evaluated.");
+    }
+    if (feedbackMessage) {
+      const stars = "⭐".repeat(payload.stars);
+      feedbackMessage.textContent = stars
+        ? `${payload.feedback} ${stars}`
+        : payload.feedback;
+    }
+    if (fallbackError) fallbackError.textContent = "";
+    showScreen("feedback");
+  } catch (error) {
+    if (fallbackError) {
+      fallbackError.textContent = "The application could not be reached.";
+    }
+  }
+});

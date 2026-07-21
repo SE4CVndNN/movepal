@@ -96,11 +96,19 @@ Raise both arms above the shoulders so the game can recognize the pose.
 
 - left shoulder;
 - right shoulder;
-- left elbow;
-- right elbow;
 - left wrist;
 - right wrist;
 - torso reference such as hips when needed for scale/framing.
+
+> **MP-014 correction:** an earlier draft of this list also required left/
+> right elbow. The executable acceptance matrix in section 12 never reads
+> elbow coordinates, and the checked-in negative/borderline/low-visibility
+> fixtures in
+> [`raise_both_arms_fixtures.json`](../data/landmarks/raise_both_arms_fixtures.json)
+> omit elbows entirely while still expecting a `retry`/`raise_arms` result
+> rather than a missing-landmark failure. MP-014's implementation
+> (`app/services/movement_rules.py`) therefore does not require elbows for
+> `raise_both_arms`; see "MP-014 decisions" at the end of this document.
 
 ### Provisional logical rule
 
@@ -350,3 +358,12 @@ Side-specific fixtures use `requested_side: "left"` or `requested_side: "right"`
 ### Fixture review mechanism
 
 Each checked-in synthetic fixture identifies an `annotator` and carries no personal data. Before a fixture is treated as approved regression evidence, an independent reviewer must check its MP-005 metadata, landmark names and normalized ranges, anatomical side, category, expected completion, and feedback code against this specification. Record the reviewer, review date, and decision in the MP-007 pull-request review or a linked issue comment; update the fixture description or expectation when a discrepancy is found. A fixture that lacks independent review remains usable for development experiments but must not be presented as calibrated evidence.
+
+## 13. MP-014 decisions
+
+MP-014 built the first vertical slice (`docs/architecture.md` section 7): a deterministic `raise_both_arms` fixture travels through `POST /api/movement`, the pure rule in `app/services/movement_rules.py`, and the friendly feedback in `app/services/feedback.py`, then renders in the browser fallback path with no camera or MediaPipe model. Decisions and mismatches recorded during that work:
+
+- **Elbow requirement removed for `raise_both_arms`.** See the correction note in section 6. Fixed in the rule, not the fixtures, since the fixtures and the acceptance-matrix formula already agreed with each other.
+- **`feedback.py` wording corrected.** `great`, `raise_arms`, `hold`, and `full_body_missing` previously used older placeholder text that did not match this document's section 12 approved-wording table (the table was added by MP-007 after `feedback.py` was first written). `feedback.py` is the owning component for wording per section 12, so its strings were updated to match the table exactly; `move_back` and `try_again` are untouched, unused legacy codes and are out of scope here.
+- **Hold/consecutive-sample tracking is per-request, not per-session.** `evaluate_raise_both_arms` accepts a caller-supplied `consecutive_samples` count (matching the fixtures' own `observed_consecutive_samples` field) rather than tracking state across HTTP requests itself. When a caller omits it, the rule assumes the hold requirement is already satisfied (a single satisfying sample succeeds immediately) so that a real single-frame request from a future camera path does not get stuck on `hold` forever. Real cross-request session tracking is left to MP-016; until then, only callers that explicitly pass a lower count (as the fixture-driven contract tests do) will see a `hold` result.
+- **`POST /api/movement` only accepts a `fixture_id`, not a live image or raw landmark JSON**, keeping the new endpoint's input surface minimal and privacy-safe (no arbitrary body data). Composing a real camera frame's pose-adapter output with `evaluate_raise_both_arms` is straightforward (the shapes already match) and is deferred to MP-019's full game loop rather than built speculatively here.

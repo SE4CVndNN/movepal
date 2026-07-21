@@ -147,6 +147,44 @@ Receives a single image frame, processes it transiently with the pose tracking s
     }
     ```
 
+##### 3. Movement Evaluation: `POST /api/movement`
+
+Implemented by MP-014 as the vertical slice's movement-rule endpoint. Evaluates
+a deterministic landmark fixture through a pure movement rule (currently only
+`raise_both_arms`) and returns friendly feedback — no camera or MediaPipe
+model is touched.
+
+- **Request Format:** `application/json` or `multipart/form-data`
+  - `movement` (required): a supported movement code, currently only
+    `"raise_both_arms"`.
+  - `fixture_id` (required): a `fixture_id` from
+    [`raise_both_arms_fixtures.json`](../data/landmarks/raise_both_arms_fixtures.json).
+  - `consecutive_samples` (optional integer): overrides the fixture's
+    `observed_consecutive_samples` so a caller/test can exercise the `hold`
+    outcome. Defaults to the fixture's own value, or to the rule's required
+    count (currently 2) when neither is present.
+- **Successful Response (HTTP 200):**
+  ```json
+  {
+    "movement": "raise_both_arms",
+    "completed": true,
+    "confidence": 1.0,
+    "feedback_code": "great",
+    "feedback": "Awesome job! You've earned ⭐ 1 Star!",
+    "stars": 3,
+    "visibility_ok": true,
+    "retryable": true
+  }
+  ```
+- **Error Responses (HTTP 400):** unsupported/missing `movement`, missing
+  `fixture_id`, unknown `fixture_id`, or a non-integer `consecutive_samples`,
+  each as `{"status": "error", "message": "..."}`.
+- **Known limitation:** this endpoint only accepts fixture landmarks, not a
+  live image or arbitrary landmark JSON. Wiring a real camera frame into this
+  same rule (via `get_pose_adapter()` + `process_frame()`, whose output is
+  already the same `Landmark` dict shape `evaluate_raise_both_arms` accepts)
+  is deferred to the full game loop in MP-019.
+
 ### `app/services/pose_tracking.py`
 
 Provides the adapter between MediaPipe or another approved pose provider and MovePal’s project-level landmark representation.
