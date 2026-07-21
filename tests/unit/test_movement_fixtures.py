@@ -48,6 +48,14 @@ MOVEMENT_VALUES = set(MOVEMENT_FILE_CONTRACTS.values())
 CATEGORY_VALUES = {"positive", "negative", "borderline", "low_visibility"}
 REQUESTED_SIDE_VALUES = {"left", "right", "both"}
 EXPECTED_STATUS_VALUES = {"success", "retry", "low_visibility"}
+EXPECTED_FEEDBACK_CODE_VALUES = {
+    "great",
+    "raise_arms",
+    "reach_left",
+    "reach_right",
+    "lift_knee",
+    "full_body_missing",
+}
 
 
 def test_movement_fixtures_follow_mp005_structure_and_keep_sides_explicit():
@@ -102,6 +110,7 @@ def _validate_fixture(
     assert fixture["category"] in CATEGORY_VALUES
     assert fixture["requested_side"] in REQUESTED_SIDE_VALUES
     assert fixture["expected_status"] in EXPECTED_STATUS_VALUES
+    assert fixture["expected_feedback_code"] in EXPECTED_FEEDBACK_CODE_VALUES
     assert isinstance(fixture["expected_completed"], bool)
     assert isinstance(fixture["observed_consecutive_samples"], int)
     assert fixture["observed_consecutive_samples"] >= 0
