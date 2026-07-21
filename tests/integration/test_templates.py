@@ -28,7 +28,7 @@ def test_avatar_uses_unique_gradient_ids(client):
     response = client.get("/")
     assert response.status_code == 200
     body = response.get_data(as_text=True)
-    assert 'robotBody-start' in body
-    assert 'robotBody-activity' in body
-    assert 'robotBody-summary' in body
-    assert 'robotBody-default' not in body
+    assert "robotBody-start" in body
+    assert "robotBody-activity" in body
+    assert "robotBody-summary" in body
+    assert "robotBody-default" not in body
