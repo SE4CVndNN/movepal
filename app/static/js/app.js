@@ -33,7 +33,8 @@ function updateFeedbackMessage(amount, mode) {
     const totalLabel = totalStars === 1 ? "1 Star" : `${totalStars} Stars`;
     const attemptLabel = amount === 1 ? "1 Star" : `${amount} Stars`;
     if (mode === "retry") {
-      feedbackMessage.textContent = `Oops! Try again — this time, aim for better alignment.`;
+      feedbackMessage.textContent =
+        "Keep going! Adjust your position and try that movement again.";
     } else {
       feedbackMessage.textContent = `Awesome job! You earned ⭐ ${attemptLabel} this round. Your total is ${totalLabel}.`;
     }
