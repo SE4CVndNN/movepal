@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from flask import Flask, render_template
+from flask import Flask, jsonify, render_template, request
 
 from app.config import DevelopmentConfig
 from app.routes.api import api_bp
@@ -26,6 +26,8 @@ def create_app(test_config: dict[str, object] | None = None) -> Flask:
 
     @app.errorhandler(413)
     def request_entity_too_large(error):
+        if request.path.startswith("/api/"):
+            return jsonify({"status": "error", "message": "File too large."}), 413
         return render_template("errors/413.html"), 413
 
     return app
