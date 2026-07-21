@@ -115,6 +115,29 @@ python run.py
 
 Then open the address printed by Flask, normally `http://127.0.0.1:5000/`.
 
+### Pose model file (only needed for a live `/api/frame` request)
+
+`POST /api/frame` uses `MediaPipePoseAdapter`, which needs a downloaded
+MediaPipe Pose Landmarker `.task` model bundle on disk. This file is **not**
+committed to the repository (privacy/size — see
+[`docs/adr/002-pose-estimator.md`](docs/adr/002-pose-estimator.md)) and is
+ignored by `.gitignore`. Automated tests never need it: `pytest` runs entirely
+against the offline fixtures in `data/landmarks/`.
+
+To exercise a real frame locally, download the model once into the repository
+root (or any path, if you also set `POSE_MODEL_PATH`):
+
+```bash
+python -c "import urllib.request; urllib.request.urlretrieve(
+    'https://storage.googleapis.com/mediapipe-models/pose_landmarker/'
+    'pose_landmarker_lite/float16/latest/pose_landmarker_lite.task',
+    'pose_landmarker_lite.task')"
+```
+
+By default the app looks for `pose_landmarker_lite.task` next to `run.py`.
+Set the `POSE_MODEL_PATH` environment variable to point somewhere else
+instead. Never commit the downloaded file or any real captured frame.
+
 The health endpoint is:
 
 ```text
