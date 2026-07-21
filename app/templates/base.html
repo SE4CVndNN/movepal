@@ -1,16 +1,25 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}MovePal{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/app.css') }}"
+    />
   </head>
-  <body>
+  <body data-app-state="idle">
     <header class="site-header">
       <div class="header-row">
         <h1>MovePal</h1>
-        <div id="score-region" class="score-badge" role="status" aria-live="polite" aria-label="Stars earned this session">
+        <div
+          id="score-region"
+          class="score-badge"
+          role="status"
+          aria-live="polite"
+          aria-label="Stars earned this session"
+        >
           <span aria-hidden="true">⭐</span>
           <span id="score-count">0</span>
         </div>

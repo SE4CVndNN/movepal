@@ -1,20 +1,39 @@
 <svg
   class="avatar"
   viewBox="0 0 200 200"
-  role="img"
-  aria-label="MovePal's dancing robot mascot"
+  focusable="false"
+  aria-hidden="true"
   xmlns="http://www.w3.org/2000/svg"
 >
+  {% set avatar_uid = avatar_suffix|default('default') %}
   <defs>
-    <linearGradient id="robotBody" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient
+      id="robotBody-{{ avatar_uid }}"
+      x1="0%"
+      y1="0%"
+      x2="100%"
+      y2="100%"
+    >
       <stop offset="0%" stop-color="#8dd9e6" />
       <stop offset="100%" stop-color="#5f9ee0" />
     </linearGradient>
-    <linearGradient id="robotFace" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient
+      id="robotFace-{{ avatar_uid }}"
+      x1="0%"
+      y1="0%"
+      x2="100%"
+      y2="100%"
+    >
       <stop offset="0%" stop-color="#ffffff" />
       <stop offset="100%" stop-color="#f4f2ff" />
     </linearGradient>
-    <linearGradient id="robotLeg" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient
+      id="robotLeg-{{ avatar_uid }}"
+      x1="0%"
+      y1="0%"
+      x2="100%"
+      y2="100%"
+    >
       <stop offset="0%" stop-color="#ffb3d1" />
       <stop offset="100%" stop-color="#f582ae" />
     </linearGradient>
@@ -26,7 +45,7 @@
     width="80"
     height="80"
     rx="18"
-    fill="url(#robotBody)"
+    fill="url(#robotBody-{{ avatar_uid }})"
     stroke="var(--color-primary-dark)"
     stroke-width="4"
   />
@@ -36,7 +55,7 @@
     width="60"
     height="38"
     rx="10"
-    fill="url(#robotFace)"
+    fill="url(#robotFace-{{ avatar_uid }})"
     stroke="var(--color-primary-dark)"
     stroke-width="2"
   />
@@ -93,8 +112,22 @@
     rx="8"
     fill="var(--color-secondary)"
   />
-  <rect x="75" y="140" width="14" height="24" rx="6" fill="url(#robotLeg)" />
-  <rect x="111" y="140" width="14" height="24" rx="6" fill="url(#robotLeg)" />
+  <rect
+    x="75"
+    y="140"
+    width="14"
+    height="24"
+    rx="6"
+    fill="url(#robotLeg-{{ avatar_uid }})"
+  />
+  <rect
+    x="111"
+    y="140"
+    width="14"
+    height="24"
+    rx="6"
+    fill="url(#robotLeg-{{ avatar_uid }})"
+  />
   <rect x="82" y="48" width="12" height="8" rx="4" fill="var(--color-retry)" />
   <rect x="106" y="48" width="12" height="8" rx="4" fill="var(--color-retry)" />
   <circle cx="35" cy="45" r="8" fill="var(--color-secondary)" opacity="0.8" />

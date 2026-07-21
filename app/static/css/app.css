@@ -163,14 +163,14 @@ h2 {
 button {
   font: inherit;
   font-size: 1.05rem;
-  font-weight: bold;
+  font-weight: 800;
   min-height: 4rem;
   padding: 0.9rem 1.5rem;
   margin: var(--space-sm) 0.4rem 0;
   border: none;
   border-radius: 1.5rem;
-  background: linear-gradient(135deg, var(--color-primary), #ff8ab3);
-  color: white;
+  background: linear-gradient(135deg, #f7d9e4, #d7e9f4);
+  color: var(--color-text);
   cursor: pointer;
   box-shadow: 0 0.35rem 0.8rem rgb(209 71 126 / 30%);
   transition:
@@ -183,13 +183,53 @@ button:hover,
 button:active {
   transform: translateY(-0.08rem) scale(1.025);
   box-shadow: 0 0.55rem 1rem rgb(209 71 126 / 35%);
-  filter: brightness(1.03);
+  filter: brightness(1.02);
 }
 
 #use-fallback-btn,
 #stop-camera-btn {
-  background: var(--color-secondary-dark);
+  background: linear-gradient(135deg, #d8eef2, #bde4eb);
+  color: var(--color-text);
   box-shadow: 0 0.3rem 0.6rem rgb(58 155 168 / 30%);
+}
+
+.status-badge {
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-success {
+  background: rgba(76, 175, 80, 0.14);
+  color: var(--color-success-dark);
+}
+
+.status-retry {
+  background: rgba(255, 159, 67, 0.16);
+  color: var(--color-retry-dark);
+}
+
+.feedback-header {
+  display: grid;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.feedback-card {
+  text-align: left;
+}
+
+.feedback-card h2 {
+  margin-bottom: 0;
+}
+
+.feedback-card p {
+  color: var(--color-text-muted);
 }
 
 :focus-visible {

@@ -28,16 +28,34 @@ function updateScoreDisplays() {
   if (summaryStarCount) summaryStarCount.textContent = totalStars;
 }
 
-function updateFeedbackMessage(amount) {
+function updateFeedbackMessage(amount, mode) {
   if (feedbackMessage) {
     const totalLabel = totalStars === 1 ? "1 Star" : `${totalStars} Stars`;
-    feedbackMessage.textContent = `Awesome job! You earned ⭐ ${amount} Star${amount === 1 ? "" : "s"} this round. Your total is ${totalLabel}.`;
+    const attemptLabel = amount === 1 ? "1 Star" : `${amount} Stars`;
+    if (mode === "retry") {
+      feedbackMessage.textContent = `Oops! Try again — this time, aim for better alignment.`;
+    } else {
+      feedbackMessage.textContent = `Awesome job! You earned ⭐ ${attemptLabel} this round. Your total is ${totalLabel}.`;
+    }
+  }
+}
+
+function updateFeedbackStatus(mode) {
+  const statusBadge = document.querySelector("#feedback-status");
+  const detail = document.querySelector("#feedback-detail");
+  if (statusBadge) {
+    statusBadge.textContent = mode === "retry" ? "Retry" : "Success";
+    statusBadge.className = `status-badge status-${mode}`;
+  }
+  if (detail) {
+    detail.textContent =
+      mode === "retry"
+        ? "Try again with a little more space and a stronger pose."
+        : "This is a placeholder success result; real evaluation arrives in MP-014.";
   }
 }
 
 function getAttemptStarReward() {
-  // Placeholder reward logic for the current movement attempt.
-  // Replace with real scoring logic once pose evaluation is wired up.
   return 1;
 }
 
@@ -68,15 +86,24 @@ function showScreen(name) {
 
 document.querySelectorAll("[data-goto]").forEach((button) => {
   button.addEventListener("click", () => {
-    // Placeholder: award a star whenever the feedback screen is reached.
-    // Replaced once real scoring logic (scoring.py) is wired up in a
-    // later task.
-    if (button.dataset.goto === "feedback") {
-      const earnedStars = getAttemptStarReward();
-      addStars(earnedStars);
-      updateFeedbackMessage(earnedStars);
+    const target = button.dataset.goto;
+    const mode = button.dataset.feedback || "success";
+    if (target === "feedback") {
+      if (mode === "success") {
+        const earnedStars = getAttemptStarReward();
+        addStars(earnedStars);
+        updateFeedbackMessage(earnedStars, "success");
+      } else {
+        updateFeedbackMessage(0, "retry");
+      }
+      updateFeedbackStatus(mode);
+      stopCamera();
     }
-    showScreen(button.dataset.goto);
+    if (target === "start") {
+      totalStars = 0;
+      updateScoreDisplays();
+    }
+    showScreen(target);
   });
 });
 

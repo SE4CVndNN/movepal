@@ -2,7 +2,7 @@
 block content %}
 
 <section class="card" data-screen="start">
-  {% include "partials/_avatar.html" %}
+  {% set avatar_uid = 'start' %} {% include "partials/_avatar.html" %}
   <h2>Let's move and collect stars!</h2>
   <p>
     MovePal is a playful movement-practice prototype created for
@@ -20,9 +20,9 @@ block content %}
 </section>
 
 <section class="card" data-screen="activity" hidden>
-  {% include "partials/_avatar.html" %}
+  {% set avatar_uid = 'activity' %} {% include "partials/_avatar.html" %}
   <h2>Pick your favorite move</h2>
-  <p>Tap a move, then choose how you want to play.</p>
+  <p>Choose a move, then choose how you want to play.</p>
   <div class="activity-list">
     <button
       type="button"
@@ -59,23 +59,41 @@ block content %}
   <p>Camera frames are processed temporarily and are not stored by default.</p>
   <p>Please click on Stop Camera or Reset to stop recording.</p>
   <button type="button" id="stop-camera-btn">Stop Camera</button>
-  <button type="button" data-goto="feedback">Simulate attempt</button>
+  <button type="button" data-goto="feedback" data-feedback="success">
+    Simulate success
+  </button>
+  <button type="button" data-goto="feedback" data-feedback="retry">
+    Simulate retry
+  </button>
 </section>
 
 <section class="card" data-screen="camera-fallback" hidden>
   <h2>Practice with demo mode</h2>
   <p id="fallback-reason" role="status" aria-live="polite"></p>
-  <button type="button" data-goto="feedback">Finish attempt</button>
+  <button type="button" data-goto="feedback" data-feedback="success">
+    Simulate success
+  </button>
+  <button type="button" data-goto="feedback" data-feedback="retry">
+    Simulate retry
+  </button>
 </section>
 
-<section class="card" data-screen="feedback" hidden>
-  <h2 id="feedback-message">Awesome job! You've earned ⭐ 1 Star!</h2>
+<section class="card feedback-card" data-screen="feedback" hidden>
+  <div class="feedback-header">
+    <span id="feedback-status" class="status-badge" aria-live="polite"
+      >Success</span
+    >
+    <h2 id="feedback-message">Awesome job! You've earned ⭐ 1 Star!</h2>
+  </div>
+  <p id="feedback-detail">
+    This is a placeholder success result; real evaluation arrives in MP-014.
+  </p>
   <button type="button" data-goto="activity">Try another move</button>
   <button type="button" data-goto="summary">See my total stars</button>
 </section>
 
 <section class="card" data-screen="summary" hidden>
-  {% include "partials/_avatar.html" %}
+  {% set avatar_uid = 'summary' %} {% include "partials/_avatar.html" %}
   <h2>Session Complete!</h2>
   <p id="summary-text">
     You successfully completed your movements today and earned a total of ⭐
