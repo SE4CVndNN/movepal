@@ -31,11 +31,23 @@ block content %}
     >
       Raise both arms
     </button>
-    <button type="button" data-activity="side_reach" data-goto="camera-choice">
-      Reach to the side
+    <button
+      type="button"
+      data-activity="side_reach"
+      data-goto="camera-choice"
+      disabled
+      title="Coming soon: not part of this vertical slice yet"
+    >
+      Reach to the side (coming soon)
     </button>
-    <button type="button" data-activity="knee_lift" data-goto="camera-choice">
-      Knee lift
+    <button
+      type="button"
+      data-activity="knee_lift"
+      data-goto="camera-choice"
+      disabled
+      title="Coming soon: not part of this vertical slice yet"
+    >
+      Knee lift (coming soon)
     </button>
   </div>
 </section>
@@ -70,12 +82,8 @@ block content %}
 <section class="card" data-screen="camera-fallback" hidden>
   <h2>Practice with demo mode</h2>
   <p id="fallback-reason" role="status" aria-live="polite"></p>
-  <button type="button" data-goto="feedback" data-feedback="success">
-    Simulate success
-  </button>
-  <button type="button" data-goto="feedback" data-feedback="retry">
-    Simulate retry
-  </button>
+  <button type="button" id="simulate-fallback-btn">Simulate attempt</button>
+  <p id="fallback-error" role="status" aria-live="polite"></p>
 </section>
 
 <section class="card feedback-card" data-screen="feedback" hidden>
