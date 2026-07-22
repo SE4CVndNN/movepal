@@ -1,5 +1,6 @@
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont
+
+from PIL import Image, ImageDraw
 
 BG = (254, 246, 230)
 LIMB = (58, 155, 168)
@@ -71,7 +72,7 @@ def draw_pose(pose):
     draw_limb(draw, pose["head"], neck_bottom)
 
     for shoulder, elbow, wrist in zip(
-        pose["shoulders"], pose["elbows"], pose["wrists"]
+        pose["shoulders"], pose["elbows"], pose["wrists"], strict=True
     ):
         draw_limb(draw, shoulder, elbow)
         draw_limb(draw, elbow, wrist)
@@ -84,7 +85,9 @@ def draw_pose(pose):
     draw_limb(draw, left_hip, right_hip)
     draw_limb(draw, neck_bottom, hip_center)
 
-    for hip, knee, ankle in zip(pose["hips"], pose["knees"], pose["ankles"]):
+    for hip, knee, ankle in zip(
+        pose["hips"], pose["knees"], pose["ankles"], strict=True
+    ):
         draw_limb(draw, hip, knee)
         draw_limb(draw, knee, ankle)
         draw_joint(draw, hip)

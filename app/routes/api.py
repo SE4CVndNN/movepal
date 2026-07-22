@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, current_app, jsonify, request, send_from_directory
 
 from app.services.feedback import FEEDBACK_MESSAGES
 from app.services.frame_processing import process_frame
@@ -68,6 +68,11 @@ def frame():
     result: PoseResult = process_frame(file, adapter)
 
     return _map_pose_result(result)
+
+
+@api_bp.get("/samples/<path:filename>")
+def sample_asset(filename):
+    return send_from_directory(current_app.config["SAMPLE_DATA_DIR"], filename)
 
 
 def _movement_request_payload() -> dict[str, Any]:

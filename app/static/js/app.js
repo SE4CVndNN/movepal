@@ -53,7 +53,7 @@ function updateFeedbackStatus(mode, detailText) {
       detailText ??
       (mode === "retry"
         ? "Try again with a little more space and a stronger pose."
-        : "This is a placeholder success result; real evaluation arrives in MP-014.");
+        : "A deterministic fallback result was returned for this demo move.");
   }
 }
 
@@ -124,39 +124,69 @@ const cameraStatus = document.querySelector("#camera-status");
 const preview = document.querySelector("#camera-preview");
 const fallbackReason = document.querySelector("#fallback-reason");
 
-document.querySelector("#use-webcam-btn")?.addEventListener("click", async () => {
-  cameraStatus.textContent = "Requesting camera access…";
-  try {
-    activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
-    preview.srcObject = activeStream;
-    cameraStatus.textContent = "Webcam connected successfully! Prepare to move.";
-    showScreen("camera-live");
-  } catch (error) {
-    let reason;
-    if (error.name === "NotAllowedError") {
-      reason =
-        "Camera access was denied. Please enable camera permissions in your browser settings to continue.";
-    } else {
-      reason =
-        "No camera was detected. Please connect a webcam or use the local demo sample.";
+function isSecureContextForCamera() {
+  return (
+    window.isSecureContext ||
+    location.hostname === "localhost" ||
+    location.hostname === "127.0.0.1"
+  );
+}
+
+function isCameraApiSupported() {
+  return Boolean(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+}
+
+document
+  .querySelector("#use-webcam-btn")
+  ?.addEventListener("click", async () => {
+    if (!isSecureContextForCamera()) {
+      if (fallbackReason)
+        fallbackReason.textContent =
+          "Camera access requires a secure connection (HTTPS). Please use the local demo sample instead.";
+      showScreen("camera-fallback");
+      return;
     }
-    if (fallbackReason) fallbackReason.textContent = reason;
-    showScreen("camera-fallback");
-  }
-});
+
+    if (!isCameraApiSupported()) {
+      if (fallbackReason)
+        fallbackReason.textContent =
+          "This browser does not support camera access. Please use the local demo sample instead.";
+      showScreen("camera-fallback");
+      return;
+    }
+
+    cameraStatus.textContent = "Requesting camera access…";
+    try {
+      activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      preview.srcObject = activeStream;
+      cameraStatus.textContent =
+        "Webcam connected successfully! Prepare to move.";
+
+      activeStream.getVideoTracks()[0].addEventListener("ended", () => {
+        if (fallbackReason)
+          fallbackReason.textContent =
+            "The camera stopped unexpectedly. Please use the local demo sample instead.";
+        showScreen("camera-fallback");
+      });
+
+      showScreen("camera-live");
+    } catch (error) {
+      let reason;
+      if (error.name === "NotAllowedError") {
+        reason =
+          "Camera access was denied. Please enable camera permissions in your browser settings to continue.";
+      } else {
+        reason =
+          "No camera was detected. Please connect a webcam or use the local demo sample.";
+      }
+      if (fallbackReason) fallbackReason.textContent = reason;
+      showScreen("camera-fallback");
+    }
+  });
 
 document.querySelector("#use-fallback-btn")?.addEventListener("click", () => {
-  if (fallbackReason) {
-    fallbackReason.textContent = "Using local demo feed. No camera access required.";
-  }
-  showScreen("camera-fallback");
+  showScreen("sample-picker");
 });
-
-function stopCamera() {
-  activeStream?.getTracks().forEach((track) => track.stop());
-  activeStream = null;
-  if (preview) preview.srcObject = null;
-}
 
 document.querySelector("#stop-camera-btn")?.addEventListener("click", () => {
   stopCamera();
@@ -166,61 +196,230 @@ document.querySelector("#stop-camera-btn")?.addEventListener("click", () => {
 // Safety net: stop the camera if the user navigates away without clicking "Stop".
 window.addEventListener("beforeunload", stopCamera);
 
-// --- MP-014 vertical slice: fixture -> /api/movement -> friendly feedback ---
-// Only raise_both_arms has a rule and fixture wired up in this slice; the
-// activity buttons for the other moves are disabled in the template.
+const MAX_CAPTURE_WIDTH = 640;
+const MAX_CAPTURE_HEIGHT = 480;
+let requestInFlight = false;
+let captureIntervalId = null;
+
+const captureFrameButton = document.querySelector("#capture-frame-btn");
+const sampleChoiceButtons = document.querySelectorAll(".sample-choice");
+const fallbackError = document.querySelector("#fallback-error");
+
 const SUPPORTED_FALLBACK_FIXTURES = {
   raise_both_arms: "synthetic_raise_arms_positive_001",
 };
 
-let selectedActivity = null;
-
-document.querySelectorAll("[data-activity]").forEach((button) => {
-  button.addEventListener("click", () => {
-    selectedActivity = button.dataset.activity;
+function setBusyRequest(isBusy) {
+  requestInFlight = isBusy;
+  if (captureFrameButton) captureFrameButton.disabled = isBusy;
+  sampleChoiceButtons.forEach((button) => {
+    if (!button.disabled) button.disabled = isBusy;
   });
-});
+}
 
-const fallbackError = document.querySelector("#fallback-error");
+function getCaptureDimensions(sourceWidth, sourceHeight) {
+  const sourceRatio = sourceWidth / sourceHeight;
+  let width = sourceWidth;
+  let height = sourceHeight;
 
-document.querySelector("#simulate-fallback-btn")?.addEventListener("click", async () => {
-  const fixtureId = SUPPORTED_FALLBACK_FIXTURES[selectedActivity];
-  if (!fixtureId) {
-    if (fallbackError) {
-      fallbackError.textContent =
-        "This move isn't part of the demo yet. Please choose Raise both arms.";
-    }
+  if (width > MAX_CAPTURE_WIDTH) {
+    width = MAX_CAPTURE_WIDTH;
+    height = Math.round(width / sourceRatio);
+  }
+  if (height > MAX_CAPTURE_HEIGHT) {
+    height = MAX_CAPTURE_HEIGHT;
+    width = Math.round(height * sourceRatio);
+  }
+
+  return { width, height };
+}
+
+function startPeriodicCapture() {
+  stopPeriodicCapture();
+  captureIntervalId = window.setInterval(() => {
+    if (!requestInFlight) captureFrame();
+  }, 8000);
+}
+
+function stopPeriodicCapture() {
+  if (captureIntervalId != null) {
+    window.clearInterval(captureIntervalId);
+    captureIntervalId = null;
+  }
+}
+
+function stopCamera() {
+  stopPeriodicCapture();
+  activeStream?.getTracks().forEach((track) => track.stop());
+  activeStream = null;
+  if (preview) preview.srcObject = null;
+}
+
+function showCameraFallback(message) {
+  if (fallbackReason) fallbackReason.textContent = message;
+  stopPeriodicCapture();
+  stopCamera();
+  showScreen("camera-fallback");
+}
+
+function captureFrame() {
+  const video = document.querySelector("#camera-preview");
+  const canvas = document.querySelector("#capture-canvas");
+  const statusEl = document.querySelector("#upload-status");
+  if (!video || !canvas) return;
+
+  if (!video.videoWidth || !video.videoHeight) {
+    if (statusEl) statusEl.textContent = "Waiting for video preview...";
     return;
   }
-  if (fallbackError) fallbackError.textContent = "Checking your pose…";
+
+  const { width, height } = getCaptureDimensions(
+    video.videoWidth,
+    video.videoHeight,
+  );
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext("2d").drawImage(video, 0, 0, width, height);
+  canvas.toBlob(
+    (blob) => {
+      if (blob) uploadFrame(blob, "frame.jpg");
+    },
+    "image/jpeg",
+    0.85,
+  );
+}
+
+async function uploadFrame(blob, filename) {
+  if (requestInFlight) return null;
+  setBusyRequest(true);
+
+  const statusEl =
+    document.querySelector("#upload-status") ||
+    document.querySelector("#sample-upload-status");
+  if (statusEl) statusEl.textContent = "Sending frame…";
+
+  const formData = new FormData();
+  formData.append("image", blob, filename);
+
   try {
-    const response = await fetch("/api/movement", {
+    const response = await fetch("/api/frame", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        movement: selectedActivity,
-        fixture_id: fixtureId,
-      }),
+      body: formData,
     });
     const payload = await response.json();
+
     if (!response.ok) {
-      throw new Error(payload.message || "The movement could not be evaluated.");
+      showCameraFallback(
+        payload.message ||
+          "The server could not process the frame. Please use the no-camera fallback.",
+      );
+      return null;
     }
-    const mode = payload.completed ? "success" : "retry";
-    if (feedbackMessage) feedbackMessage.textContent = payload.feedback;
-    updateFeedbackStatus(
-      mode,
-      mode === "success"
-        ? "This result came from a real, deterministic movement fixture."
-        : undefined,
+
+    const messages = {
+      success:
+        "Pose detected. Movement evaluation is separate from pose capture.",
+      no_pose: "No pose detected in that frame — try again.",
+      low_visibility: "Pose visibility was too low — try again.",
+    };
+    if (statusEl)
+      statusEl.textContent = messages[payload.pose_status] || payload.message;
+
+    if (payload.pose_status === "success") {
+      if (fallbackReason) {
+        fallbackReason.textContent =
+          "Pose detected. The approved fallback path is still the best way to complete the demo without a camera.";
+      }
+    }
+
+    return payload;
+  } catch (_error) {
+    showCameraFallback(
+      "Could not reach the server. Please use the no-camera fallback.",
     );
-    if (payload.completed && payload.stars > 0) addStars(payload.stars);
-    if (fallbackError) fallbackError.textContent = "";
-    showScreen("feedback");
-    setAppState(mode);
-  } catch (error) {
-    if (fallbackError) {
-      fallbackError.textContent = "The application could not be reached.";
-    }
+    return null;
+  } finally {
+    setBusyRequest(false);
   }
+}
+
+document.querySelector("#capture-frame-btn")?.addEventListener("click", () => {
+  const video = document.querySelector("#camera-preview");
+  const canvas = document.querySelector("#capture-canvas");
+  if (!video || !canvas) return;
+
+  const { width, height } = getCaptureDimensions(
+    video.videoWidth,
+    video.videoHeight,
+  );
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext("2d").drawImage(video, 0, 0, width, height);
+  canvas.toBlob(
+    (blob) => {
+      if (blob) uploadFrame(blob, "frame.jpg");
+    },
+    "image/jpeg",
+    0.85,
+  );
+});
+
+document.querySelectorAll(".sample-choice").forEach((button) => {
+  button.addEventListener("click", async () => {
+    const activity = button.dataset.activity;
+    const statusEl = document.querySelector("#sample-upload-status");
+    if (!activity) return;
+
+    if (button.disabled) {
+      if (fallbackError) {
+        fallbackError.textContent =
+          "This move is not available in the current fallback demo. Please choose Raise both arms.";
+      }
+      return;
+    }
+
+    const fixtureId = SUPPORTED_FALLBACK_FIXTURES[activity];
+    if (!fixtureId) {
+      if (fallbackError) {
+        fallbackError.textContent =
+          "This move is not available in the current fallback demo. Please choose Raise both arms.";
+      }
+      return;
+    }
+
+    if (statusEl) statusEl.textContent = "Running fallback demo…";
+    if (fallbackError) fallbackError.textContent = "";
+
+    try {
+      const response = await fetch("/api/movement", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ movement: activity, fixture_id: fixtureId }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          payload.message || "The movement could not be evaluated.",
+        );
+      }
+
+      const mode = payload.completed ? "success" : "retry";
+      if (feedbackMessage) feedbackMessage.textContent = payload.feedback;
+      updateFeedbackStatus(
+        mode,
+        mode === "success"
+          ? "This result came from a deterministic movement fixture."
+          : undefined,
+      );
+      if (payload.completed && payload.stars > 0) addStars(payload.stars);
+      showScreen("feedback");
+      setAppState(mode);
+    } catch (_error) {
+      if (fallbackError) {
+        fallbackError.textContent =
+          "The fallback demo could not be reached. Please try again later.";
+      }
+    }
+  });
 });

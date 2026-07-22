@@ -65,12 +65,47 @@ block content %}
   <p id="camera-status" role="status" aria-live="polite"></p>
 </section>
 
+<section class="card" data-screen="sample-picker" hidden>
+  <h2>Pick a no-camera fallback</h2>
+  <p>
+    The current demo supports a deterministic Raise Both Arms fallback path
+    without a webcam. Side Reach and Knee Lift are not available yet.
+  </p>
+  <div class="sample-list">
+    <button type="button" class="sample-choice" data-activity="raise_both_arms">
+      Raise both arms
+    </button>
+    <button
+      type="button"
+      class="sample-choice"
+      data-activity="side_reach"
+      disabled
+      title="Fallback not available yet for Side Reach"
+    >
+      Reach to the side (coming soon)
+    </button>
+    <button
+      type="button"
+      class="sample-choice"
+      data-activity="knee_lift"
+      disabled
+      title="Fallback not available yet for Knee Lift"
+    >
+      Knee lift (coming soon)
+    </button>
+  </div>
+  <p id="sample-upload-status" role="status" aria-live="polite"></p>
+</section>
+
 <section class="card" data-screen="camera-live" hidden>
   <h2>Live camera</h2>
   <video id="camera-preview" autoplay playsinline muted></video>
+  <canvas id="capture-canvas" hidden></canvas>
   <p>Camera frames are processed temporarily and are not stored by default.</p>
   <p>Please click on Stop Camera or Reset to stop recording.</p>
   <button type="button" id="stop-camera-btn">Stop Camera</button>
+  <button type="button" id="capture-frame-btn">Capture Frame</button>
+  <p id="upload-status" role="status" aria-live="polite"></p>
   <button type="button" data-goto="feedback" data-feedback="success">
     Simulate success
   </button>
@@ -82,7 +117,12 @@ block content %}
 <section class="card" data-screen="camera-fallback" hidden>
   <h2>Practice with demo mode</h2>
   <p id="fallback-reason" role="status" aria-live="polite"></p>
-  <button type="button" id="simulate-fallback-btn">Simulate attempt</button>
+  <div class="fallback-actions">
+    <button type="button" data-goto="sample-picker">
+      Choose fallback movement
+    </button>
+    <button type="button" data-goto="camera-choice">Change input method</button>
+  </div>
   <p id="fallback-error" role="status" aria-live="polite"></p>
 </section>
 
@@ -94,7 +134,8 @@ block content %}
     <h2 id="feedback-message">Awesome job! You've earned ⭐ 1 Star!</h2>
   </div>
   <p id="feedback-detail">
-    This is a placeholder success result; real evaluation arrives in MP-014.
+    Pose detection and movement evaluation are separate. This screen shows the
+    current fallback result for the selected move.
   </p>
   <button type="button" data-goto="activity">Try another move</button>
   <button type="button" data-goto="summary">See my total stars</button>
