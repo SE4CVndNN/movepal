@@ -14,7 +14,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from app.services.pose_tracking import Landmark, landmark_distance
+from app.services.geometry import (
+    Side,
+    horizontal_outward_offset,
+    shoulder_width,
+    side_landmark_name,
+    vertical_offset,
+)
+from app.services.pose_tracking import Landmark
 
 DEFAULT_MINIMUM_VISIBILITY = 0.5
 """Per-landmark visibility cutoff for required raise-both-arms landmarks.
@@ -124,8 +131,8 @@ def evaluate_raise_both_arms(
     left_wrist = landmarks["left_wrist"]
     right_wrist = landmarks["right_wrist"]
 
-    shoulder_width = landmark_distance(left_shoulder, right_shoulder)
-    if shoulder_width <= 0:
+    width = shoulder_width(left_shoulder, right_shoulder)
+    if width <= 0:
         return MovementResult(
             movement="raise_both_arms",
             completed=False,
@@ -133,7 +140,7 @@ def evaluate_raise_both_arms(
             feedback_code="full_body_missing",
         )
 
-    margin = vertical_margin_ratio * shoulder_width
+    margin = vertical_margin_ratio * width
     left_progress = _raise_progress(left_wrist, left_shoulder, margin)
     right_progress = _raise_progress(right_wrist, right_shoulder, margin)
     confidence = min(1.0, (left_progress + right_progress) / 2)
@@ -157,6 +164,131 @@ def evaluate_raise_both_arms(
 
     return MovementResult(
         movement="raise_both_arms",
+        completed=True,
+        confidence=confidence,
+        feedback_code="great",
+    )
+
+
+DEFAULT_REACH_RATIO = 0.85
+"""Fraction of shoulder width the requested wrist must clear outward.
+
+Matches the acceptance matrix's "wrist is outward by >= 0.85 *
+shoulder_width" progress measurement (docs/movement_specification.md
+section 12).
+"""
+
+DEFAULT_REACH_VERTICAL_RATIO = 0.50
+"""Fraction of shoulder width the wrist may drift vertically from its
+shoulder while still counting as a side reach rather than a raised or
+dropped arm. Matches the acceptance matrix's "vertical offset is <= 0.50
+* shoulder_width" progress measurement.
+"""
+
+SIDE_REACH_COMMON_REQUIRED_LANDMARKS: tuple[str, ...] = (
+    "left_shoulder",
+    "right_shoulder",
+    "left_hip",
+    "right_hip",
+)
+"""Landmarks every side-reach evaluation needs regardless of requested side.
+
+The requested side's own wrist is required in addition to these (see
+:func:`evaluate_side_reach`). The opposite wrist and both elbows are read
+by neither this rule nor the acceptance-matrix formula, mirroring the
+raise-both-arms elbow exclusion recorded above and in the "MP-014
+decisions" note in movement_specification.md: requiring them would fail
+the checked-in side_reach_fixtures.json positive/wrong-side cases, which
+omit them, for the wrong reason (missing landmark instead of insufficient
+reach).
+"""
+
+
+def evaluate_side_reach(
+    landmarks: dict[str, Landmark],
+    requested_side: Side,
+    *,
+    consecutive_samples: int | None = None,
+    minimum_visibility: float = DEFAULT_MINIMUM_VISIBILITY,
+    reach_ratio: float = DEFAULT_REACH_RATIO,
+    vertical_ratio: float = DEFAULT_REACH_VERTICAL_RATIO,
+    required_consecutive_samples: int = DEFAULT_REQUIRED_CONSECUTIVE_SAMPLES,
+) -> MovementResult:
+    """Evaluate a side-reach movement for one requested anatomical side.
+
+    ``requested_side`` is the user's own side, never the mirrored
+    preview's screen side (docs/movement_specification.md section 2).
+    Only the requested side's own shoulder/wrist pair is read, so an
+    opposite-arm reach can never satisfy the request regardless of how
+    far it extends.
+
+    ``consecutive_samples`` follows the same per-request hold contract as
+    :func:`evaluate_raise_both_arms`: omitting it assumes the hold
+    requirement is already satisfied, so a single satisfying sample
+    succeeds immediately; a caller exercising ``hold`` must pass a lower
+    count explicitly.
+
+    Follows docs/movement_specification.md section 3's evaluation order:
+    required landmarks, then visibility, then framing/scale, then the
+    movement condition, then hold, then the final result.
+    """
+    if consecutive_samples is None:
+        consecutive_samples = required_consecutive_samples
+
+    feedback_code = f"reach_{requested_side}"
+    requested_wrist_name = side_landmark_name(requested_side, "wrist")
+    required = SIDE_REACH_COMMON_REQUIRED_LANDMARKS + (requested_wrist_name,)
+
+    for name in required:
+        landmark = landmarks.get(name)
+        if landmark is None or landmark.visibility < minimum_visibility:
+            return MovementResult(
+                movement="side_reach",
+                completed=False,
+                confidence=0.0,
+                feedback_code="full_body_missing",
+            )
+
+    left_shoulder = landmarks["left_shoulder"]
+    right_shoulder = landmarks["right_shoulder"]
+    width = shoulder_width(left_shoulder, right_shoulder)
+    if width <= 0:
+        return MovementResult(
+            movement="side_reach",
+            completed=False,
+            confidence=0.0,
+            feedback_code="full_body_missing",
+        )
+
+    requested_shoulder = left_shoulder if requested_side == "left" else right_shoulder
+    wrist = landmarks[requested_wrist_name]
+
+    outward = horizontal_outward_offset(wrist, requested_shoulder, requested_side)
+    vertical = vertical_offset(wrist, requested_shoulder)
+    vertical_ok = vertical <= vertical_ratio * width
+    confidence = (
+        min(1.0, max(0.0, outward) / (reach_ratio * width)) if reach_ratio > 0 else 0.0
+    )
+    reached = vertical_ok and outward >= reach_ratio * width
+
+    if not reached:
+        return MovementResult(
+            movement="side_reach",
+            completed=False,
+            confidence=confidence,
+            feedback_code=feedback_code,
+        )
+
+    if consecutive_samples < required_consecutive_samples:
+        return MovementResult(
+            movement="side_reach",
+            completed=False,
+            confidence=confidence,
+            feedback_code="hold",
+        )
+
+    return MovementResult(
+        movement="side_reach",
         completed=True,
         confidence=confidence,
         feedback_code="great",
@@ -196,3 +328,14 @@ def load_raise_both_arms_fixture(fixture_id: str) -> dict[str, Any]:
         if fixture["fixture_id"] == fixture_id:
             return fixture
     raise KeyError(f"No raise_both_arms fixture named {fixture_id!r}")
+
+
+def load_side_reach_fixture(fixture_id: str) -> dict[str, Any]:
+    """Load one named fixture from side_reach_fixtures.json.
+
+    Raises KeyError if no fixture with that id exists.
+    """
+    for fixture in load_movement_fixtures("side_reach_fixtures.json"):
+        if fixture["fixture_id"] == fixture_id:
+            return fixture
+    raise KeyError(f"No side_reach fixture named {fixture_id!r}")
