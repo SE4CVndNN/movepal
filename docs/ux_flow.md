@@ -1,4 +1,4 @@
-# MovePal UX Flow (MP-006 / MP-011)
+# MovePal UX Flow (MP-006 / MP-011 / MP-012)
 
 ## Screen sequence
 
@@ -11,7 +11,9 @@ start → activity choice → camera choice → (live camera | fallback sample) 
 | User clicks "Use Live Webcam" and grants permission | camera-live     | "Webcam connected successfully! Prepare to move."                                                  |
 | User clicks "Use Live Webcam" and denies permission | camera-fallback | "Camera access was denied. Please enable camera permissions in your browser settings to continue." |
 | No camera device exists                             | camera-fallback | "No camera was detected. Please connect a webcam or use the local demo sample."                    |
-| User clicks "Use Local Demo Sample" directly        | camera-fallback | "Using local demo feed. No camera access required."                                                |
+| Browser requires secure context or unsupported API  | camera-fallback | "Camera access requires a secure connection (HTTPS). Please use the local demo sample instead."    |
+| User clicks "Use Local Demo Sample" directly        | sample-picker   | "Using local demo feed. No camera access required."                                                |
+| Sample selected for upload                          | camera-fallback | sample is fetched, sent to `/api/frame`, and status is shown; success transitions to feedback      |
 | User clicks "Stop Camera"                           | camera-choice   | (camera stream stopped, tracks released)                                                           |
 
 ## Game state model (MP-011)
@@ -57,6 +59,12 @@ is connected to the actual game flow.
 
 ## Decisions and fixes made during implementation
 
+- Camera permission is requested only after the user clicks "Use Live Webcam".
+- The live preview uses `navigator.mediaDevices.getUserMedia`, then draws bounded frames to a hidden canvas for upload.
+- Every uploaded frame is sent to `/api/frame` in a `FormData` request with the field name `image`.
+- Overlapping uploads are prevented with a single `requestInFlight` guard and button disabling.
+- A dedicated fallback sample picker was added so the app can run fully without a live camera.
+- A browser security-context failure now shows a clear message and falls back to sample mode.
 - Initially wrote the permission-denied message into `#camera-status` on the camera-choice screen, but that screen gets hidden immediately when switching to the fallback screen, so the message was never visible. Fixed by adding a dedicated `#fallback-reason` element on the fallback screen itself.
 - Visual/child-friendly design (MP-011) builds directly on the MP-006 flow rather than replacing it — same screens, same state machine, restyled and extended.
 - Kept core flow wording aligned with `docs/content_baseline.md` for input selection, live-camera guidance, and session summary copy. Slightly friendlier start-screen wording remains only in the welcome header, to preserve a lightweight child-friendly tone while retaining the approved disclaimer text.
@@ -65,8 +73,8 @@ is connected to the actual game flow.
 
 ## Known limitations / follow-up
 
-- No real pose detection — "Simulate attempt" always shows a placeholder success message; MP-014 replaces this with real evaluation.
-- No captured frame is saved or sent anywhere; MP-012 will add the real fallback sample/upload wiring.
+- Real frame capture is implemented and sent to `/api/frame`. The backend may still return `no_pose` or `low_visibility` depending on the image content.
 - Score increment is a placeholder, not tied to real scoring logic yet.
+- Feedback is still a simplified placeholder pending MP-014.
 - Only manually tested in Chrome on Windows — cross-browser testing is out of scope for this spike.
 - The "no camera detected" (`NotFoundError`) path was verified by code review only — no hardware available to test without a camera.
