@@ -30,13 +30,15 @@ function updateScoreDisplays() {
 
 function updateFeedbackMessage(amount, mode) {
   if (feedbackMessage) {
-    const totalLabel = totalStars === 1 ? "1 Star" : `${totalStars} Stars`;
-    const attemptLabel = amount === 1 ? "1 Star" : `${amount} Stars`;
     if (mode === "retry") {
       feedbackMessage.textContent =
         "Keep going! Adjust your position and try that movement again.";
     } else {
-      feedbackMessage.textContent = `Awesome job! You earned ⭐ ${attemptLabel} this round. Your total is ${totalLabel}.`;
+      if (amount === 1) {
+        feedbackMessage.textContent = "Awesome job! You've earned ⭐ 1 Star!";
+      } else {
+        feedbackMessage.textContent = `Awesome job! You've earned ⭐ ${amount} Stars!`;
+      }
     }
   }
 }
@@ -200,7 +202,7 @@ document
       showScreen("camera-live");
       startPeriodicCapture();
       cameraStatus.textContent =
-        "Webcam connected successfully! Capturing a frame every 8 seconds.";
+        "Webcam connected successfully! Prepare to move.";
     } catch (error) {
       let reason;
       if (error.name === "NotAllowedError") {
@@ -289,14 +291,29 @@ function stopCamera() {
 function showCameraFallback(message) {
   if (fallbackReason) fallbackReason.textContent = message;
   stopPeriodicCapture();
-  stopCamera();
-  showScreen("camera-fallback");
+}
+
+function getCurrentStatusElement() {
+  const sampleStatus = document.querySelector("#sample-upload-status");
+  const uploadStatus = document.querySelector("#upload-status");
+
+  const sampleScreen = sampleStatus?.closest("[data-screen]");
+  if (sampleStatus && sampleScreen && !sampleScreen.hidden) {
+    return sampleStatus;
+  }
+
+  const uploadScreen = uploadStatus?.closest("[data-screen]");
+  if (uploadStatus && uploadScreen && !uploadScreen.hidden) {
+    return uploadStatus;
+  }
+
+  return sampleStatus || uploadStatus;
 }
 
 function captureFrame() {
   const video = document.querySelector("#camera-preview");
   const canvas = document.querySelector("#capture-canvas");
-  const statusEl = document.querySelector("#upload-status");
+  const statusEl = getCurrentStatusElement();
   if (!video || !canvas) return;
 
   if (!video.videoWidth || !video.videoHeight) {
@@ -324,9 +341,7 @@ async function uploadFrame(blob, filename) {
   if (requestInFlight) return null;
   setBusyRequest(true);
 
-  const statusEl =
-    document.querySelector("#upload-status") ||
-    document.querySelector("#sample-upload-status");
+  const statusEl = getCurrentStatusElement();
   if (statusEl) statusEl.textContent = "Sending frame…";
 
   const formData = new FormData();
@@ -353,6 +368,7 @@ async function uploadFrame(blob, filename) {
       no_pose: "No pose detected in that frame — try again.",
       low_visibility: "Pose visibility was too low — try again.",
     };
+
     if (statusEl)
       statusEl.textContent = messages[payload.pose_status] || payload.message;
 
