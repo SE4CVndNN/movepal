@@ -105,9 +105,6 @@ python -m ruff check .
 python -m ruff format --check .
 python -m pytest
 python -m compileall app tests
-npm install
-npm run lint:js
-npm run format:check:js
 ```
 
 Run the application:
@@ -122,21 +119,6 @@ The health endpoint is:
 
 ```text
 GET /api/health
-```
-
-## JavaScript checks
-
-`npm install` installs the JavaScript toolchain.
-
-```bash
-npm run lint:js
-npm run format:check:js
-```
-
-To format the JavaScript file automatically:
-
-```bash
-npm run format:js
 ```
 
 A healthy starter application returns JSON equivalent to:
