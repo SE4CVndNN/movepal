@@ -25,7 +25,7 @@ def test_movement_success_fixture_returns_documented_schema(client):
         "confidence": 1.0,
         "feedback_code": "great",
         "feedback": "Awesome job! You've earned ⭐ 1 Star!",
-        "stars": 3,
+        "stars": 1,
         "visibility_ok": True,
         "retryable": True,
     }

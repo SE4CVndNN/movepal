@@ -1,33 +1,241 @@
 :root {
-  font-family: system-ui, sans-serif;
-  line-height: 1.5;
+  --color-bg: #fef6e4;
+  --color-surface: #ffffff;
+  --color-primary: #f582ae;
+  --color-primary-dark: #d1477e;
+  --color-secondary: #8bd3dd;
+  --color-secondary-dark: #3a9ba8;
+  --color-success: #4caf50;
+  --color-success-dark: #2e7d32;
+  --color-retry: #ff9f43;
+  --color-retry-dark: #c9700a;
+  --color-text: #172033;
+  --color-text-muted: #5c6478;
+  --color-focus: #172033;
+
+  --radius-lg: 1.5rem;
+  --radius-md: 1rem;
+  --radius-pill: 999px;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+
+  --font-body: "Comic Sans MS", "Segoe UI Rounded", system-ui, sans-serif;
+  --font-size-base: 1.125rem;
+  --font-size-lg: 1.5rem;
+  --font-size-xl: 2.25rem;
+
+  line-height: 1.6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background:
+    radial-gradient(
+      38rem 38rem at 100% 0%,
+      rgb(245 130 174 / 35%),
+      transparent 60%
+    ),
+    radial-gradient(
+      42rem 42rem at 0% 100%,
+      rgb(139 211 221 / 35%),
+      transparent 60%
+    ),
+    var(--color-bg);
 }
 
 body {
   margin: 0;
-  background: #f7f8fb;
-  color: #172033;
+  min-height: 100vh;
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
 }
 
 .site-header,
 main,
 footer {
-  max-width: 60rem;
+  max-width: 44rem;
   margin: 0 auto;
-  padding: 1rem;
+  padding: var(--space-md);
+}
+
+body {
+  background:
+    radial-gradient(
+      8rem 8rem at 20% 15%,
+      rgba(255, 233, 149, 0.55),
+      transparent 30%
+    ),
+    radial-gradient(
+      6rem 6rem at 80% 10%,
+      rgba(255, 154, 179, 0.45),
+      transparent 30%
+    ),
+    radial-gradient(
+      7rem 7rem at 15% 75%,
+      rgba(139, 211, 221, 0.35),
+      transparent 28%
+    ),
+    radial-gradient(
+      10rem 10rem at 85% 75%,
+      rgba(179, 213, 255, 0.35),
+      transparent 28%
+    ),
+    linear-gradient(180deg, #fff9f0 0%, #fef0f8 35%, #fff5fd 100%);
+}
+
+.site-header {
+  padding-top: var(--space-lg);
+}
+
+.site-header p {
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  margin-top: 0.25rem;
+}
+
+h1 {
+  font-size: calc(var(--font-size-xl) + 0.25rem);
+  color: var(--color-primary-dark);
+  margin: 0;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0.25rem 0.5rem rgba(245, 130, 174, 0.2);
+}
+
+h2 {
+  font-size: calc(var(--font-size-lg) + 0.1rem);
+  color: var(--color-primary-dark);
+  margin-top: 0;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+
+.score-badge {
+  background: var(--color-secondary);
+  color: var(--color-text);
+  font-size: var(--font-size-lg);
+  font-weight: bold;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-pill);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  box-shadow: 0 0.15rem 0.4rem rgb(0 0 0 / 10%);
 }
 
 .card {
-  background: white;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 10%);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl) var(--space-lg);
+  box-shadow: 0 0.75rem 2rem rgb(23 32 51 / 10%);
+  text-align: center;
+  margin-top: var(--space-lg);
+}
+
+.card p {
+  color: var(--color-text-muted);
+  max-width: 32rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.avatar {
+  width: 7rem;
+  height: 7rem;
+  display: block;
+  margin: 0 auto var(--space-md);
+  filter: drop-shadow(0 0.4rem 0.5rem rgb(23 32 51 / 15%));
 }
 
 button {
-  min-height: 2.75rem;
-  padding: 0.5rem 1rem;
   font: inherit;
+  font-size: 1.05rem;
+  font-weight: 800;
+  min-height: 4rem;
+  padding: 0.9rem 1.5rem;
+  margin: var(--space-sm) 0.4rem 0;
+  border: none;
+  border-radius: 1.5rem;
+  background: linear-gradient(135deg, #f7d9e4, #d7e9f4);
+  color: var(--color-text);
+  cursor: pointer;
+  box-shadow: 0 0.35rem 0.8rem rgb(209 71 126 / 30%);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease;
+}
+
+button:hover,
+button:active {
+  transform: translateY(-0.08rem) scale(1.025);
+  box-shadow: 0 0.55rem 1rem rgb(209 71 126 / 35%);
+  filter: brightness(1.02);
+}
+
+#use-fallback-btn,
+#stop-camera-btn {
+  background: linear-gradient(135deg, #d8eef2, #bde4eb);
+  color: var(--color-text);
+  box-shadow: 0 0.3rem 0.6rem rgb(58 155 168 / 30%);
+}
+
+.status-badge {
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-success {
+  background: rgba(76, 175, 80, 0.14);
+  color: var(--color-success-dark);
+}
+
+.status-retry {
+  background: rgba(255, 159, 67, 0.16);
+  color: var(--color-retry-dark);
+}
+
+.feedback-header {
+  display: grid;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.feedback-card {
+  text-align: left;
+}
+
+.feedback-card h2 {
+  margin-bottom: 0;
+}
+
+.feedback-card p {
+  color: var(--color-text-muted);
+}
+
+:focus-visible {
+  outline: 0.25rem solid var(--color-focus);
+  outline-offset: 0.25rem;
+  border-radius: var(--radius-md);
 }
 
 [hidden] {
@@ -37,19 +245,40 @@ button {
 .activity-list {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 0.75rem;
+  margin-top: var(--space-md);
 }
 
 #camera-preview {
   width: 100%;
   max-width: 24rem;
-  border-radius: 0.75rem;
+  border-radius: 1.5rem;
   background: black;
+  margin-top: var(--space-md);
+  box-shadow: 0 0.75rem 1.8rem rgb(23 32 51 / 12%);
 }
 
-/* keep touch targets comfortably large on narrow screens */
-@media (max-width: 30rem) {
+body[data-app-state="capturing"] .score-badge {
+  outline: 0.2rem solid var(--color-secondary-dark);
+}
+
+body[data-app-state="summary"] .score-badge {
+  outline: 0.2rem solid var(--color-success);
+}
+
+@media (max-width: 22.5rem) {
   button {
     width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .site-header,
+  main,
+  footer {
+    padding: var(--space-sm);
+  }
+  h1 {
+    font-size: 1.75rem;
   }
 }

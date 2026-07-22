@@ -17,7 +17,7 @@ from app.services.movement_rules import (
     load_raise_both_arms_fixture,
 )
 from app.services.pose_tracking import MediaPipePoseAdapter, PoseResult, PoseStatus
-from app.services.scoring import stars_for_confidence
+from app.services.scoring import stars_for_completion
 
 api_bp = Blueprint("api", __name__)
 
@@ -142,7 +142,7 @@ def _movement_response(result: MovementResult) -> dict[str, Any]:
         "confidence": result.confidence,
         "feedback_code": result.feedback_code,
         "feedback": FEEDBACK_MESSAGES.get(result.feedback_code, ""),
-        "stars": stars_for_confidence(result.confidence),
+        "stars": stars_for_completion(result.completed),
         "visibility_ok": result.feedback_code != "full_body_missing",
         "retryable": True,
     }

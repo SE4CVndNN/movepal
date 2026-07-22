@@ -171,7 +171,7 @@ model is touched.
     "confidence": 1.0,
     "feedback_code": "great",
     "feedback": "Awesome job! You've earned ⭐ 1 Star!",
-    "stars": 3,
+    "stars": 1,
     "visibility_ok": true,
     "retryable": true
   }
