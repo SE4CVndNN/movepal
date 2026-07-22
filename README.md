@@ -1,120 +1,312 @@
 # MovePal
 
-MovePal is an AI-powered movement analysis and exercise tracking platform. It leverages computer vision and landmark estimation to evaluate physical movement form in real-time, calculate scores, and provide immediate feedback and session summaries to users.
+MovePal is a software-engineering training project in the `SE4CVndNN` GitHub organization. The team is building a playful browser-based movement game in which an avatar demonstrates a simple movement, the user tries it in front of a webcam or with an included fallback sample, and the application returns friendly feedback, stars, and a short session summary.
 
----
+MovePal is a **prototype for playful movement practice**. It is not a medical device, diagnostic tool, clinical rehabilitation system, or replacement for a physiotherapist or another healthcare professional.
 
-## Key Features
+## Sprint 1 at a glance
 
-* **Real-time Pose Tracking:** Uses computer vision (MediaPipe) to track key body landmarks across video frames.
-* **Movement Rule Evaluation:** Calculates joint angles and checks form against pre-defined movement rules.
-* **Live Feedback Engine:** Provides instantaneous visual/audio feedback to help users correct their posture and technique.
-* **Scoring & Performance Metrics:** Evaluates rep quality, consistency, and overall form score.
-* **Session Summaries:** Generates post-workout reports and analytics.
+- **Kickoff:** Monday, 13 July 2026
+- **Sprint:** Tuesday, 14 July–Wednesday, 29 July 2026
+- **Development team:** Team B / `team-movepal`
+- **External QA team:** Team A / `team-aidsign`
+- **Release-candidate freeze:** Tuesday, 28 July 2026
+- **External manual QA:** Wednesday, 29 July 2026
+- **Default branch:** `master`
+- **Python:** 3.11
+- **Repository:** private, under a GitHub Free organization
 
----
+Instructor checkpoints are held on Monday and Wednesday at **20:00 Palestine time**, for at most one hour. The development team also holds a focused daily stand-up of approximately 10 minutes.
 
-## Tech Stack
+## Sprint Goal
 
-* **Backend:** Python (FastAPI / Flask)
-* **Computer Vision:** MediaPipe, OpenCV, NumPy
-* **Data & Storage:** JSON-based landmark fixtures & session stores
-* **Frontend:** HTML5, CSS3, JavaScript / Jinja2 Templates
+By the end of Sprint 1, MovePal should provide a demonstrable Flask web application with:
 
----
+1. a clear child-friendly game interface;
+2. webcam capture and a reliable sample-image or sample-video fallback;
+3. pretrained pose-landmark extraction;
+4. three supported movements:
+   - raise both arms;
+   - side reach to the left or right;
+   - knee lift or step in place;
+5. visibility and framing checks;
+6. rule-based movement evaluation;
+7. friendly, non-medical feedback;
+8. stars or points;
+9. a short session summary;
+10. invalid-input and low-confidence handling;
+11. automated tests, Ruff checks, and Windows/Linux CI;
+12. privacy, limitations, QA, and demonstration documentation.
 
-## Project Structure
+The full Product Backlog contains later improvements, but students must not begin post-Sprint, future, or optional work unless the Product Owner and instructor explicitly change the Sprint scope.
+
+## Current repository status
+
+The repository starts with a small Flask application factory, a landing page, a health endpoint, service contracts, starter tests, and CI configuration. Some modules are intentionally incomplete because they are assigned Sprint tasks.
+
+Do not assume a placeholder service is a finished feature. Read the assigned GitHub issue, its dependencies, and its acceptance criteria before modifying code.
+
+## Start here
+
+Every student should read these files before beginning an assigned issue:
+
+1. [`docs/student_start_here.md`](docs/student_start_here.md)
+2. [`docs/sprint_kickoff.md`](docs/sprint_kickoff.md)
+3. [`docs/sprint_execution_plan.md`](docs/sprint_execution_plan.md)
+4. [`docs/role_playbooks.md`](docs/role_playbooks.md)
+5. [`docs/project_scope.md`](docs/project_scope.md)
+6. [`docs/architecture.md`](docs/architecture.md)
+7. [`CONTRIBUTING.md`](CONTRIBUTING.md)
+8. [`docs/manual_pr_policy.md`](docs/manual_pr_policy.md)
+9. [`docs/privacy.md`](docs/privacy.md)
+10. [`docs/limitations.md`](docs/limitations.md)
+11. [`backlog/sprint_1_plan.md`](backlog/sprint_1_plan.md)
+12. the assigned GitHub issue and every dependency referenced by that issue.
+
+Useful planning reports:
+
+- [`backlog/assignment_report.csv`](backlog/assignment_report.csv)
+- [`backlog/workload_report.md`](backlog/workload_report.md)
+- [`backlog/dependency_report.md`](backlog/dependency_report.md)
+- [`backlog/blocked_task_report.md`](backlog/blocked_task_report.md)
+- [`backlog/review_assignment_report.md`](backlog/review_assignment_report.md)
+
+## Local setup
+
+### Windows PowerShell
+
+```powershell
+# From the repository root
+py -3.11 -m venv .venv
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements-dev.txt
+```
+
+### Linux or macOS
+
+```bash
+# From the repository root
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements-dev.txt
+```
+
+If `python3.11` is not available, install Python 3.11 before continuing. Do not silently use a different major/minor version without discussing compatibility with the Scrum Master.
+
+### Environment configuration (optional)
+
+The application runs with safe built-in defaults, so this step is optional for local development. Copy [`.env.example`](.env.example) to `.env` only if you want to override a default (secret key, upload size limit, debug mode):
+
+```bash
+cp .env.example .env
+```
+
+## Verify the environment
+
+Run all checks from the repository root:
+
+```bash
+python -m ruff check .
+python -m ruff format --check .
+python -m pytest
+python -m compileall app tests
+python -c "from app import create_app; assert create_app().name == 'app'"
+```
+
+This is the same sequence Windows and Linux CI run on every push and pull request to `master` (see `.github/workflows/ci.yml`).
+
+Run the application:
+
+```bash
+python run.py
+```
+
+Then open the address printed by Flask, normally `http://127.0.0.1:5000/`.
+
+### Pose model file (only needed for a live `/api/frame` request)
+
+`POST /api/frame` uses `MediaPipePoseAdapter`, which needs a downloaded
+MediaPipe Pose Landmarker `.task` model bundle on disk. This file is **not**
+committed to the repository (privacy/size — see
+[`docs/adr/002-pose-estimator.md`](docs/adr/002-pose-estimator.md)) and is
+ignored by `.gitignore`. Automated tests never need it: `pytest` runs entirely
+against the offline fixtures in `data/landmarks/`.
+
+To exercise a real frame locally, download the model once into the repository
+root (or any path, if you also set `POSE_MODEL_PATH`):
+
+```bash
+python -c "import urllib.request; urllib.request.urlretrieve(
+    'https://storage.googleapis.com/mediapipe-models/pose_landmarker/'
+    'pose_landmarker_lite/float16/latest/pose_landmarker_lite.task',
+    'pose_landmarker_lite.task')"
+```
+
+By default the app looks for `pose_landmarker_lite.task` next to `run.py`.
+Set the `POSE_MODEL_PATH` environment variable to point somewhere else
+instead. Never commit the downloaded file or any real captured frame.
+
+The health endpoint is:
 
 ```text
-movepal/
-├── app/
-│   ├── routes/
-│   │   ├── api.py            # REST API endpoints for pose data & scoring
-│   │   └── pages.py          # Frontend view routes
-│   ├── services/
-│   │   ├── pose_tracking.py  # MediaPipe landmark extraction logic
-│   │   ├── movement_rules.py # Angle calculations & pose verification
-│   │   ├── scoring.py        # Performance scoring algorithms
-│   │   ├── feedback.py       # Real-time feedback generator
-│   │   └── session_summary.py# Summary & analytics aggregator
-│   └── templates/            # HTML templates
-├── data/
-│   └── landmarks/            # Landmark JSON test fixtures
-├── backlog/                  # Task documentation & project backlog
-├── requirements.txt          # Python dependencies
-└── README.md                 # Project documentation
+GET /api/health
 ```
 
----
+A healthy starter application returns JSON equivalent to:
 
-## Installation & Local Setup
+```json
+{
+  "service": "movepal",
+  "status": "ok"
+}
+```
 
-### Prerequisites
-* Python 3.9+
-* pip package manager
-* Git
+## Repository structure
 
-### 1. Clone the Repository
+```text
+app/
+├── __init__.py              Flask application factory
+├── config.py                Portable configuration and upload limits
+├── routes/                  Thin HTML and JSON routes
+├── services/                Pose, movement, feedback, scoring, session logic
+├── templates/                Jinja HTML templates
+└── static/                   CSS, JavaScript, images, and movement assets
+
+data/
+├── samples/                 Small privacy-safe fallback samples
+├── schemas/                 Landmark and evaluation schemas
+└── landmarks/               Small derived fixtures; no raw private recordings
+
+tests/
+├── unit/                    Service-level deterministic tests
+├── integration/              Flask route and component-contract tests
+└── fixtures/                 Tiny checked-in test inputs
+
+docs/                        Product, architecture, privacy, data, QA, and demo guidance
+backlog/                     Authoritative machine-readable and readable planning data
+.github/                    Issue templates, PR template, and CI workflows
+```
+
+Use `pathlib.Path` for filesystem paths. Do not hard-code Windows drive letters or platform-specific separators in Python code.
+
+## Development workflow
+
+```text
+Assigned issue
+→ verify dependencies
+→ create a feature branch
+→ produce the practical first output
+→ implement and test
+→ open a draft pull request
+→ obtain independent review
+→ pass Windows and Linux CI
+→ resolve comments
+→ squash merge into master
+→ move the issue to Done
+```
+
+Example branch:
+
+```text
+mp-014-raise-arms-vertical-slice
+```
+
+Example PR title:
+
+```text
+MP-014: Add sample-to-feedback vertical slice
+```
+
+Follow [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`docs/manual_pr_policy.md`](docs/manual_pr_policy.md). Students must not push directly to `master`.
+
+## Design rules
+
+- Keep Flask routes thin.
+- Put pose, movement, scoring, feedback, and session logic in services.
+- Validate uploads before processing them.
+- Use allowed file types and configured size limits.
+- Do not log images, raw frames, personal information, or private file paths.
+- Use deterministic landmark fixtures in automated tests.
+- Do not require a real camera or a large model/data download in CI.
+- Return an explicit retry or low-confidence result instead of forcing success.
+- Keep feedback friendly and non-medical.
+- Update documentation when behavior or contracts change.
+
+## Data and privacy
+
+Sprint 1 requires no child data. Calibration or usability work may use consenting adult volunteers only after the instructor approves the collection procedure.
+
+Prefer storing derived landmarks rather than video. Keep raw recordings under private, ignored storage such as `data/private/` or `data/raw/`; never commit them, upload them to Actions, or attach them to issues.
+
+Read:
+
+- [`docs/privacy.md`](docs/privacy.md)
+- [`docs/dataset_card.md`](docs/dataset_card.md)
+- [`docs/collection_protocol.md`](docs/collection_protocol.md)
+- [`docs/annotation_guide.md`](docs/annotation_guide.md)
+- [`docs/consent_template.md`](docs/consent_template.md)
+
+## Movement implementation
+
+The movement rules are transparent game heuristics, not clinical measurements. Thresholds must be configurable, tested with positive/negative/borderline fixtures, and justified in the evaluation notes.
+
+Read [`docs/movement_specification.md`](docs/movement_specification.md) before implementing or reviewing movement logic.
+
+## External QA and final demonstration
+
+External QA is performed by `team-aidsign` on 29 July against one frozen release-candidate commit. QA members run manual sanity checks and open separate bug issues; they do not silently modify MovePal code.
+
+Read:
+
+- [`docs/qa_plan.md`](docs/qa_plan.md)
+- [`docs/qa_handoff.md`](docs/qa_handoff.md)
+- [`docs/demo_plan.md`](docs/demo_plan.md)
+
+## Common problems
+
+### PowerShell will not activate the virtual environment
+
+Use a process-only policy change:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+.\.venv\Scripts\Activate.ps1
+```
+
+This applies only to the current PowerShell session.
+
+### MediaPipe does not install
+
+Confirm that the active interpreter is Python 3.11:
+
 ```bash
-git clone https://github.com/your-org/movepal.git
-cd movepal
+python --version
+python -m pip --version
 ```
 
-### 2. Create and Activate a Virtual Environment
-* **Linux/macOS:**
-  ```bash
-  python3 -m venv venv
-  source venv/bin/activate
-  ```
-* **Windows:**
-  ```bash
-  python -m venv venv
-  .\venv\Scripts\activate
-  ```
+Delete and recreate the virtual environment if it was created with another Python version.
 
-### 3. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
+### The camera is unavailable or permission is denied
 
-### 4. Run the Application
-```bash
-python app/main.py
-```
-> Access the application in your browser at `http://localhost:8000` (or `[http://127.0.0.1:5000](http://127.0.0.1:5000)`).
+Do not block the Sprint on a specific device. Use the required fallback sample path once MP-012 is merged. Record the browser, operating system, and observed permission behavior in the issue or PR.
 
----
+### Tests work locally but fail in CI
 
-## Testing & Data Fixtures
+Check both Windows and Linux logs. Common causes include case-sensitive paths, hard-coded separators, files not committed to Git, current-working-directory assumptions, and tests that access real hardware.
 
-To run unit tests or evaluate landmark fixtures:
+### A dependency is not ready
 
-```bash
-pytest
-```
+Do not bypass it silently. Comment on the issue, move the item to `Blocked`, identify the missing output, and notify the Scrum Master. Continue another ready task only after coordination.
 
-Mock landmark data for testing movement rules can be found in `data/landmarks/`.
+## Administration scripts
 
----
+The owner/bootstrap scripts are for project administration. Students should not rerun them unless explicitly instructed:
 
-## Contributing Workflow
+- `scripts/bootstrap_org.ps1`
+- `scripts/prepare_repository.py`
+- `scripts/import_backlog.py`
 
-We follow a feature-branch / Pull Request workflow:
-
-1. Create a feature branch off `master`:
-   ```bash
-   git checkout -b feature/task-9-implementation
-   ```
-2. Commit your changes with clear messages.
-3. Keep your branch updated with `master`:
-   ```bash
-   git fetch origin
-   git merge origin/master
-   ```
-4. Push your branch and open a Pull Request (PR) for review.
-
----
-
-## License
-
-This project is developed for internal team use / educational purposes.
+The authoritative task descriptions are the GitHub issues and [`backlog/product_backlog.json`](backlog/product_backlog.json).
