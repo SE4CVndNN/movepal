@@ -119,10 +119,37 @@ document.querySelectorAll("[data-goto]").forEach((button) => {
 
 // --- camera / fallback probe ---
 let activeStream = null;
+let captureIntervalId = null;
 
 const cameraStatus = document.querySelector("#camera-status");
 const preview = document.querySelector("#camera-preview");
 const fallbackReason = document.querySelector("#fallback-reason");
+const captureFrameButton = document.querySelector("#capture-frame-btn");
+const sampleChoiceButtons = document.querySelectorAll(".sample-choice");
+
+function setBusyRequest(isBusy) {
+  requestInFlight = isBusy;
+  if (captureFrameButton) captureFrameButton.disabled = isBusy;
+  sampleChoiceButtons.forEach((button) => {
+    button.disabled = isBusy;
+  });
+}
+
+function startPeriodicCapture() {
+  stopPeriodicCapture();
+  captureIntervalId = window.setInterval(() => {
+    if (!requestInFlight) {
+      captureFrame();
+    }
+  }, 8000);
+}
+
+function stopPeriodicCapture() {
+  if (captureIntervalId != null) {
+    window.clearInterval(captureIntervalId);
+    captureIntervalId = null;
+  }
+}
 
 function isSecureContextForCamera() {
   return (
@@ -166,10 +193,14 @@ document
         if (fallbackReason)
           fallbackReason.textContent =
             "The camera stopped unexpectedly. Please use the local demo sample instead.";
+        stopCamera();
         showScreen("camera-fallback");
       });
 
       showScreen("camera-live");
+      startPeriodicCapture();
+      cameraStatus.textContent =
+        "Webcam connected successfully! Capturing a frame every 8 seconds.";
     } catch (error) {
       let reason;
       if (error.name === "NotAllowedError") {

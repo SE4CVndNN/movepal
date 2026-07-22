@@ -106,12 +106,18 @@ block content %}
   <button type="button" id="stop-camera-btn">Stop Camera</button>
   <button type="button" id="capture-frame-btn">Capture Frame</button>
   <p id="upload-status" role="status" aria-live="polite"></p>
-  <button type="button" data-goto="feedback" data-feedback="success">
-    Simulate success
-  </button>
-  <button type="button" data-goto="feedback" data-feedback="retry">
-    Simulate retry
-  </button>
+</section>
+
+<section class="card" data-screen="camera-fallback" hidden>
+  <h2>Practice with demo mode</h2>
+  <p id="fallback-reason" role="status" aria-live="polite"></p>
+  <div class="fallback-actions">
+    <button type="button" data-goto="sample-picker">
+      Choose fallback movement
+    </button>
+    <button type="button" data-goto="camera-choice">Change input method</button>
+  </div>
+  <p id="fallback-error" role="status" aria-live="polite"></p>
 </section>
 
 <section class="card" data-screen="camera-fallback" hidden>
