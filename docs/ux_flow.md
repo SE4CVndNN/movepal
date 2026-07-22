@@ -68,6 +68,5 @@ is connected to the actual game flow.
 - No real pose detection — "Simulate attempt" always shows a placeholder success message; MP-014 replaces this with real evaluation.
 - No captured frame is saved or sent anywhere; MP-012 will add the real fallback sample/upload wiring.
 - Score increment is a placeholder, not tied to real scoring logic yet.
-- Success/retry visual states aren't split yet — pending MP-014.
 - Only manually tested in Chrome on Windows — cross-browser testing is out of scope for this spike.
 - The "no camera detected" (`NotFoundError`) path was verified by code review only — no hardware available to test without a camera.
