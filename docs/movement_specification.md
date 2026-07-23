@@ -401,3 +401,13 @@ A frame that meets this static knee-position heuristic does not prove a
 dynamic step. This remains a prototype game heuristic, not a clinical
 assessment. API, UI, session, scoring, and full-game integration are outside
 MP-016.
+
+## 16. MP-017 decisions
+
+MP-017 implements the game-level feedback orchestration service (`app/services/feedback.py`) and idempotent scoring state machine (`app/services/scoring.py`). Key decisions and behaviors:
+
+- **Centralized Friendly Feedback Mapping (`FeedbackResult`):** `format_feedback` turns raw `MovementResult` evaluation outputs into structured `FeedbackResult` objects. Every feedback code (`great`, `raise_arms`, `reach_left`, `reach_right`, `lift_knee`, `hold`, `full_body_missing`, `move_back`, `try_again`) maps to approved non-medical wording per section 12 and `docs/content_baseline.md`.
+- **Visibility Precedence:** `full_body_missing` and framing codes (`move_back`) set `visibility_ok=False` and immediately return framing instructions before technique feedback.
+- **Idempotent Star Scoring (`ScoringSession`):** A single completed attempt awards 1 Star (`stars_awarded=1`, `total_stars += 1`). Replaying identical success frames on the same attempt returns `stars_awarded=0` while keeping `completed=True` and `total_stars` unchanged, preventing points farming.
+- **Attempt Lifecycle and Reset:** Calling `session.start_new_attempt()` or `session.reset_session()` clears the attempt completion state, allowing subsequent successful attempts to earn stars. Switching movements automatically initiates a new attempt.
+

@@ -7,7 +7,7 @@ from typing import Any
 
 from flask import Blueprint, current_app, jsonify, request
 
-from app.services.feedback import FEEDBACK_MESSAGES
+from app.services.feedback import FEEDBACK_MESSAGES, format_feedback
 from app.services.frame_processing import process_frame
 from app.services.health import get_health_status
 from app.services.movement_rules import (
@@ -136,15 +136,16 @@ def movement():
 
 
 def _movement_response(result: MovementResult) -> dict[str, Any]:
+    feedback_result = format_feedback(result)
     return {
         "movement": result.movement,
-        "completed": result.completed,
+        "completed": feedback_result.completed,
         "confidence": result.confidence,
-        "feedback_code": result.feedback_code,
-        "feedback": FEEDBACK_MESSAGES.get(result.feedback_code, ""),
-        "stars": stars_for_completion(result.completed),
-        "visibility_ok": result.feedback_code != "full_body_missing",
-        "retryable": True,
+        "feedback_code": feedback_result.feedback_code,
+        "feedback": feedback_result.message,
+        "stars": feedback_result.stars_awarded,
+        "visibility_ok": feedback_result.visibility_ok,
+        "retryable": feedback_result.retryable,
     }
 
 
