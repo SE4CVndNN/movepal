@@ -1,11 +1,9 @@
 """Friendly, non-medical feedback messages.
 
-Wording for ``great``, ``raise_arms``, ``reach_left``, ``reach_right``,
-``hold``, and ``full_body_missing`` must match the approved wording table
+Wording for ``great``, movement corrections, ``hold``, and
+``full_body_missing`` must match the approved wording table
 in docs/movement_specification.md section 12 ("Result and
-friendly-feedback mapping"). MP-015 added the ``reach_left``/
-``reach_right`` entries required by ``evaluate_side_reach``; a future
-knee-lift task still owes the ``lift_knee`` mapping.
+friendly-feedback mapping").
 """
 
 _MOVEMENT_CORRECTION_TEXT = "Please adjust your pose slightly."
@@ -23,6 +21,7 @@ FEEDBACK_MESSAGES = {
     "raise_arms": _MOVEMENT_CORRECTION_TEXT,
     "reach_left": _MOVEMENT_CORRECTION_TEXT,
     "reach_right": _MOVEMENT_CORRECTION_TEXT,
+    "lift_knee": _MOVEMENT_CORRECTION_TEXT,
     "move_back": "Move slightly farther from the camera.",
     "hold": "Please hold a bit longer for better validation.",
     "full_body_missing": (

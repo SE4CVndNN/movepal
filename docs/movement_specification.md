@@ -382,3 +382,22 @@ MP-015 implemented `evaluate_side_reach` for both anatomical sides (`app/service
 - **No wrong-side-specific feedback code was added.** The acceptance matrix and the checked-in fixtures already treat an insufficient or wrong-side reach identically (`reach_left`/`reach_right`, not a separate `wrong_side` code), so `evaluate_side_reach` does not introduce one; adding a new code here would be undocumented scope beyond section 12's table.
 - **No "bent posture" signal is implemented for side reach.** MP-015's issue text mentions feedback for "bent posture where represented," but section 12's executable formula for side reach checks only wrist-to-shoulder horizontal and vertical offsets, not elbow angle — consistent with the elbow-exclusion decision above. Side reach therefore has no bent-posture representation in Sprint 1; this would need a new documented threshold and fixtures if a future task adds one.
 - **`side_reach` is not wired into `POST /api/movement` or the UI.** Following the same scoping the MP-014 decisions record for `raise_both_arms`-only wiring, the "Reach to the side" button remains `disabled` ("coming soon") in `app/templates/index.html` and `SUPPORTED_MOVEMENTS` in `app/routes/api.py` still only contains `raise_both_arms`. `evaluate_side_reach` and `load_side_reach_fixture` are ready to be composed into the endpoint the same way `evaluate_raise_both_arms` already is; that composition, plus any UI side-selection control, is left to whichever task actually enables the "Reach to the side" activity (MP-019's full game loop, or an earlier dedicated wiring task if one is scheduled first).
+
+## 15. MP-016 decisions
+
+MP-016 implements the pure `knee_lift_or_step` rule for a requested anatomical
+left or right side. It requires the selected hip, knee, and ankle plus the
+opposite hip and ankle; missing or below-`0.50` visibility landmarks, and a
+zero selected hip-to-ankle scale, return `full_body_missing` before geometry is
+evaluated. Mirroring remains display-only. The selected knee passes when
+`knee.y <= hip.y + 0.35 * distance(hip, ankle)`, with `0.35` configurable.
+One satisfying sample returns `hold`, two return `great`, and an omitted count
+assumes the hold is satisfied without adding cross-request state. Confidence
+is the allowed hip-to-knee vertical offset divided by the observed downward
+offset, capped to `[0.0, 1.0]`; satisfying poses return `1.0`, while unusable
+input returns `0.0`. This deterministic value is game-rule progress only.
+
+A frame that meets this static knee-position heuristic does not prove a
+dynamic step. This remains a prototype game heuristic, not a clinical
+assessment. API, UI, session, scoring, and full-game integration are outside
+MP-016.

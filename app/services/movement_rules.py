@@ -17,11 +17,12 @@ from typing import Any
 from app.services.geometry import (
     Side,
     horizontal_outward_offset,
+    opposite_side,
     shoulder_width,
     side_landmark_name,
     vertical_offset,
 )
-from app.services.pose_tracking import Landmark
+from app.services.pose_tracking import Landmark, landmark_distance
 
 DEFAULT_MINIMUM_VISIBILITY = 0.5
 """Per-landmark visibility cutoff for required raise-both-arms landmarks.
@@ -295,6 +296,103 @@ def evaluate_side_reach(
     )
 
 
+DEFAULT_KNEE_LIFT_RATIO = 0.35
+"""Maximum selected hip-to-knee vertical offset as a fraction of leg scale."""
+
+
+def evaluate_knee_lift(
+    landmarks: dict[str, Landmark],
+    requested_side: Side,
+    *,
+    consecutive_samples: int | None = None,
+    minimum_visibility: float = DEFAULT_MINIMUM_VISIBILITY,
+    lift_ratio: float = DEFAULT_KNEE_LIFT_RATIO,
+    required_consecutive_samples: int = DEFAULT_REQUIRED_CONSECUTIVE_SAMPLES,
+) -> MovementResult:
+    """Evaluate a knee lift for one requested anatomical side.
+
+    ``requested_side`` names the user's anatomical side; preview mirroring
+    does not change it. As with the existing movement rules, omitting
+    ``consecutive_samples`` assumes the required hold count is satisfied.
+
+    Confidence is the allowed hip-to-knee vertical offset divided by the
+    observed downward offset, capped to ``[0.0, 1.0]``. A satisfying
+    position therefore has confidence ``1.0``; unusable input has ``0.0``.
+    This is deterministic game-rule progress, not a clinical measure.
+    """
+    if consecutive_samples is None:
+        consecutive_samples = required_consecutive_samples
+
+    selected_hip_name = side_landmark_name(requested_side, "hip")
+    selected_knee_name = side_landmark_name(requested_side, "knee")
+    selected_ankle_name = side_landmark_name(requested_side, "ankle")
+    other_side = opposite_side(requested_side)
+    opposite_hip_name = side_landmark_name(other_side, "hip")
+    opposite_ankle_name = side_landmark_name(other_side, "ankle")
+    required = (
+        selected_hip_name,
+        selected_knee_name,
+        selected_ankle_name,
+        opposite_hip_name,
+        opposite_ankle_name,
+    )
+
+    for name in required:
+        landmark = landmarks.get(name)
+        if landmark is None or landmark.visibility < minimum_visibility:
+            return MovementResult(
+                movement="knee_lift_or_step",
+                completed=False,
+                confidence=0.0,
+                feedback_code="full_body_missing",
+            )
+
+    selected_hip = landmarks[selected_hip_name]
+    selected_knee = landmarks[selected_knee_name]
+    selected_ankle = landmarks[selected_ankle_name]
+    leg_scale = landmark_distance(selected_hip, selected_ankle)
+    if leg_scale <= 0:
+        return MovementResult(
+            movement="knee_lift_or_step",
+            completed=False,
+            confidence=0.0,
+            feedback_code="full_body_missing",
+        )
+
+    allowed_offset = lift_ratio * leg_scale
+    observed_offset = selected_knee.y - selected_hip.y
+    knee_lifted = selected_knee.y <= selected_hip.y + allowed_offset
+    if knee_lifted:
+        confidence = 1.0
+    elif allowed_offset > 0 and observed_offset > 0:
+        confidence = min(1.0, allowed_offset / observed_offset)
+    else:
+        confidence = 0.0
+
+    if not knee_lifted:
+        return MovementResult(
+            movement="knee_lift_or_step",
+            completed=False,
+            confidence=confidence,
+            feedback_code="lift_knee",
+        )
+
+    if consecutive_samples < required_consecutive_samples:
+        return MovementResult(
+            movement="knee_lift_or_step",
+            completed=False,
+            confidence=confidence,
+            feedback_code="hold",
+        )
+
+    return MovementResult(
+        movement="knee_lift_or_step",
+        completed=True,
+        confidence=confidence,
+        feedback_code="great",
+    )
+
+
 def landmarks_from_fixture(fixture: dict[str, Any]) -> dict[str, Landmark]:
     """Convert a movement fixture's name-keyed landmark dict to Landmarks."""
     raw_landmarks = fixture.get("landmarks") or {}
@@ -339,3 +437,14 @@ def load_side_reach_fixture(fixture_id: str) -> dict[str, Any]:
         if fixture["fixture_id"] == fixture_id:
             return fixture
     raise KeyError(f"No side_reach fixture named {fixture_id!r}")
+
+
+def load_knee_lift_fixture(fixture_id: str) -> dict[str, Any]:
+    """Load one named fixture from knee_lift_fixtures.json.
+
+    Raises KeyError if no fixture with that id exists.
+    """
+    for fixture in load_movement_fixtures("knee_lift_fixtures.json"):
+        if fixture["fixture_id"] == fixture_id:
+            return fixture
+    raise KeyError(f"No knee_lift fixture named {fixture_id!r}")
