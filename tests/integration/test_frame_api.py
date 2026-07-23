@@ -163,3 +163,37 @@ def test_process_frame_deletes_temp_file(client, monkeypatch):
     assert len(temp_path_captured) == 1
     # Verify the temp file was unlinked after request processing completes
     assert not temp_path_captured[0].exists()
+
+
+def test_frame_with_movement_evaluates_when_pose_succeeds(client, monkeypatch):
+    import io
+
+    from app.services.movement_rules import (
+        landmarks_from_fixture,
+        load_raise_both_arms_fixture,
+    )
+    from app.services.pose_tracking import PoseResult, PoseStatus
+
+    fixture = load_raise_both_arms_fixture("synthetic_raise_arms_positive_001")
+    landmarks = landmarks_from_fixture(fixture)
+
+    class MockPoseAdapter:
+        def estimate(self, image_path):
+            return PoseResult(status=PoseStatus.SUCCESS, landmarks=landmarks)
+
+    monkeypatch.setattr("app.routes.api.get_pose_adapter", lambda: MockPoseAdapter())
+
+    tiny_png = bytes.fromhex(
+        "89504e470d0a1a0a0000000d49484452000000010000000108020000009077"
+        "53de0000000c4944415408d763f8ffff3f0005fe02fea739663a0000000049"
+        "454e44ae426082"
+    )
+    data = {
+        "image": (io.BytesIO(tiny_png), "sample.png"),
+        "movement": "raise_both_arms",
+    }
+    response = client.post("/api/frame", data=data, content_type="multipart/form-data")
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert "completed" in payload

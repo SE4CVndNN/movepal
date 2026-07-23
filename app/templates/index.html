@@ -24,30 +24,14 @@ block content %}
   <h2>Pick your favorite move</h2>
   <p>Choose a move, then choose how you want to play.</p>
   <div class="activity-list">
-    <button
-      type="button"
-      data-activity="raise_both_arms"
-      data-goto="camera-choice"
-    >
+    <button type="button" data-activity="raise_both_arms" data-goto="camera-choice">
       Raise both arms
     </button>
-    <button
-      type="button"
-      data-activity="side_reach"
-      data-goto="camera-choice"
-      disabled
-      title="Coming soon: not part of this vertical slice yet"
-    >
-      Reach to the side (coming soon)
+    <button type="button" data-activity="side_reach" data-side="left" data-goto="camera-choice">
+      Reach to the side
     </button>
-    <button
-      type="button"
-      data-activity="knee_lift"
-      data-goto="camera-choice"
-      disabled
-      title="Coming soon: not part of this vertical slice yet"
-    >
-      Knee lift (coming soon)
+    <button type="button" data-activity="knee_lift_or_step" data-side="left" data-goto="camera-choice">
+      Knee lift
     </button>
   </div>
 </section>
@@ -68,30 +52,17 @@ block content %}
 <section class="card" data-screen="sample-picker" hidden>
   <h2>Pick a deterministic no-camera fallback</h2>
   <p>
-    The current demo supports a deterministic Raise Both Arms fallback path
-    without a webcam. Side Reach and Knee Lift are not available yet.
+    Reach and knee lift fallback demos currently only support the left side.
   </p>
   <div class="sample-list">
     <button type="button" class="sample-choice" data-activity="raise_both_arms">
       Raise both arms
     </button>
-    <button
-      type="button"
-      class="sample-choice"
-      data-activity="side_reach"
-      disabled
-      title="Fallback not available yet for Side Reach"
-    >
-      Reach to the side (coming soon)
+    <button type="button" class="sample-choice" data-activity="side_reach" data-side="left">
+      Reach to the side (left)
     </button>
-    <button
-      type="button"
-      class="sample-choice"
-      data-activity="knee_lift"
-      disabled
-      title="Fallback not available yet for Knee Lift"
-    >
-      Knee lift (coming soon)
+    <button type="button" class="sample-choice" data-activity="knee_lift_or_step" data-side="left">
+      Knee lift (left)
     </button>
   </div>
   <p id="sample-upload-status" role="status" aria-live="polite"></p>

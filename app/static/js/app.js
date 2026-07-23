@@ -19,6 +19,10 @@ healthButton?.addEventListener("click", async () => {
 
 // --- persistent score region ---
 let totalStars = 0;
+let currentActivity = null;
+let currentSide = null;
+let activityToken = 0;
+
 const scoreCount = document.querySelector("#score-count");
 const summaryStarCount = document.querySelector("#summary-star-count");
 const feedbackMessage = document.querySelector("#feedback-message");
@@ -94,6 +98,11 @@ function showScreen(name) {
 
 document.querySelectorAll("[data-goto]").forEach((button) => {
   button.addEventListener("click", () => {
+    if (button.dataset.activity) {
+      currentActivity = button.dataset.activity;
+      currentSide = button.dataset.side || null;
+      activityToken += 1;
+    }
     const target = button.dataset.goto;
     const mode = button.dataset.feedback || "success";
     if (target === "feedback") {
@@ -210,23 +219,17 @@ let captureIntervalId = null;
 const captureFrameButton = document.querySelector("#capture-frame-btn");
 const sampleChoiceButtons = document.querySelectorAll(".sample-choice");
 const fallbackError = document.querySelector("#fallback-error");
-const permanentDisabledFallbackButtons = new Set(
-  Array.from(sampleChoiceButtons)
-    .filter((button) => button.disabled)
-    .map((button) => button.dataset.activity),
-);
 
 const SUPPORTED_FALLBACK_FIXTURES = {
   raise_both_arms: "synthetic_raise_arms_positive_001",
+  side_reach: "synthetic_side_reach_left_positive_001",
+  knee_lift_or_step: "synthetic_knee_lift_left_positive_001",
 };
 
 function setBusyRequest(isBusy) {
   requestInFlight = isBusy;
   if (captureFrameButton) captureFrameButton.disabled = isBusy;
   sampleChoiceButtons.forEach((button) => {
-    if (permanentDisabledFallbackButtons.has(button.dataset.activity)) {
-      return;
-    }
     button.disabled = isBusy;
   });
 }
@@ -310,16 +313,17 @@ function captureFrame() {
   canvas.width = width;
   canvas.height = height;
   canvas.getContext("2d").drawImage(video, 0, 0, width, height);
+  const requestToken = activityToken;
   canvas.toBlob(
     (blob) => {
-      if (blob) uploadFrame(blob, "frame.jpg");
+      if (blob) uploadFrame(blob, "frame.jpg", requestToken);
     },
     "image/jpeg",
     0.85,
   );
 }
 
-async function uploadFrame(blob, filename) {
+async function uploadFrame(blob, filename, requestToken) {
   if (requestInFlight) return null;
   setBusyRequest(true);
 
@@ -328,6 +332,8 @@ async function uploadFrame(blob, filename) {
 
   const formData = new FormData();
   formData.append("image", blob, filename);
+  if (currentActivity) formData.append("movement", currentActivity);
+  if (currentSide) formData.append("side", currentSide);
 
   try {
     const response = await fetch("/api/frame", {
@@ -335,6 +341,10 @@ async function uploadFrame(blob, filename) {
       body: formData,
     });
     const payload = await response.json();
+
+    if (requestToken !== undefined && requestToken !== activityToken) {
+      return null; // stale: user already switched activities
+    }
 
     if (!response.ok) {
       showCameraFallback(
@@ -344,18 +354,30 @@ async function uploadFrame(blob, filename) {
       return null;
     }
 
+    if ("completed" in payload) {
+      stopPeriodicCapture();
+      const mode = payload.completed ? "success" : "retry";
+      if (feedbackMessage) feedbackMessage.textContent = payload.feedback;
+      updateFeedbackStatus(mode);
+      if (payload.completed && payload.stars > 0) addStars(payload.stars);
+      showScreen("feedback");
+      setAppState(mode);
+      return payload;
+    }
+
     const messages = {
-      success:
-        "Pose detected. Movement evaluation is separate from pose capture.",
+      success: "Pose detected — hold your position.",
       no_pose: "No pose detected in that frame — try again.",
       low_visibility: "Pose visibility was too low — try again.",
     };
-
     if (statusEl)
       statusEl.textContent = messages[payload.pose_status] || payload.message;
 
     return payload;
   } catch (_error) {
+    if (requestToken !== undefined && requestToken !== activityToken) {
+      return null;
+    }
     showCameraFallback(
       "Frame upload failed. Please use the no-camera fallback or try again later.",
     );
@@ -365,26 +387,7 @@ async function uploadFrame(blob, filename) {
   }
 }
 
-document.querySelector("#capture-frame-btn")?.addEventListener("click", () => {
-  const video = document.querySelector("#camera-preview");
-  const canvas = document.querySelector("#capture-canvas");
-  if (!video || !canvas) return;
-
-  const { width, height } = getCaptureDimensions(
-    video.videoWidth,
-    video.videoHeight,
-  );
-  canvas.width = width;
-  canvas.height = height;
-  canvas.getContext("2d").drawImage(video, 0, 0, width, height);
-  canvas.toBlob(
-    (blob) => {
-      if (blob) uploadFrame(blob, "frame.jpg");
-    },
-    "image/jpeg",
-    0.85,
-  );
-});
+document.querySelector("#capture-frame-btn")?.addEventListener("click", captureFrame);
 
 document.querySelectorAll(".sample-choice").forEach((button) => {
   button.addEventListener("click", async () => {
@@ -412,13 +415,21 @@ document.querySelectorAll(".sample-choice").forEach((button) => {
     if (statusEl) statusEl.textContent = "Running fallback demo…";
     if (fallbackError) fallbackError.textContent = "";
 
+    const requestToken = activityToken;
+
     try {
       const response = await fetch("/api/movement", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ movement: activity, fixture_id: fixtureId }),
+        body: JSON.stringify({
+          movement: activity,
+          side: button.dataset.side || null,
+          fixture_id: fixtureId,
+        }),
       });
       const payload = await response.json();
+
+      if (requestToken !== activityToken) return; // stale: activity changed
 
       if (!response.ok) {
         throw new Error(
