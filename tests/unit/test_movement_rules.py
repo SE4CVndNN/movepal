@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import pytest
 
+from app.services.feedback import FEEDBACK_MESSAGES
 from app.services.movement_rules import (
     evaluate_raise_both_arms,
+    evaluate_side_reach,
     landmarks_from_fixture,
     load_raise_both_arms_fixture,
+    load_side_reach_fixture,
 )
 from app.services.pose_tracking import Landmark
 
@@ -129,3 +132,227 @@ def test_zero_shoulder_width_is_treated_as_framing_failure():
 
     assert result.completed is False
     assert result.feedback_code == "full_body_missing"
+
+
+# --- Side reach ------------------------------------------------------------
+#
+# The requested side always refers to the user's own anatomical side, never
+# the mirrored preview's screen side (docs/movement_specification.md section
+# 2). Tests below are parametrized over ("left", "right") wherever the
+# scenario should behave identically once mirrored, so a left/right
+# asymmetry bug shows up as one parametrized case failing rather than a
+# hand-duplicated pair silently drifting apart.
+
+SIDE_REACH_FIXTURE_CASES = [
+    ("synthetic_side_reach_left_positive_001", "left", True, "great"),
+    ("synthetic_side_reach_right_negative_001", "right", False, "reach_right"),
+    ("synthetic_side_reach_left_borderline_001", "left", False, "reach_left"),
+    (
+        "synthetic_side_reach_right_low_visibility_001",
+        "right",
+        False,
+        "full_body_missing",
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "fixture_id, side, expected_completed, expected_code", SIDE_REACH_FIXTURE_CASES
+)
+def test_side_reach_committed_fixtures_match_expected_outcome(
+    fixture_id, side, expected_completed, expected_code
+):
+    fixture = load_side_reach_fixture(fixture_id)
+    landmarks = landmarks_from_fixture(fixture)
+
+    result = evaluate_side_reach(
+        landmarks,
+        side,
+        consecutive_samples=fixture["observed_consecutive_samples"],
+    )
+
+    assert result.movement == "side_reach"
+    assert result.completed is expected_completed
+    assert result.feedback_code == expected_code
+    assert fixture["requested_side"] == side
+    assert fixture["expected_completed"] == expected_completed
+    assert fixture["expected_feedback_code"] == expected_code
+
+
+def test_unknown_side_reach_fixture_id_raises_key_error():
+    with pytest.raises(KeyError):
+        load_side_reach_fixture("does_not_exist")
+
+
+def _side_reach_landmarks(
+    side: str, outward_ratio: float, vertical_ratio: float = 0.0
+) -> dict[str, Landmark]:
+    """Build a minimal side-reach pose for *side*.
+
+    The requested wrist is placed ``outward_ratio * shoulder_width``
+    beyond its shoulder (and ``vertical_ratio * shoulder_width`` above or
+    below it). Calling this with "left" and "right" for the same ratios
+    produces literal mirror images across the body midline, so the same
+    assertions can be parametrized over both sides to prove symmetry by
+    construction rather than by hand-authoring two matching fixtures.
+    """
+    shoulder_width_value = 0.3
+    left_shoulder_x, right_shoulder_x = 0.35, 0.65
+    shoulder_y = 0.4
+    shoulder_x = left_shoulder_x if side == "left" else right_shoulder_x
+    sign = -1 if side == "left" else 1
+    wrist_x = shoulder_x + sign * outward_ratio * shoulder_width_value
+    wrist_y = shoulder_y + vertical_ratio * shoulder_width_value
+    return {
+        "left_shoulder": Landmark(
+            "left_shoulder", left_shoulder_x, shoulder_y, 0.0, 0.9
+        ),
+        "right_shoulder": Landmark(
+            "right_shoulder", right_shoulder_x, shoulder_y, 0.0, 0.9
+        ),
+        f"{side}_wrist": Landmark(f"{side}_wrist", wrist_x, wrist_y, 0.0, 0.9),
+        "left_hip": Landmark("left_hip", 0.4, 0.65, 0.0, 0.9),
+        "right_hip": Landmark("right_hip", 0.6, 0.65, 0.0, 0.9),
+    }
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_full_reach_succeeds_symmetrically(side):
+    landmarks = _side_reach_landmarks(side, outward_ratio=1.0)
+
+    result = evaluate_side_reach(landmarks, side, consecutive_samples=2)
+
+    assert result.movement == "side_reach"
+    assert result.completed is True
+    assert result.feedback_code == "great"
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_arm_down_returns_reach_code_symmetrically(side):
+    landmarks = _side_reach_landmarks(side, outward_ratio=0.0)
+
+    result = evaluate_side_reach(landmarks, side, consecutive_samples=2)
+
+    assert result.completed is False
+    assert result.feedback_code == f"reach_{side}"
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_boundary_just_below_reach_ratio_fails_symmetrically(side):
+    landmarks = _side_reach_landmarks(side, outward_ratio=0.84)
+
+    result = evaluate_side_reach(landmarks, side, consecutive_samples=2)
+
+    assert result.completed is False
+    assert result.feedback_code == f"reach_{side}"
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_boundary_exactly_at_reach_ratio_succeeds_symmetrically(side):
+    landmarks = _side_reach_landmarks(side, outward_ratio=0.85)
+
+    result = evaluate_side_reach(landmarks, side, consecutive_samples=2)
+
+    assert result.completed is True
+    assert result.feedback_code == "great"
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_vertical_offset_too_large_fails_despite_full_reach_symmetrically(side):
+    landmarks = _side_reach_landmarks(side, outward_ratio=1.0, vertical_ratio=-0.6)
+
+    result = evaluate_side_reach(landmarks, side, consecutive_samples=2)
+
+    assert result.completed is False
+    assert result.feedback_code == f"reach_{side}"
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_missing_requested_wrist_returns_full_body_missing_symmetrically(side):
+    landmarks = _side_reach_landmarks(side, outward_ratio=1.0)
+    del landmarks[f"{side}_wrist"]
+
+    result = evaluate_side_reach(landmarks, side, consecutive_samples=2)
+
+    assert result.completed is False
+    assert result.feedback_code == "full_body_missing"
+    assert result.confidence == 0.0
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_low_visibility_requested_wrist_returns_full_body_missing_symmetrically(side):
+    landmarks = _side_reach_landmarks(side, outward_ratio=1.0)
+    wrist = landmarks[f"{side}_wrist"]
+    landmarks[f"{side}_wrist"] = Landmark(wrist.name, wrist.x, wrist.y, wrist.z, 0.2)
+
+    result = evaluate_side_reach(landmarks, side, consecutive_samples=2)
+
+    assert result.completed is False
+    assert result.feedback_code == "full_body_missing"
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_zero_shoulder_width_is_framing_failure_symmetrically(side):
+    landmarks = _side_reach_landmarks(side, outward_ratio=1.0)
+    landmarks["right_shoulder"] = Landmark(
+        "right_shoulder",
+        landmarks["left_shoulder"].x,
+        landmarks["left_shoulder"].y,
+        0.0,
+        0.9,
+    )
+
+    result = evaluate_side_reach(landmarks, side, consecutive_samples=2)
+
+    assert result.completed is False
+    assert result.feedback_code == "full_body_missing"
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_condition_met_but_insufficient_consecutive_samples_holds_symmetrically(side):
+    landmarks = _side_reach_landmarks(side, outward_ratio=1.0)
+
+    result = evaluate_side_reach(landmarks, side, consecutive_samples=1)
+
+    assert result.completed is False
+    assert result.feedback_code == "hold"
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_default_consecutive_samples_assumes_hold_already_satisfied_symmetrically(side):
+    landmarks = _side_reach_landmarks(side, outward_ratio=1.0)
+
+    result = evaluate_side_reach(landmarks, side)
+
+    assert result.completed is True
+    assert result.feedback_code == "great"
+
+
+@pytest.mark.parametrize("requested_side", ["left", "right"])
+def test_opposite_arm_reaching_does_not_satisfy_requested_side(requested_side):
+    """A full reach on the *other* arm must never satisfy the requested side.
+
+    Matches the acceptance matrix's "a right-arm reach does not satisfy
+    the [left] request" rule (docs/movement_specification.md section 12),
+    checked here in both directions.
+    """
+    other_side = "right" if requested_side == "left" else "left"
+    landmarks = _side_reach_landmarks(other_side, outward_ratio=1.0)
+    # The requested side's own wrist stays down at its shoulder, not reaching.
+    requested_shoulder_x = 0.35 if requested_side == "left" else 0.65
+    landmarks[f"{requested_side}_wrist"] = Landmark(
+        f"{requested_side}_wrist", requested_shoulder_x, 0.4, 0.0, 0.9
+    )
+
+    result = evaluate_side_reach(landmarks, requested_side, consecutive_samples=2)
+
+    assert result.completed is False
+    assert result.feedback_code == f"reach_{requested_side}"
+
+
+def test_reach_left_and_reach_right_share_the_raise_arms_wording():
+    """Section 12's approved-wording table gives raise_arms/reach_left/
+    reach_right the identical sentence; only the feedback_code carries the
+    distinction between movements and sides."""
+    assert FEEDBACK_MESSAGES["reach_left"] == FEEDBACK_MESSAGES["raise_arms"]
+    assert FEEDBACK_MESSAGES["reach_right"] == FEEDBACK_MESSAGES["raise_arms"]
