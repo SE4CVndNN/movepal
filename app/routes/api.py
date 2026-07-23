@@ -5,9 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, current_app, jsonify, request, session
 
-from app.services.feedback import format_feedback
+from app.services.feedback import FeedbackResult, format_feedback
 from app.services.frame_processing import process_frame
 from app.services.health import get_health_status
 from app.services.movement_rules import (
@@ -17,6 +17,8 @@ from app.services.movement_rules import (
     load_raise_both_arms_fixture,
 )
 from app.services.pose_tracking import MediaPipePoseAdapter, PoseResult, PoseStatus
+from app.services.session_state import SessionStateService
+from app.services.session_summary import SessionSummary
 
 api_bp = Blueprint("api", __name__)
 
@@ -131,11 +133,18 @@ def movement():
         landmarks, consecutive_samples=consecutive_samples
     )
 
-    return jsonify(_movement_response(result)), 200
+    state_service = SessionStateService(session)
+    scoring_session = state_service.load_scoring_session()
+    feedback_result = format_feedback(result, session=scoring_session)
+    state_service.save_scoring_session(scoring_session)
+    state_service.record_result(result, completed=feedback_result.completed)
+
+    return jsonify(_movement_response(result, feedback_result)), 200
 
 
-def _movement_response(result: MovementResult) -> dict[str, Any]:
-    feedback_result = format_feedback(result)
+def _movement_response(
+    result: MovementResult, feedback_result: FeedbackResult
+) -> dict[str, Any]:
     return {
         "movement": result.movement,
         "completed": feedback_result.completed,
@@ -146,6 +155,55 @@ def _movement_response(result: MovementResult) -> dict[str, Any]:
         "visibility_ok": feedback_result.visibility_ok,
         "retryable": feedback_result.retryable,
     }
+
+
+@api_bp.post("/session/reset")
+def session_reset():
+    """Clear session progress and start a clean session."""
+    SessionStateService(session).reset()
+    return (
+        jsonify({"status": "success", "message": "Session reset successfully."}),
+        200,
+    )
+
+
+@api_bp.get("/session/summary")
+def session_summary():
+    """Return the current non-identifying session summary."""
+    summary = SessionStateService(session).build_summary()
+    return jsonify(_summary_payload(summary)), 200
+
+
+@api_bp.post("/session/finish")
+def session_finish():
+    """Mark the session finished and return its final summary.
+
+    Idempotent: repeated calls return the same summary and never award
+    additional stars.
+    """
+    summary = SessionStateService(session).finish()
+    payload = _summary_payload(summary)
+    payload["finished"] = True
+    payload["message"] = _completion_message(summary)
+    return jsonify(payload), 200
+
+
+def _summary_payload(summary: SessionSummary) -> dict[str, Any]:
+    return {
+        "attempted_movements": summary.attempted_movements,
+        "completed_movements": summary.completed_movements,
+        "stars": summary.stars,
+    }
+
+
+def _completion_message(summary: SessionSummary) -> str:
+    """Return friendly, deterministic end-of-session text."""
+    if summary.completed_movements == 0:
+        return "Session complete. Come move with us again soon!"
+    return (
+        f"Great session! You completed {summary.completed_movements} "
+        f"movement(s) and earned {summary.stars} star(s)."
+    )
 
 
 def _map_pose_result(result: PoseResult):
