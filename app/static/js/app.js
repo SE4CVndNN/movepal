@@ -210,6 +210,11 @@ let captureIntervalId = null;
 const captureFrameButton = document.querySelector("#capture-frame-btn");
 const sampleChoiceButtons = document.querySelectorAll(".sample-choice");
 const fallbackError = document.querySelector("#fallback-error");
+const permanentDisabledFallbackButtons = new Set(
+  Array.from(sampleChoiceButtons)
+    .filter((button) => button.disabled)
+    .map((button) => button.dataset.activity),
+);
 
 const SUPPORTED_FALLBACK_FIXTURES = {
   raise_both_arms: "synthetic_raise_arms_positive_001",
@@ -219,7 +224,10 @@ function setBusyRequest(isBusy) {
   requestInFlight = isBusy;
   if (captureFrameButton) captureFrameButton.disabled = isBusy;
   sampleChoiceButtons.forEach((button) => {
-    if (!button.disabled) button.disabled = isBusy;
+    if (permanentDisabledFallbackButtons.has(button.dataset.activity)) {
+      return;
+    }
+    button.disabled = isBusy;
   });
 }
 
@@ -263,7 +271,7 @@ function stopCamera() {
 
 function showCameraFallback(message) {
   if (fallbackReason) fallbackReason.textContent = message;
-  stopPeriodicCapture();
+  stopCamera();
   showScreen("camera-fallback");
 }
 

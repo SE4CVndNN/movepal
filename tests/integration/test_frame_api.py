@@ -163,38 +163,3 @@ def test_process_frame_deletes_temp_file(client, monkeypatch):
     assert len(temp_path_captured) == 1
     # Verify the temp file was unlinked after request processing completes
     assert not temp_path_captured[0].exists()
-
-
-def test_sample_asset_route_serves_existing_file(client):
-    response = client.get("/api/samples/sample_raise_both_arms.png")
-    assert response.status_code == 200
-    assert response.content_type == "image/png"
-
-
-def test_sample_asset_route_404s_for_unknown_file(client):
-    response = client.get("/api/samples/does_not_exist.png")
-    assert response.status_code == 404
-
-
-def test_process_frame_with_sample_asset(client, monkeypatch):
-    from pathlib import Path
-
-    from app.services.pose_tracking import PoseResult, PoseStatus
-
-    class MockPoseAdapter:
-        def estimate(self, image_path):
-            return PoseResult(status=PoseStatus.SUCCESS)
-
-    monkeypatch.setattr("app.routes.api.get_pose_adapter", lambda: MockPoseAdapter())
-
-    sample_path = (
-        Path(__file__).parents[2] / "data" / "samples" / "sample_raise_both_arms.png"
-    )
-    with open(sample_path, "rb") as handle:
-        data = {"image": (handle, "sample_raise_both_arms.png")}
-        response = client.post(
-            "/api/frame", data=data, content_type="multipart/form-data"
-        )
-
-    assert response.status_code == 200
-    assert response.get_json()["pose_status"] == "success"

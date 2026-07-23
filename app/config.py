@@ -13,7 +13,6 @@ class BaseConfig:
 
     SECRET_KEY = os.getenv("SECRET_KEY", "development-only-change-me")
     MAX_CONTENT_LENGTH = int(os.getenv("MAX_CONTENT_LENGTH_MB", "5")) * 1024 * 1024
-    SAMPLE_DATA_DIR = BASE_DIR / "data" / "samples"
     LANDMARK_DATA_DIR = BASE_DIR / "data" / "landmarks"
     ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png"}
     ALLOWED_VIDEO_EXTENSIONS = {"mp4", "webm"}
