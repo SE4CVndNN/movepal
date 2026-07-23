@@ -75,6 +75,6 @@ is connected to the actual game flow.
 
 - Real frame capture is implemented and sent to `/api/frame`. The backend may still return `no_pose` or `low_visibility` depending on the image content.
 - Score increment is a placeholder, not tied to real scoring logic yet.
-- Feedback is still a simplified placeholder pending MP-014.
+- The no-camera fallback path is now deterministic for Raise Both Arms and uses the merged `/api/movement` endpoint.
 - Only manually tested in Chrome on Windows — cross-browser testing is out of scope for this spike.
 - The "no camera detected" (`NotFoundError`) path was verified by code review only — no hardware available to test without a camera.

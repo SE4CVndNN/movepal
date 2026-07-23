@@ -121,37 +121,10 @@ document.querySelectorAll("[data-goto]").forEach((button) => {
 
 // --- camera / fallback probe ---
 let activeStream = null;
-let captureIntervalId = null;
 
 const cameraStatus = document.querySelector("#camera-status");
 const preview = document.querySelector("#camera-preview");
 const fallbackReason = document.querySelector("#fallback-reason");
-const captureFrameButton = document.querySelector("#capture-frame-btn");
-const sampleChoiceButtons = document.querySelectorAll(".sample-choice");
-
-function setBusyRequest(isBusy) {
-  requestInFlight = isBusy;
-  if (captureFrameButton) captureFrameButton.disabled = isBusy;
-  sampleChoiceButtons.forEach((button) => {
-    button.disabled = isBusy;
-  });
-}
-
-function startPeriodicCapture() {
-  stopPeriodicCapture();
-  captureIntervalId = window.setInterval(() => {
-    if (!requestInFlight) {
-      captureFrame();
-    }
-  }, 8000);
-}
-
-function stopPeriodicCapture() {
-  if (captureIntervalId != null) {
-    window.clearInterval(captureIntervalId);
-    captureIntervalId = null;
-  }
-}
 
 function isSecureContextForCamera() {
   return (
@@ -291,6 +264,7 @@ function stopCamera() {
 function showCameraFallback(message) {
   if (fallbackReason) fallbackReason.textContent = message;
   stopPeriodicCapture();
+  showScreen("camera-fallback");
 }
 
 function getCurrentStatusElement() {
@@ -372,17 +346,10 @@ async function uploadFrame(blob, filename) {
     if (statusEl)
       statusEl.textContent = messages[payload.pose_status] || payload.message;
 
-    if (payload.pose_status === "success") {
-      if (fallbackReason) {
-        fallbackReason.textContent =
-          "Pose detected. The approved fallback path is still the best way to complete the demo without a camera.";
-      }
-    }
-
     return payload;
   } catch (_error) {
     showCameraFallback(
-      "Could not reach the server. Please use the no-camera fallback.",
+      "Frame upload failed. Please use the no-camera fallback or try again later.",
     );
     return null;
   } finally {
