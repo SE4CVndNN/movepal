@@ -6,9 +6,11 @@ import pytest
 
 from app.services.feedback import FEEDBACK_MESSAGES
 from app.services.movement_rules import (
+    evaluate_knee_lift,
     evaluate_raise_both_arms,
     evaluate_side_reach,
     landmarks_from_fixture,
+    load_knee_lift_fixture,
     load_raise_both_arms_fixture,
     load_side_reach_fixture,
 )
@@ -356,3 +358,226 @@ def test_reach_left_and_reach_right_share_the_raise_arms_wording():
     distinction between movements and sides."""
     assert FEEDBACK_MESSAGES["reach_left"] == FEEDBACK_MESSAGES["raise_arms"]
     assert FEEDBACK_MESSAGES["reach_right"] == FEEDBACK_MESSAGES["raise_arms"]
+
+
+# --- Knee lift -------------------------------------------------------------
+
+KNEE_LIFT_FIXTURE_CASES = [
+    ("synthetic_knee_lift_left_positive_001", "left", True, "great"),
+    ("synthetic_knee_lift_right_negative_001", "right", False, "lift_knee"),
+    ("synthetic_knee_lift_right_borderline_001", "right", False, "lift_knee"),
+    (
+        "synthetic_knee_lift_left_low_visibility_001",
+        "left",
+        False,
+        "full_body_missing",
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "fixture_id, side, expected_completed, expected_code", KNEE_LIFT_FIXTURE_CASES
+)
+def test_knee_lift_committed_fixtures_match_expected_outcome(
+    fixture_id, side, expected_completed, expected_code
+):
+    fixture = load_knee_lift_fixture(fixture_id)
+    result = evaluate_knee_lift(
+        landmarks_from_fixture(fixture),
+        side,
+        consecutive_samples=fixture["observed_consecutive_samples"],
+    )
+
+    assert result.movement == "knee_lift_or_step"
+    assert result.completed is expected_completed
+    assert result.feedback_code == expected_code
+    assert fixture["requested_side"] == side
+    assert fixture["expected_completed"] == expected_completed
+    assert fixture["expected_feedback_code"] == expected_code
+
+
+def test_unknown_knee_lift_fixture_id_raises_key_error():
+    with pytest.raises(KeyError):
+        load_knee_lift_fixture("does_not_exist")
+
+
+def _knee_lift_landmarks(
+    selected_side: str, selected_knee_y: float, opposite_knee_y: float = 0.7
+) -> dict[str, Landmark]:
+    """Build symmetric lower-body landmarks with a vertical 0.4 leg scale."""
+    other_side = "right" if selected_side == "left" else "left"
+    x_by_side = {"left": 0.4, "right": 0.6}
+    landmarks = {}
+    for side in ("left", "right"):
+        x = x_by_side[side]
+        landmarks[f"{side}_hip"] = Landmark(f"{side}_hip", x, 0.5, 0.0, 0.9)
+        landmarks[f"{side}_ankle"] = Landmark(f"{side}_ankle", x, 0.9, 0.0, 0.9)
+    landmarks[f"{selected_side}_knee"] = Landmark(
+        f"{selected_side}_knee",
+        x_by_side[selected_side],
+        selected_knee_y,
+        0.0,
+        0.9,
+    )
+    landmarks[f"{other_side}_knee"] = Landmark(
+        f"{other_side}_knee",
+        x_by_side[other_side],
+        opposite_knee_y,
+        0.0,
+        0.9,
+    )
+    return landmarks
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_knee_lift_succeeds_symmetrically_for_anatomical_side(side):
+    result = evaluate_knee_lift(
+        _knee_lift_landmarks(side, selected_knee_y=0.6),
+        side,
+        consecutive_samples=2,
+    )
+
+    assert result.completed is True
+    assert result.feedback_code == "great"
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_neutral_knee_returns_lift_knee_symmetrically(side):
+    result = evaluate_knee_lift(
+        _knee_lift_landmarks(side, selected_knee_y=0.7),
+        side,
+        consecutive_samples=2,
+    )
+
+    assert result.completed is False
+    assert result.feedback_code == "lift_knee"
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_exact_knee_lift_threshold_succeeds(side):
+    result = evaluate_knee_lift(
+        _knee_lift_landmarks(side, selected_knee_y=0.64),
+        side,
+        consecutive_samples=2,
+    )
+
+    assert result.completed is True
+    assert result.confidence == 1.0
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_just_outside_knee_lift_threshold_retries(side):
+    result = evaluate_knee_lift(
+        _knee_lift_landmarks(side, selected_knee_y=0.640001),
+        side,
+        consecutive_samples=2,
+    )
+
+    assert result.completed is False
+    assert result.feedback_code == "lift_knee"
+    assert 0.0 < result.confidence < 1.0
+
+
+@pytest.mark.parametrize("requested_side", ["left", "right"])
+def test_opposite_knee_alone_does_not_satisfy_selected_side(requested_side):
+    result = evaluate_knee_lift(
+        _knee_lift_landmarks(requested_side, selected_knee_y=0.7, opposite_knee_y=0.6),
+        requested_side,
+        consecutive_samples=2,
+    )
+
+    assert result.completed is False
+    assert result.feedback_code == "lift_knee"
+
+
+@pytest.mark.parametrize("requested_side", ["left", "right"])
+def test_both_knees_lifted_evaluates_selected_side_consistently(requested_side):
+    result = evaluate_knee_lift(
+        _knee_lift_landmarks(requested_side, selected_knee_y=0.6, opposite_knee_y=0.6),
+        requested_side,
+        consecutive_samples=2,
+    )
+
+    assert result.completed is True
+    assert result.feedback_code == "great"
+
+
+@pytest.mark.parametrize(
+    "missing_name",
+    ["left_hip", "left_knee", "left_ankle", "right_hip", "right_ankle"],
+)
+def test_missing_each_required_knee_lift_landmark_returns_framing(missing_name):
+    landmarks = _knee_lift_landmarks("left", selected_knee_y=0.6)
+    del landmarks[missing_name]
+
+    result = evaluate_knee_lift(landmarks, "left", consecutive_samples=2)
+
+    assert result.completed is False
+    assert result.feedback_code == "full_body_missing"
+    assert result.confidence == 0.0
+
+
+@pytest.mark.parametrize(
+    "low_visibility_name",
+    ["left_hip", "left_knee", "left_ankle", "right_hip", "right_ankle"],
+)
+def test_low_visibility_on_each_required_knee_lift_landmark_returns_framing(
+    low_visibility_name,
+):
+    landmarks = _knee_lift_landmarks("left", selected_knee_y=0.6)
+    landmark = landmarks[low_visibility_name]
+    landmarks[low_visibility_name] = Landmark(
+        landmark.name, landmark.x, landmark.y, landmark.z, 0.2
+    )
+
+    result = evaluate_knee_lift(landmarks, "left", consecutive_samples=2)
+
+    assert result.completed is False
+    assert result.feedback_code == "full_body_missing"
+    assert result.confidence == 0.0
+
+
+def test_zero_knee_lift_leg_scale_is_framing_failure():
+    landmarks = _knee_lift_landmarks("left", selected_knee_y=0.5)
+    landmarks["left_ankle"] = Landmark("left_ankle", 0.4, 0.5, 0.0, 0.9)
+
+    result = evaluate_knee_lift(landmarks, "left", consecutive_samples=2)
+
+    assert result.completed is False
+    assert result.feedback_code == "full_body_missing"
+    assert result.confidence == 0.0
+
+
+def test_knee_lift_condition_with_one_sample_holds():
+    result = evaluate_knee_lift(
+        _knee_lift_landmarks("left", selected_knee_y=0.6),
+        "left",
+        consecutive_samples=1,
+    )
+
+    assert result.completed is False
+    assert result.feedback_code == "hold"
+
+
+def test_knee_lift_condition_with_two_samples_succeeds():
+    result = evaluate_knee_lift(
+        _knee_lift_landmarks("left", selected_knee_y=0.6),
+        "left",
+        consecutive_samples=2,
+    )
+
+    assert result.completed is True
+    assert result.feedback_code == "great"
+
+
+def test_knee_lift_omitted_samples_assumes_hold_satisfied():
+    result = evaluate_knee_lift(
+        _knee_lift_landmarks("left", selected_knee_y=0.6), "left"
+    )
+
+    assert result.completed is True
+    assert result.feedback_code == "great"
+
+
+def test_lift_knee_shares_approved_movement_correction_wording():
+    assert FEEDBACK_MESSAGES["lift_knee"] == FEEDBACK_MESSAGES["raise_arms"]
