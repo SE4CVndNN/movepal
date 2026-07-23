@@ -282,3 +282,11 @@ body[data-app-state="summary"] .score-badge {
     font-size: 1.75rem;
   }
 }
+
+.sample-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: var(--space-md);
+}
