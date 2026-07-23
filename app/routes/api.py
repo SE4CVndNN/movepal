@@ -7,7 +7,7 @@ from typing import Any
 
 from flask import Blueprint, current_app, jsonify, request
 
-from app.services.feedback import FEEDBACK_MESSAGES, format_feedback
+from app.services.feedback import format_feedback
 from app.services.frame_processing import process_frame
 from app.services.health import get_health_status
 from app.services.movement_rules import (
@@ -17,7 +17,6 @@ from app.services.movement_rules import (
     load_raise_both_arms_fixture,
 )
 from app.services.pose_tracking import MediaPipePoseAdapter, PoseResult, PoseStatus
-from app.services.scoring import stars_for_completion
 
 api_bp = Blueprint("api", __name__)
 
