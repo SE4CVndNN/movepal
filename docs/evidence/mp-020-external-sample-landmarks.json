@@ -1,0 +1,27 @@
+{
+  "fixture_id": "external_pixabay_demo_photo_001",
+  "schema_version": "1.0",
+  "source_type": "external_licensed",
+  "provenance_reference": "Pixabay Content License: https://pixabay.com/photos/training-pull-up-workout-fitness-828744/ (accessed 2026-07-23)",
+  "description": "MP-020 compatibility spike: one openly licensed demo photo run through MediaPipePoseAdapter.",
+  "expected_status": "success",
+  "landmarks": {
+    "left_shoulder": { "x": 0.647, "y": 0.369, "z": 0.041, "visibility": 1.0 },
+    "right_shoulder": {
+      "x": 0.381,
+      "y": 0.373,
+      "z": 0.022,
+      "visibility": 0.999
+    },
+    "left_elbow": { "x": 0.826, "y": 0.34, "z": -0.182, "visibility": 0.995 },
+    "right_elbow": { "x": 0.205, "y": 0.326, "z": -0.274, "visibility": 0.996 },
+    "left_wrist": { "x": 0.807, "y": 0.223, "z": -0.463, "visibility": 0.988 },
+    "right_wrist": { "x": 0.228, "y": 0.208, "z": -0.459, "visibility": 0.981 },
+    "left_hip": { "x": 0.606, "y": 0.653, "z": -0.017, "visibility": 1.0 },
+    "right_hip": { "x": 0.444, "y": 0.653, "z": 0.017, "visibility": 1.0 },
+    "left_knee": { "x": 0.648, "y": 0.879, "z": -0.163, "visibility": 0.888 },
+    "right_knee": { "x": 0.431, "y": 0.886, "z": -0.163, "visibility": 0.902 },
+    "left_ankle": { "x": 0.571, "y": 0.816, "z": 0.838, "visibility": 0.086 },
+    "right_ankle": { "x": 0.46, "y": 0.806, "z": 0.825, "visibility": 0.107 }
+  }
+}

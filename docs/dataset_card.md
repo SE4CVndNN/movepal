@@ -6,14 +6,12 @@ The dataset is not clinical, does not establish treatment effectiveness, and mus
 
 ## 1. Dataset identity
 
-- **Name:**
-- **Version:**
-- **Status:** draft / internal / reviewed / releasable
-- **Responsible student(s):**
-- **Reviewer:**
-- **Creation date:**
-- **Last updated:**
-- **Related tasks/PRs:**
+- **Name:** MP-020 external asset compatibility spike
+- **Version:** 0.1
+- **Status:** draft
+- **Creation date:** 2026-07-23
+- **Last updated:** 2026-07-23
+- **Related tasks/PRs:** MP-020 / PR #107
 
 ## 2. Intended purpose
 
@@ -35,15 +33,22 @@ Explicitly list prohibited uses:
 - inference of health or disability;
 - use with children.
 
+This dataset specifically aims to:
+
+- verify the landmark schema;
+- check compatibility of a real permitted sample with the existing pose contract (pipeline compatibility), i.e. confirm that externally-derived landmarks conform to MovePal's `PoseResult` shape and conservative visibility/coverage expectations.
+
+Prohibited uses remain as listed above.
+
 ## 3. Data sources and provenance
 
 For each source category, record:
 
-| Source category | Count | Provenance | Permission/license | Raw media retained? | Releasable? |
-|---|---:|---|---|---|---|
-| Synthetic/hand-authored landmarks |  |  |  | No |  |
-| Licensed sample media |  |  |  |  |  |
-| Consented adult-derived landmarks |  |  |  |  |  |
+| Source category                   | Count | Provenance                                                                                               | Permission/license      | Raw media retained? | Releasable?            |
+| --------------------------------- | ----: | -------------------------------------------------------------------------------------------------------- | ----------------------- | ------------------- | ---------------------- |
+| Synthetic/hand-authored landmarks |       |                                                                                                          |                         | No                  |                        |
+| Licensed sample media             |     1 | Pixabay photo: https://pixabay.com/photos/training-pull-up-workout-fitness-828744/ (accessed 2026-07-23) | Pixabay Content License | No                  | Derived landmarks only |
+| Consented adult-derived landmarks |       |                                                                                                          |                         |                     |                        |
 
 Do not include a source when permission or provenance is uncertain.
 
@@ -59,6 +64,15 @@ Do not include a source when permission or provenance is uncertain.
 - Whether raw media may be retained, and for how long:
 
 Never put participant names or contact details in this file.
+
+- Adults only: yes
+- Confirmation that no child data is included: yes — single openly licensed stock photo of an adult, not a study participant
+- Consent-template version: N/A — not a study participant, no consent form required per Option A reasoning
+- Consent storage location (private, not GitHub): N/A
+- Anonymous-ID method: N/A
+- Withdrawal/deletion contact/process: N/A
+- Whether derived landmarks may be committed or published: yes — derived landmarks only
+- Whether raw media may be retained, and for how long: No raw media retained in repository
 
 ## 5. Representation and schema
 
@@ -95,13 +109,13 @@ schema_version
 
 Record counts for each category:
 
-| Movement | Positive | Negative | Borderline | Missing/low visibility | Framing failure | Total |
-|---|---:|---:|---:|---:|---:|---:|
-| Raise both arms |  |  |  |  |  |  |
-| Side reach left |  |  |  |  |  |  |
-| Side reach right |  |  |  |  |  |  |
-| Knee lift/step left |  |  |  |  |  |  |
-| Knee lift/step right |  |  |  |  |  |  |
+| Movement             | Positive | Negative | Borderline | Missing/low visibility | Framing failure | Total |
+| -------------------- | -------: | -------: | ---------: | ---------------------: | --------------: | ----: |
+| Raise both arms      |          |          |            |                        |                 |       |
+| Side reach left      |          |          |            |                        |                 |       |
+| Side reach right     |          |          |            |                        |                 |       |
+| Knee lift/step left  |          |          |            |                        |                 |       |
+| Knee lift/step right |          |          |            |                        |                 |       |
 
 Explain gaps rather than presenting a small incomplete sample as comprehensive.
 
@@ -176,11 +190,13 @@ Discuss:
 - unsupported cases;
 - prohibited interpretations.
 
+Note: this dataset contains a single licensed sample used to demonstrate pipeline compatibility only. It does not provide evidence of accuracy, representativeness, or generalizability across populations, camera types, or clothing/occlusion conditions.
+
 ## 12. Version history
 
-| Version | Date | Change | Related issue/PR | Reviewer |
-|---|---|---|---|---|
-|  |  |  |  |  |
+| Version | Date       | Change                                            | Related issue/PR | Reviewer         |
+| ------- | ---------- | ------------------------------------------------- | ---------------- | ---------------- |
+| 0.1     | 2026-07-23 | Initial MP-020 external-asset compatibility spike | MP-020 / PR #107 | MovePal reviewer |
 
 A schema, threshold, consent, provenance, or release change requires a new recorded version.
 
