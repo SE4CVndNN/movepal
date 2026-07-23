@@ -1,6 +1,14 @@
 # Contributing to MovePal
 
-This guide defines the required student workflow for MovePal. It applies to code, tests, documentation, fixtures, configuration, and design artifacts.
+Thank you for contributing to MovePal. This guide defines the required student workflow — for code, tests, documentation, fixtures, configuration, and design artifacts — so the project stays reviewable and the repository stays clean.
+
+## Code of Conduct
+
+By participating in this project, you agree to foster an open and welcoming environment. Keep discussions respectful, constructive, and focused on collaborative problem-solving.
+
+## Getting started
+
+Clone the repository and follow **README.md → "Local setup"** to create your virtual environment and install dependencies. Do not duplicate those steps here — the README is the single source of truth for prerequisites and install commands, so it never drifts out of sync with this file.
 
 ## 1. Before starting work
 
@@ -9,7 +17,7 @@ This guide defines the required student workflow for MovePal. It applies to code
 3. Confirm that every blocking dependency is complete and merged.
 4. Check the Project board for the current Sprint status.
 5. Pull the latest `master`.
-6. Create the issue’s practical first output before attempting the whole solution.
+6. Create the issue's practical first output before attempting the whole solution.
 
 Do not begin a blocked task merely because time is available. Ask the Scrum Master to confirm another ready task.
 
@@ -28,7 +36,7 @@ git status
 
 ## 3. Create a focused branch
 
-Use the task ID and a short description:
+Name branches after the task ID first, so they sort and search consistently across the whole project:
 
 ```bash
 git switch -c mp-014-raise-arms-vertical-slice
@@ -42,7 +50,7 @@ fix-<issue-number>-<short-description>
 docs-<issue-number>-<short-description>
 ```
 
-Do not reuse another student’s branch and do not work directly on `master`.
+Do not reuse another student's branch and do not work directly on `master`.
 
 ## 4. Implement the smallest complete change
 
@@ -60,9 +68,17 @@ During implementation:
 - do not commit secrets, raw recordings, private data, or local environment files;
 - update documentation when a behavior, data shape, or API contract changes.
 
+Example of the docstring/type-hint expectation:
+
+```python
+def calculate_joint_angle(point_a: tuple, point_b: tuple, point_c: tuple) -> float:
+    """Calculate the angle at point_b formed by point_a-point_b-point_c."""
+    ...
+```
+
 ## 5. Test before pushing
 
-Run:
+Run the full check sequence — this is the same sequence CI runs on every push, so passing locally means the PR won't fail for an avoidable reason:
 
 ```bash
 python -m ruff check .
@@ -73,7 +89,7 @@ python -m compileall app tests
 
 A feature is not complete because it worked once on one machine. Add deterministic tests for normal, invalid, borderline, and missing-data behavior where relevant.
 
-Computer-vision tests must use small fixtures or mocks. They must not require a physical camera, a private recording, or a large dataset download.
+Computer-vision tests must use small fixtures or mocks — never a physical camera, a private recording, or a large dataset download. Add new pose fixtures to `data/landmarks/` alongside the existing ones.
 
 ## 6. Commit clearly
 
@@ -84,7 +100,7 @@ git add <files>
 git commit -m "feat: add raise-arms visibility checks"
 ```
 
-Useful prefixes include:
+Useful prefixes:
 
 ```text
 feat:     new user-facing behavior
@@ -157,7 +173,7 @@ Before merge:
 
 Use squash merge and delete the feature branch afterward.
 
-Because this is a private repository in a GitHub Free organization, all branch restrictions may not be technically enforced. Direct student pushes to `master` remain prohibited by the course process and are visible in Git history.
+Because this is a private repository in a GitHub Free organization, some branch restrictions may not be technically enforced. Direct student pushes to `master` remain prohibited by course policy and are visible in Git history.
 
 ## 10. Project status transitions
 

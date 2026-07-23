@@ -96,6 +96,14 @@ python -m pip install -r requirements-dev.txt
 
 If `python3.11` is not available, install Python 3.11 before continuing. Do not silently use a different major/minor version without discussing compatibility with the Scrum Master.
 
+### Environment configuration (optional)
+
+The application runs with safe built-in defaults, so this step is optional for local development. Copy [`.env.example`](.env.example) to `.env` only if you want to override a default (secret key, upload size limit, debug mode):
+
+```bash
+cp .env.example .env
+```
+
 ## Verify the environment
 
 Run all checks from the repository root:
@@ -105,7 +113,10 @@ python -m ruff check .
 python -m ruff format --check .
 python -m pytest
 python -m compileall app tests
+python -c "from app import create_app; assert create_app().name == 'app'"
 ```
+
+This is the same sequence Windows and Linux CI run on every push and pull request to `master` (see `.github/workflows/ci.yml`).
 
 Run the application:
 
@@ -161,8 +172,8 @@ app/
 ├── config.py                Portable configuration and upload limits
 ├── routes/                  Thin HTML and JSON routes
 ├── services/                Pose, movement, feedback, scoring, session logic
-├── templates/               Jinja HTML templates
-└── static/                  CSS, JavaScript, images, and movement assets
+├── templates/                Jinja HTML templates
+└── static/                   CSS, JavaScript, images, and movement assets
 
 data/
 ├── samples/                 Small privacy-safe fallback samples
@@ -171,8 +182,8 @@ data/
 
 tests/
 ├── unit/                    Service-level deterministic tests
-├── integration/             Flask route and component-contract tests
-└── fixtures/                Tiny checked-in test inputs
+├── integration/              Flask route and component-contract tests
+└── fixtures/                 Tiny checked-in test inputs
 
 docs/                        Product, architecture, privacy, data, QA, and demo guidance
 backlog/                     Authoritative machine-readable and readable planning data
