@@ -5,8 +5,8 @@
   --color-primary-dark: #d1477e;
   --color-secondary: #8bd3dd;
   --color-secondary-dark: #3a9ba8;
-  --color-success: #4caf50;
-  --color-success-dark: #2e7d32;
+  --color-success: #4f86fb;
+  --color-success-dark: #2d5cd7;
   --color-retry: #ff9f43;
   --color-retry-dark: #c9700a;
   --color-text: #172033;
@@ -205,7 +205,7 @@ button:active {
 }
 
 .status-success {
-  background: rgba(76, 175, 80, 0.14);
+  background: rgba(79, 134, 251, 0.16);
   color: var(--color-success-dark);
 }
 
