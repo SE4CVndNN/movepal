@@ -308,5 +308,6 @@ The owner/bootstrap scripts are for project administration. Students should not 
 - `scripts/bootstrap_org.ps1`
 - `scripts/prepare_repository.py`
 - `scripts/import_backlog.py`
+- `scripts/validate_external_asset.py`
 
 The authoritative task descriptions are the GitHub issues and [`backlog/product_backlog.json`](backlog/product_backlog.json).
