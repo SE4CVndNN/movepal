@@ -35,5 +35,3 @@ reports/
 # and retain only team_a.example.csv and team_b.example.csv.
 bootstrap_reports/
 
-# Raw external assets (not committed)
-data/raw/
