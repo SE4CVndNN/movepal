@@ -97,9 +97,31 @@ def frame():
     return _map_pose_result(result)
 
 
+VALID_SIDES = {"left", "right"}
+
+
+def _validate_side_for_movement(movement_code: str, side: str | None):
+    if movement_code in {"side_reach", "knee_lift_or_step"}:
+        if side not in VALID_SIDES:
+            return (
+                jsonify(
+                    {
+                        "status": "error",
+                        "message": "A valid side is required for this movement.",
+                    }
+                ),
+                400,
+            )
+    return None
+
+
 def _evaluate_live_frame(pose_result: PoseResult, movement_code: str, side: str | None):
     if pose_result.status != PoseStatus.SUCCESS:
         return _map_pose_result(pose_result)
+
+    validation_error = _validate_side_for_movement(movement_code, side)
+    if validation_error is not None:
+        return validation_error
 
     movement_result = _EVALUATORS[movement_code](pose_result.landmarks, side, None)
 
@@ -170,6 +192,10 @@ def movement():
             )
 
     side = payload.get("side")
+    validation_error = _validate_side_for_movement(movement_code, side)
+    if validation_error is not None:
+        return validation_error
+
     landmarks = landmarks_from_fixture(fixture)
     result = _EVALUATORS[movement_code](landmarks, side, consecutive_samples)
 
