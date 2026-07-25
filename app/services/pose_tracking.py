@@ -159,6 +159,7 @@ def _status_for_landmarks(
     landmarks: dict[str, Landmark],
     minimum_visibility: float,
     minimum_coverage: float,
+    coverage_denominator: int | None = None,
 ) -> PoseStatus:
     if not landmarks:
         return PoseStatus.NO_POSE
@@ -168,7 +169,17 @@ def _status_for_landmarks(
         return PoseStatus.LOW_VISIBILITY
 
     visible_count = len(visible_landmarks(tracked, minimum_visibility))
-    coverage = visible_count / len(tracked)
+    # Coverage denominator may be provided by the caller. When validating
+    # external assets we default to the full set of tracked landmark names
+    # (conservative). When converting a checked-in fixture to a PoseResult
+    # we pass the number of present tracked landmarks so existing fixture
+    # semantics are preserved.
+    denom = (
+        coverage_denominator
+        if coverage_denominator is not None
+        else len(TRACKED_LANDMARK_NAMES)
+    )
+    coverage = visible_count / denom
     if coverage < minimum_coverage:
         return PoseStatus.LOW_VISIBILITY
     return PoseStatus.SUCCESS
@@ -255,6 +266,8 @@ def pose_result_from_fixture_data(
     fixture: dict[str, Any],
     minimum_visibility: float = DEFAULT_VISIBILITY_THRESHOLD,
     minimum_coverage: float = DEFAULT_MINIMUM_COVERAGE,
+    *,
+    conservative: bool = False,
 ) -> PoseResult:
     """Build a PoseResult from an already-loaded fixture dict.
 
@@ -267,7 +280,24 @@ def pose_result_from_fixture_data(
         name: _landmark_from_fixture(name, values)
         for name, values in raw_landmarks.items()
     }
-    status = _status_for_landmarks(landmarks, minimum_visibility, minimum_coverage)
+    # Determine coverage denominator:
+    # - If `conservative` is True (external evidence), validate against the
+    #   full set of tracked landmark names so incomplete fixtures are
+    #   flagged as LOW_VISIBILITY.
+    # - Otherwise (checked-in fixtures), use the number of present tracked
+    #   landmarks so existing fixture semantics remain unchanged.
+    if conservative:
+        coverage_denominator = None
+    else:
+        tracked_present = [name for name in TRACKED_LANDMARK_NAMES if name in landmarks]
+        coverage_denominator = len(tracked_present) if tracked_present else None
+
+    status = _status_for_landmarks(
+        landmarks,
+        minimum_visibility,
+        minimum_coverage,
+        coverage_denominator=coverage_denominator,
+    )
     return PoseResult(status=status, landmarks=landmarks)
 
 

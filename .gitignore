@@ -34,3 +34,4 @@ reports/
 # If this repository is ever made public, consider ignoring the real team CSVs
 # and retain only team_a.example.csv and team_b.example.csv.
 bootstrap_reports/
+

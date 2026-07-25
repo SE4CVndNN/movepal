@@ -4,10 +4,12 @@ from app.services.pose_tracking import (
     TRACKED_LANDMARK_NAMES,
     Landmark,
     MediaPipePoseAdapter,
+    PoseResult,
     PoseStatus,
     landmark_distance,
     load_pose_fixture,
     load_pose_fixtures,
+    pose_result_from_fixture_data,
     visible_landmarks,
 )
 
@@ -73,6 +75,18 @@ def test_partial_upper_body_fixture_omits_lower_body_landmarks():
     assert "left_shoulder" in result.landmarks
     assert "left_hip" not in result.landmarks
     assert "left_knee" not in result.landmarks
+
+
+def test_pose_result_from_fixture_data_conservative_mode_flags_incomplete_sample():
+    fixtures = {item["fixture_id"]: item for item in load_pose_fixtures()}
+    fixture = fixtures["synthetic_partial_upper_body_only_001"]
+
+    result = pose_result_from_fixture_data(fixture, conservative=True)
+
+    assert isinstance(result, PoseResult)
+    assert result.status == PoseStatus.LOW_VISIBILITY
+    assert "left_shoulder" in result.landmarks
+    assert "left_hip" not in result.landmarks
 
 
 def test_unknown_fixture_id_raises_key_error():
