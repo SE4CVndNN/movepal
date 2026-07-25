@@ -51,6 +51,3 @@ jobs:
 
       - name: Smoke-check Flask application factory
         run: python -c "from app import create_app; app = create_app(); response = app.test_client().get('/api/health'); assert response.status_code == 200"
-
-      - name: MP-022 intentional failure demonstration
-        run: python -c "raise SystemExit('Intentional MP-022 CI failure for log-reading evidence')"
