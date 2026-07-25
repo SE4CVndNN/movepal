@@ -214,11 +214,14 @@ window.addEventListener("beforeunload", stopCamera);
 const MAX_CAPTURE_WIDTH = 640;
 const MAX_CAPTURE_HEIGHT = 480;
 let requestInFlight = false;
-let captureIntervalId = null;
+let captureCountdownTimerId = null;
+let captureCountdownValue = 0;
 
 const captureFrameButton = document.querySelector("#capture-frame-btn");
 const sampleChoiceButtons = document.querySelectorAll(".sample-choice");
 const fallbackError = document.querySelector("#fallback-error");
+const captureCountdown = document.querySelector("#capture-countdown");
+const captureFlash = document.querySelector("#capture-flash");
 
 const SUPPORTED_FALLBACK_FIXTURES = {
   raise_both_arms: "synthetic_raise_arms_positive_001",
@@ -251,18 +254,53 @@ function getCaptureDimensions(sourceWidth, sourceHeight) {
   return { width, height };
 }
 
+function updateCaptureCountdown(value) {
+  if (!captureCountdown) return;
+  if (value > 0) {
+    captureCountdown.hidden = false;
+    captureCountdown.textContent = value === 1 ? "📸 Cheese!" : `⏰ ${value}`;
+    captureCountdown.classList.remove("is-pulse");
+    void captureCountdown.offsetWidth;
+    captureCountdown.classList.add("is-pulse");
+  } else {
+    captureCountdown.hidden = true;
+    captureCountdown.textContent = "";
+    captureCountdown.classList.remove("is-pulse");
+  }
+}
+
+function showCaptureFlash() {
+  if (!captureFlash) return;
+  captureFlash.classList.remove("is-visible");
+  void captureFlash.offsetWidth;
+  captureFlash.classList.add("is-visible");
+  window.setTimeout(() => captureFlash.classList.remove("is-visible"), 380);
+}
+
 function startPeriodicCapture() {
   stopPeriodicCapture();
-  captureIntervalId = window.setInterval(() => {
-    if (!requestInFlight) captureFrame();
-  }, 8000);
+  if (!activeStream || !preview || requestInFlight) return;
+
+  captureCountdownValue = 4;
+  updateCaptureCountdown(captureCountdownValue);
+  captureCountdownTimerId = window.setInterval(() => {
+    captureCountdownValue -= 1;
+    if (captureCountdownValue <= 0) {
+      stopPeriodicCapture();
+      showCaptureFlash();
+      captureFrame();
+    } else {
+      updateCaptureCountdown(captureCountdownValue);
+    }
+  }, 1000);
 }
 
 function stopPeriodicCapture() {
-  if (captureIntervalId != null) {
-    window.clearInterval(captureIntervalId);
-    captureIntervalId = null;
+  if (captureCountdownTimerId != null) {
+    window.clearInterval(captureCountdownTimerId);
+    captureCountdownTimerId = null;
   }
+  updateCaptureCountdown(0);
 }
 
 function stopCamera() {
@@ -373,6 +411,14 @@ async function uploadFrame(blob, filename, requestToken) {
     if (statusEl)
       statusEl.textContent = messages[payload.pose_status] || payload.message;
 
+    if (document.body.dataset.appState === "capturing" && activeStream) {
+      window.setTimeout(() => {
+        if (document.body.dataset.appState === "capturing" && activeStream) {
+          startPeriodicCapture();
+        }
+      }, 900);
+    }
+
     return payload;
   } catch (_error) {
     if (requestToken !== undefined && requestToken !== activityToken) {
@@ -387,7 +433,11 @@ async function uploadFrame(blob, filename, requestToken) {
   }
 }
 
-document.querySelector("#capture-frame-btn")?.addEventListener("click", captureFrame);
+document.querySelector("#capture-frame-btn")?.addEventListener("click", () => {
+  if (!requestInFlight) {
+    startPeriodicCapture();
+  }
+});
 
 document.querySelectorAll(".sample-choice").forEach((button) => {
   button.addEventListener("click", async () => {

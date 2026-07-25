@@ -24,13 +24,27 @@ block content %}
   <h2>Pick your favorite move</h2>
   <p>Choose a move, then choose how you want to play.</p>
   <div class="activity-list">
-    <button type="button" data-activity="raise_both_arms" data-goto="camera-choice">
+    <button
+      type="button"
+      data-activity="raise_both_arms"
+      data-goto="camera-choice"
+    >
       Raise both arms
     </button>
-    <button type="button" data-activity="side_reach" data-side="left" data-goto="camera-choice">
+    <button
+      type="button"
+      data-activity="side_reach"
+      data-side="left"
+      data-goto="camera-choice"
+    >
       Reach to the side
     </button>
-    <button type="button" data-activity="knee_lift_or_step" data-side="left" data-goto="camera-choice">
+    <button
+      type="button"
+      data-activity="knee_lift_or_step"
+      data-side="left"
+      data-goto="camera-choice"
+    >
       Knee lift
     </button>
   </div>
@@ -58,10 +72,20 @@ block content %}
     <button type="button" class="sample-choice" data-activity="raise_both_arms">
       Raise both arms
     </button>
-    <button type="button" class="sample-choice" data-activity="side_reach" data-side="left">
+    <button
+      type="button"
+      class="sample-choice"
+      data-activity="side_reach"
+      data-side="left"
+    >
       Reach to the side (left)
     </button>
-    <button type="button" class="sample-choice" data-activity="knee_lift_or_step" data-side="left">
+    <button
+      type="button"
+      class="sample-choice"
+      data-activity="knee_lift_or_step"
+      data-side="left"
+    >
       Knee lift (left)
     </button>
   </div>
@@ -70,7 +94,13 @@ block content %}
 
 <section class="card" data-screen="camera-live" hidden>
   <h2>Live camera</h2>
-  <video id="camera-preview" autoplay playsinline muted></video>
+  <div class="camera-stage">
+    <div class="camera-feed-wrapper">
+      <video id="camera-preview" autoplay playsinline muted></video>
+      <div id="capture-flash" class="capture-flash" aria-hidden="true"></div>
+    </div>
+    <div id="capture-countdown" class="capture-countdown" hidden></div>
+  </div>
   <canvas id="capture-canvas" hidden></canvas>
   <p>Camera frames are processed temporarily and are not stored by default.</p>
   <p>

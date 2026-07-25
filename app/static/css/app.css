@@ -258,13 +258,97 @@ button:active {
   margin-top: var(--space-md);
 }
 
-#camera-preview {
+.camera-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
   width: 100%;
   max-width: 24rem;
+  margin: var(--space-md) auto 0;
+}
+
+.camera-feed-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+#camera-preview {
+  width: 100%;
+  max-width: 100%;
   border-radius: 1.5rem;
   background: black;
-  margin-top: var(--space-md);
   box-shadow: 0 0.75rem 1.8rem rgb(23 32 51 / 12%);
+  object-fit: cover;
+}
+
+.capture-countdown {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 8rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f7d9e4, #d7e9f4);
+  color: var(--color-text);
+  font-size: 1.1rem;
+  font-weight: 800;
+  box-shadow: 0 0.3rem 0.7rem rgb(23 32 51 / 12%);
+  pointer-events: none;
+  letter-spacing: 0.04em;
+  transform: scale(1);
+  transition: transform 0.2s ease;
+}
+
+.capture-countdown.is-pulse {
+  animation: countdown-bounce 0.45s ease;
+}
+
+.capture-flash {
+  position: absolute;
+  inset: 0;
+  border-radius: 1.5rem;
+  background: radial-gradient(
+    circle,
+    rgba(255, 249, 198, 0.95) 0%,
+    rgba(255, 255, 255, 0.4) 70%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.capture-flash.is-visible {
+  opacity: 1;
+  animation: flash-pop 0.38s ease;
+}
+
+@keyframes countdown-bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes flash-pop {
+  0% {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
 }
 
 body[data-app-state="capturing"] .score-badge {
