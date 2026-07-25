@@ -163,3 +163,62 @@ def test_movement_invalid_consecutive_samples(client):
         "status": "error",
         "message": "consecutive_samples must be an integer.",
     }
+
+
+def test_movement_supports_side_reach_left(client):
+    response = client.post(
+        "/api/movement",
+        json={
+            "movement": "side_reach",
+            "side": "left",
+            "fixture_id": "synthetic_side_reach_left_positive_001",
+        },
+    )
+    assert response.status_code == 200
+    assert response.get_json()["completed"] is True
+
+
+def test_movement_supports_knee_lift_left(client):
+    response = client.post(
+        "/api/movement",
+        json={
+            "movement": "knee_lift_or_step",
+            "side": "left",
+            "fixture_id": "synthetic_knee_lift_left_positive_001",
+        },
+    )
+    assert response.status_code == 200
+    assert response.get_json()["completed"] is True
+
+
+def test_movement_side_reach_missing_side_returns_error(client):
+    response = client.post(
+        "/api/movement",
+        json={
+            "movement": "side_reach",
+            "fixture_id": "synthetic_side_reach_left_positive_001",
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {
+        "status": "error",
+        "message": "A valid side is required for this movement.",
+    }
+
+
+def test_movement_side_reach_invalid_side_returns_error(client):
+    response = client.post(
+        "/api/movement",
+        json={
+            "movement": "side_reach",
+            "side": "center",
+            "fixture_id": "synthetic_side_reach_left_positive_001",
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {
+        "status": "error",
+        "message": "A valid side is required for this movement.",
+    }

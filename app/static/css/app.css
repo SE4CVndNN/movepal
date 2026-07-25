@@ -5,10 +5,10 @@
   --color-primary-dark: #d1477e;
   --color-secondary: #8bd3dd;
   --color-secondary-dark: #3a9ba8;
-  --color-success: #4caf50;
-  --color-success-dark: #2e7d32;
-  --color-retry: #ff9f43;
-  --color-retry-dark: #c9700a;
+  --color-success: var(--color-secondary);
+  --color-success-dark: var(--color-secondary-dark);
+  --color-retry: var(--color-primary);
+  --color-retry-dark: var(--color-primary-dark);
   --color-text: #172033;
   --color-text-muted: #5c6478;
   --color-focus: #172033;
@@ -194,34 +194,42 @@ button:active {
 }
 
 .status-badge {
-  padding: 0.4rem 0.75rem;
+  padding: 0.2rem 0.55rem;
   border-radius: var(--radius-pill);
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   font-weight: 700;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.08em;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  text-transform: uppercase;
+  min-width: 5.5rem;
+  line-height: 1;
+  border: 1px solid transparent;
 }
 
 .status-success {
-  background: rgba(76, 175, 80, 0.14);
+  background: rgba(139, 211, 221, 0.14);
   color: var(--color-success-dark);
+  border-color: rgba(58, 155, 168, 0.2);
 }
 
 .status-retry {
-  background: rgba(255, 159, 67, 0.16);
+  background: rgba(245, 130, 174, 0.14);
   color: var(--color-retry-dark);
+  border-color: rgba(209, 71, 126, 0.2);
 }
 
 .feedback-header {
-  display: grid;
-  gap: var(--space-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
   margin-bottom: var(--space-md);
 }
 
 .feedback-card {
-  text-align: left;
+  text-align: center;
 }
 
 .feedback-card h2 {

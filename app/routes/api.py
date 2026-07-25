@@ -12,9 +12,13 @@ from app.services.frame_processing import process_frame
 from app.services.health import get_health_status
 from app.services.movement_rules import (
     MovementResult,
+    evaluate_knee_lift,
     evaluate_raise_both_arms,
+    evaluate_side_reach,
     landmarks_from_fixture,
+    load_knee_lift_fixture,
     load_raise_both_arms_fixture,
+    load_side_reach_fixture,
 )
 from app.services.pose_tracking import MediaPipePoseAdapter, PoseResult, PoseStatus
 from app.services.session_state import SessionStateService
@@ -23,7 +27,25 @@ from app.services.session_summary import SessionSummary
 api_bp = Blueprint("api", __name__)
 
 ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/jpg"}
-SUPPORTED_MOVEMENTS = {"raise_both_arms"}
+SUPPORTED_MOVEMENTS = {"raise_both_arms", "side_reach", "knee_lift_or_step"}
+
+_FIXTURE_LOADERS = {
+    "raise_both_arms": load_raise_both_arms_fixture,
+    "side_reach": load_side_reach_fixture,
+    "knee_lift_or_step": load_knee_lift_fixture,
+}
+
+_EVALUATORS = {
+    "raise_both_arms": lambda landmarks, side, samples: evaluate_raise_both_arms(
+        landmarks, consecutive_samples=samples
+    ),
+    "side_reach": lambda landmarks, side, samples: evaluate_side_reach(
+        landmarks, side, consecutive_samples=samples
+    ),
+    "knee_lift_or_step": lambda landmarks, side, samples: evaluate_knee_lift(
+        landmarks, side, consecutive_samples=samples
+    ),
+}
 
 
 def get_pose_adapter() -> MediaPipePoseAdapter:
@@ -68,7 +90,48 @@ def frame():
     adapter = get_pose_adapter()
     result: PoseResult = process_frame(file, adapter)
 
+    movement_code = request.form.get("movement")
+    if movement_code and movement_code in SUPPORTED_MOVEMENTS:
+        return _evaluate_live_frame(result, movement_code, request.form.get("side"))
+
     return _map_pose_result(result)
+
+
+VALID_SIDES = {"left", "right"}
+
+
+def _validate_side_for_movement(movement_code: str, side: str | None):
+    if movement_code in {"side_reach", "knee_lift_or_step"}:
+        if side not in VALID_SIDES:
+            return (
+                jsonify(
+                    {
+                        "status": "error",
+                        "message": "A valid side is required for this movement.",
+                    }
+                ),
+                400,
+            )
+    return None
+
+
+def _evaluate_live_frame(pose_result: PoseResult, movement_code: str, side: str | None):
+    if pose_result.status != PoseStatus.SUCCESS:
+        return _map_pose_result(pose_result)
+
+    validation_error = _validate_side_for_movement(movement_code, side)
+    if validation_error is not None:
+        return validation_error
+
+    movement_result = _EVALUATORS[movement_code](pose_result.landmarks, side, None)
+
+    state_service = SessionStateService(session)
+    scoring_session = state_service.load_scoring_session()
+    feedback_result = format_feedback(movement_result, session=scoring_session)
+    state_service.save_scoring_session(scoring_session)
+    state_service.record_result(movement_result, completed=feedback_result.completed)
+
+    return jsonify(_movement_response(movement_result, feedback_result)), 200
 
 
 def _movement_request_payload() -> dict[str, Any]:
@@ -107,7 +170,7 @@ def movement():
         return jsonify({"status": "error", "message": "fixture_id is required."}), 400
 
     try:
-        fixture = load_raise_both_arms_fixture(str(fixture_id))
+        fixture = _FIXTURE_LOADERS[movement_code](str(fixture_id))
     except KeyError:
         return jsonify({"status": "error", "message": "Unknown fixture_id."}), 400
 
@@ -128,10 +191,13 @@ def movement():
                 400,
             )
 
+    side = payload.get("side")
+    validation_error = _validate_side_for_movement(movement_code, side)
+    if validation_error is not None:
+        return validation_error
+
     landmarks = landmarks_from_fixture(fixture)
-    result = evaluate_raise_both_arms(
-        landmarks, consecutive_samples=consecutive_samples
-    )
+    result = _EVALUATORS[movement_code](landmarks, side, consecutive_samples)
 
     state_service = SessionStateService(session)
     scoring_session = state_service.load_scoring_session()

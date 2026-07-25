@@ -91,3 +91,28 @@ Use this sequence to confirm the current fallback behavior end to end:
 5. Enter the fallback selector and verify Raise Both Arms remains selectable while Side Reach and Knee Lift stay disabled.
 6. Complete the deterministic fallback and confirm the fallback result comes from `/api/movement`.
 7. Confirm no star is awarded from the pose extraction step alone.
+
+## Game loop integration (MP-019)
+
+- /api/movement now supports all three movements via a lookup table
+  (\_EVALUATORS), not just raise_both_arms.
+- /api/frame optionally evaluates a movement using the real captured
+  landmarks when a `movement` (and `side`, where required) field is sent,
+  reusing the same feedback/session code path as /api/movement — live
+  camera and fallback return identical response shapes.
+- Fallback demo for side_reach and knee_lift_or_step is left-side only;
+  no guaranteed-success right-side fixture exists yet.
+- A stale-response guard (`activityToken`) discards any response that
+  arrives after the user has already switched to a different activity.
+- "Play again" is handled entirely on the client by switching the UI back
+  to the start screen; the current frontend does not call POST /api/session/reset.
+- Reaching the summary screen is also client-side only; the frontend does not
+  call POST /api/session/finish for the authoritative stars/attempted/completed
+  counts.
+
+### Known limitations
+
+- Live camera captures every 8 seconds (fixed interval), not continuous —
+  a deliberate choice to avoid WebSockets/streaming per task scope.
+- No mid-activity movement switching while a capture is in flight; the
+  stale-response guard discards the result rather than applying it.
