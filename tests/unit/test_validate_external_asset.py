@@ -45,6 +45,14 @@ def test_validate_landmark_shape_flags_out_of_range_value():
     problems = validate_landmark_shape(bad)
     assert any("left_wrist" in p and "x=" in p for p in problems)
 
+def test_validate_landmark_shape_flags_non_numeric_values():
+    """Regression: malformed JSON with string instead of number should be caught."""
+    bad = {
+        **VALID_LANDMARKS,
+        "left_shoulder": {"x": "oops", "y": 0.1, "z": 0.0, "visibility": 0.9},
+    }
+    problems = validate_landmark_shape(bad)
+    assert any("x must be numeric" in p for p in problems)
 
 def test_validate_external_asset_from_fixture_json(tmp_path):
     fixture_path = tmp_path / "sample.json"
