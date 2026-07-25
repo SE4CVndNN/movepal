@@ -83,17 +83,34 @@ def validate_landmark_shape(landmarks: dict[str, Any]) -> list[str]:
         for field in ("x", "y", "z", "visibility"):
             if field not in values:
                 problems.append(f"'{name}' is missing '{field}'")
-        if "x" in values and not (0.0 <= values["x"] <= 1.0):
-            problems.append(f"'{name}'.x={values['x']} outside [0, 1]")
-        if "y" in values and not (0.0 <= values["y"] <= 1.0):
-            problems.append(f"'{name}'.y={values['y']} outside [0, 1]")
-        if "z" in values and not (-1.0 <= values["z"] <= 1.0):
-            problems.append(f"'{name}'.z={values['z']} outside [-1, 1]")
-        if "visibility" in values and not (0.0 <= values["visibility"] <= 1.0):
-            problems.append(
-                f"'{name}'.visibility={values['visibility']} outside [0, 1]"
-            )
+       if "x" in values:
+           if not isinstance(values["x"], (int, float)):
+               problems.append(f"'{name}'.x must be numeric, got {type(values['x']).__name__}")
+           elif not (0.0 <= values["x"] <= 1.0):
+               problems.append(f"'{name}'.x={values['x']} outside [0, 1]")
+       
+       if "y" in values:
+           if not isinstance(values["y"], (int, float)):
+               problems.append(f"'{name}'.y must be numeric, got {type(values['y']).__name__}")
+           elif not (0.0 <= values["y"] <= 1.0):
+               problems.append(f"'{name}'.y={values['y']} outside [0, 1]")
+       
+       if "z" in values:
+           if not isinstance(values["z"], (int, float)):
+               problems.append(f"'{name}'.z must be numeric, got {type(values['z']).__name__}")
+           elif not (-1.0 <= values["z"] <= 1.0):
+               problems.append(f"'{name}'.z={values['z']} outside [-1, 1]")
+       
+       if "visibility" in values:
+           if not isinstance(values["visibility"], (int, float)):
+               problems.append(f"'{name}'.visibility must be numeric, got {type(values['visibility']).__name__}")
+           elif not (0.0 <= values["visibility"] <= 1.0):
+               problems.append(f"'{name}'.visibility={values['visibility']} outside [0, 1]")
+
     return problems
+
+
+
 
 
 def validate_external_asset(
