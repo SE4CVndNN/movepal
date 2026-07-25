@@ -3,7 +3,7 @@
     "fixture_id": "synthetic_raise_arms_positive_001",
     "schema_version": "1.0",
     "source_type": "synthetic",
-    "provenance_reference": "hand-authored for MP-007",
+    "provenance_reference": "hand-authored calibration fixture for MP-007/MP-021",
     "description": "Both wrists are clearly above their matching shoulders.",
     "expected_status": "success",
     "annotator": "MP-007 team",
@@ -68,8 +68,8 @@
     "fixture_id": "synthetic_raise_arms_negative_001",
     "schema_version": "1.0",
     "source_type": "synthetic",
-    "provenance_reference": "hand-authored for MP-007",
-    "description": "Arms remain down.",
+    "provenance_reference": "hand-authored calibration fixture for MP-007/MP-021",
+    "description": "Arms remain down at sides.",
     "expected_status": "retry",
     "annotator": "MP-007 team",
     "movement": "raise_both_arms",
@@ -121,7 +121,7 @@
     "fixture_id": "synthetic_raise_arms_borderline_001",
     "schema_version": "1.0",
     "source_type": "synthetic",
-    "provenance_reference": "hand-authored for MP-007",
+    "provenance_reference": "hand-authored calibration fixture for MP-007/MP-021",
     "description": "Both wrists are just below the configured scaled shoulder margin.",
     "expected_status": "retry",
     "annotator": "MP-007 team",
@@ -174,7 +174,7 @@
     "fixture_id": "synthetic_raise_arms_low_visibility_001",
     "schema_version": "1.0",
     "source_type": "synthetic",
-    "provenance_reference": "hand-authored for MP-007",
+    "provenance_reference": "hand-authored calibration fixture for MP-007/MP-021",
     "description": "A required wrist is below the visibility threshold.",
     "expected_status": "low_visibility",
     "annotator": "MP-007 team",
@@ -220,6 +220,324 @@
         "y": 0.65,
         "z": 0,
         "visibility": 0.9
+      }
+    }
+  },
+  {
+    "fixture_id": "synthetic_raise_arms_framing_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored calibration fixture for MP-021",
+    "description": "Zero shoulder width due to overlapping shoulders or camera collapse.",
+    "expected_status": "retry",
+    "annotator": "MP-021 team",
+    "movement": "raise_both_arms",
+    "requested_side": "both",
+    "expected_completed": false,
+    "expected_feedback_code": "full_body_missing",
+    "category": "negative",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {
+        "x": 0.5,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_shoulder": {
+        "x": 0.5,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_wrist": {
+        "x": 0.5,
+        "y": 0.1,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_wrist": {
+        "x": 0.5,
+        "y": 0.1,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_hip": {
+        "x": 0.5,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_hip": {
+        "x": 0.5,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      }
+    }
+  },
+  {
+    "fixture_id": "synthetic_raise_arms_heldout_positive_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored held-out sanity fixture for MP-021",
+    "description": "Both wrists raised high with wide stance in held-out set.",
+    "expected_status": "success",
+    "annotator": "MP-021 team",
+    "movement": "raise_both_arms",
+    "requested_side": "both",
+    "expected_completed": true,
+    "expected_feedback_code": "great",
+    "category": "positive",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {
+        "x": 0.35,
+        "y": 0.35,
+        "z": 0,
+        "visibility": 0.95
+      },
+      "right_shoulder": {
+        "x": 0.65,
+        "y": 0.35,
+        "z": 0,
+        "visibility": 0.95
+      },
+      "left_wrist": {
+        "x": 0.32,
+        "y": 0.1,
+        "z": 0,
+        "visibility": 0.95
+      },
+      "right_wrist": {
+        "x": 0.68,
+        "y": 0.1,
+        "z": 0,
+        "visibility": 0.95
+      },
+      "left_hip": {
+        "x": 0.38,
+        "y": 0.62,
+        "z": 0,
+        "visibility": 0.95
+      },
+      "right_hip": {
+        "x": 0.62,
+        "y": 0.62,
+        "z": 0,
+        "visibility": 0.95
+      }
+    }
+  },
+  {
+    "fixture_id": "synthetic_raise_arms_heldout_one_arm_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored held-out sanity fixture for MP-021",
+    "description": "Left arm raised high but right arm remains at shoulder level.",
+    "expected_status": "retry",
+    "annotator": "MP-021 team",
+    "movement": "raise_both_arms",
+    "requested_side": "both",
+    "expected_completed": false,
+    "expected_feedback_code": "raise_arms",
+    "category": "negative",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {
+        "x": 0.3,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_shoulder": {
+        "x": 0.7,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_wrist": {
+        "x": 0.3,
+        "y": 0.1,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_wrist": {
+        "x": 0.7,
+        "y": 0.45,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_hip": {
+        "x": 0.35,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_hip": {
+        "x": 0.65,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      }
+    }
+  },
+  {
+    "fixture_id": "synthetic_raise_arms_heldout_borderline_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored held-out sanity fixture for MP-021",
+    "description": "Wrists are exactly at the required vertical clearance margin (0.40 * shoulder_width = 0.16 above shoulders).",
+    "expected_status": "success",
+    "annotator": "MP-021 team",
+    "movement": "raise_both_arms",
+    "requested_side": "both",
+    "expected_completed": true,
+    "expected_feedback_code": "great",
+    "category": "borderline",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {
+        "x": 0.3,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_shoulder": {
+        "x": 0.7,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_wrist": {
+        "x": 0.3,
+        "y": 0.24,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_wrist": {
+        "x": 0.7,
+        "y": 0.24,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_hip": {
+        "x": 0.35,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_hip": {
+        "x": 0.65,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      }
+    }
+  },
+  {
+    "fixture_id": "synthetic_raise_arms_heldout_low_visibility_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored held-out sanity fixture for MP-021",
+    "description": "Right shoulder visibility is below threshold in held-out set.",
+    "expected_status": "low_visibility",
+    "annotator": "MP-021 team",
+    "movement": "raise_both_arms",
+    "requested_side": "both",
+    "expected_completed": false,
+    "expected_feedback_code": "full_body_missing",
+    "category": "low_visibility",
+    "observed_consecutive_samples": 0,
+    "landmarks": {
+      "left_shoulder": {
+        "x": 0.3,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_shoulder": {
+        "x": 0.7,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.3
+      },
+      "left_wrist": {
+        "x": 0.3,
+        "y": 0.1,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_wrist": {
+        "x": 0.7,
+        "y": 0.1,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_hip": {
+        "x": 0.35,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_hip": {
+        "x": 0.65,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      }
+    }
+  },
+  {
+    "fixture_id": "synthetic_raise_arms_heldout_off_center_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored held-out sanity fixture for MP-021",
+    "description": "Person positioned off-center near screen right edge with arms fully raised.",
+    "expected_status": "success",
+    "annotator": "MP-021 team",
+    "movement": "raise_both_arms",
+    "requested_side": "both",
+    "expected_completed": true,
+    "expected_feedback_code": "great",
+    "category": "positive",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {
+        "x": 0.65,
+        "y": 0.35,
+        "z": 0,
+        "visibility": 0.95
+      },
+      "right_shoulder": {
+        "x": 0.95,
+        "y": 0.35,
+        "z": 0,
+        "visibility": 0.95
+      },
+      "left_wrist": {
+        "x": 0.65,
+        "y": 0.15,
+        "z": 0,
+        "visibility": 0.95
+      },
+      "right_wrist": {
+        "x": 0.95,
+        "y": 0.15,
+        "z": 0,
+        "visibility": 0.95
+      },
+      "left_hip": {
+        "x": 0.7,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.95
+      },
+      "right_hip": {
+        "x": 0.9,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.95
       }
     }
   }
