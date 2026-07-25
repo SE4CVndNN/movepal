@@ -83,20 +83,17 @@ def validate_landmark_shape(landmarks: dict[str, Any]) -> list[str]:
         for field in ("x", "y", "z", "visibility"):
             if field not in values:
                 problems.append(f"'{name}' is missing '{field}'")
-        if "x" in values and not (0.0 <= values["x"] <= 1.0):
-            problems.append(f"'{name}'.x={values['x']} outside [0, 1]")
-        if "y" in values and not (0.0 <= values["y"] <= 1.0):
-            problems.append(f"'{name}'.y={values['y']} outside [0, 1]")
-        if "z" in values and not (-1.0 <= values["z"] <= 1.0):
-            problems.append(f"'{name}'.z={values['z']} outside [-1, 1]")
-        if "visibility" in values and not (0.0 <= values["visibility"] <= 1.0):
-            problems.append(
-                f"'{name}'.visibility={values['visibility']} outside [0, 1]"
-            )
+            else:
+                val = values[field]
+                if not isinstance(val, (int, float)) or isinstance(val, bool):
+                    problems.append(f"'{name}'.{field} must be numeric")
+                elif field in ("x", "y") and not (0.0 <= val <= 1.0):
+                    problems.append(f"'{name}'.{field}={val} outside [0, 1]")
+                elif field == "z" and not (-1.0 <= val <= 1.0):
+                    problems.append(f"'{name}'.z={val} outside [-1, 1]")
+                elif field == "visibility" and not (0.0 <= val <= 1.0):
+                    problems.append(f"'{name}'.visibility={val} outside [0, 1]")
     return problems
-
-
-
 
 
 def validate_external_asset(
