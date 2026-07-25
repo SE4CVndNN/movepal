@@ -49,5 +49,5 @@ jobs:
       - name: Compile Python sources
         run: python -m compileall app tests
 
-      - name: Import Flask application
-        run: python -c "from app import create_app; assert create_app().name == 'app'"
+      - name: Smoke-check Flask application factory
+        run: python -c "from app import create_app; app = create_app(); response = app.test_client().get('/api/health'); assert response.status_code == 200"
