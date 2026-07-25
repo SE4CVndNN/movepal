@@ -175,6 +175,28 @@ Use squash merge and delete the feature branch afterward.
 
 Because this is a private repository in a GitHub Free organization, some branch restrictions may not be technically enforced. Direct student pushes to `master` remain prohibited by course policy and are visible in Git history.
 
+### Troubleshooting CI failures
+
+Open the failed GitHub Actions run, select the failed Windows or Linux job,
+and expand the first red step. The step name identifies which local command to
+repeat:
+
+- **Run Ruff lint checks:** run `python -m ruff check .` and fix the reported
+  file and line.
+- **Verify Ruff formatting:** run `python -m ruff format .`, review the changes,
+  and repeat `python -m ruff format --check .`.
+- **Run automated tests:** run `python -m pytest` and start with the first
+  failing test and traceback.
+- **Compile Python sources:** run `python -m compileall app tests` and fix the
+  reported syntax or import problem.
+- **Smoke-check Flask application factory:** create the app locally and check
+  that `GET /api/health` returns HTTP 200.
+
+Fix the cause and push the correction; never hide a required failure with
+`continue-on-error`. Computer-vision tests must continue to use mocks or small
+deterministic fixtures, never a physical camera, private recording, large
+dataset, or model download.
+
 ## 10. Project status transitions
 
 Use the Project board to represent reality:
