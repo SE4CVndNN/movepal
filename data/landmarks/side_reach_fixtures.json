@@ -38,6 +38,83 @@
         "z": 0,
         "visibility": 0.9
       },
+      "right_elbow": {
+        "x": 0.62,
+        "y": 0.5,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_wrist": {
+        "x": 0.64,
+        "y": 0.7,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_hip": {
+        "x": 0.4,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_hip": {
+        "x": 0.6,
+        "y": 0.65,
+        "z": 0,
+        "visibility": 0.9
+      }
+    }
+  },
+  {
+    "fixture_id": "synthetic_side_reach_right_positive_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-007",
+    "description": "User's right wrist reaches outward by at least one shoulder width.",
+    "expected_status": "success",
+    "annotator": "MP-007 team",
+    "movement": "side_reach",
+    "requested_side": "right",
+    "expected_completed": true,
+    "expected_feedback_code": "great",
+    "category": "positive",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {
+        "x": 0.35,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_shoulder": {
+        "x": 0.65,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_elbow": {
+        "x": 0.85,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_wrist": {
+        "x": 0.96,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_elbow": {
+        "x": 0.38,
+        "y": 0.5,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_wrist": {
+        "x": 0.36,
+        "y": 0.7,
+        "z": 0,
+        "visibility": 0.9
+      },
       "left_hip": {
         "x": 0.4,
         "y": 0.65,
@@ -79,15 +156,27 @@
         "z": 0,
         "visibility": 0.9
       },
+      "left_elbow": {
+        "x": 0.15,
+        "y": 0.4,
+        "z": 0,
+        "visibility": 0.9
+      },
       "left_wrist": {
         "x": 0.04,
         "y": 0.4,
         "z": 0,
         "visibility": 0.9
       },
+      "right_elbow": {
+        "x": 0.65,
+        "y": 0.5,
+        "z": 0,
+        "visibility": 0.9
+      },
       "right_wrist": {
         "x": 0.7,
-        "y": 0.4,
+        "y": 0.6,
         "z": 0,
         "visibility": 0.9
       },
@@ -144,6 +233,18 @@
         "z": 0,
         "visibility": 0.9
       },
+      "right_elbow": {
+        "x": 0.62,
+        "y": 0.5,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "right_wrist": {
+        "x": 0.64,
+        "y": 0.7,
+        "z": 0,
+        "visibility": 0.9
+      },
       "left_hip": {
         "x": 0.4,
         "y": 0.65,
@@ -185,11 +286,29 @@
         "z": 0,
         "visibility": 0.9
       },
+      "right_elbow": {
+        "x": 0.65,
+        "y": 0.5,
+        "z": 0,
+        "visibility": 0.9
+      },
       "right_wrist": {
         "x": 0.96,
         "y": 0.4,
         "z": 0,
         "visibility": 0.2
+      },
+      "left_elbow": {
+        "x": 0.2,
+        "y": 0.5,
+        "z": 0,
+        "visibility": 0.9
+      },
+      "left_wrist": {
+        "x": 0.25,
+        "y": 0.7,
+        "z": 0,
+        "visibility": 0.9
       },
       "left_hip": {
         "x": 0.4,

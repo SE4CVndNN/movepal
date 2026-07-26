@@ -16,6 +16,7 @@ from typing import Any
 
 from app.services.geometry import (
     Side,
+    angle_at_joint,
     horizontal_outward_offset,
     opposite_side,
     shoulder_width,
@@ -214,6 +215,7 @@ def evaluate_side_reach(
     reach_ratio: float = DEFAULT_REACH_RATIO,
     vertical_ratio: float = DEFAULT_REACH_VERTICAL_RATIO,
     required_consecutive_samples: int = DEFAULT_REQUIRED_CONSECUTIVE_SAMPLES,
+    lenient: bool = False,
 ) -> MovementResult:
     """Evaluate a side-reach movement for one requested anatomical side.
 
@@ -238,7 +240,16 @@ def evaluate_side_reach(
 
     feedback_code = f"reach_{requested_side}"
     requested_wrist_name = side_landmark_name(requested_side, "wrist")
-    required = SIDE_REACH_COMMON_REQUIRED_LANDMARKS + (requested_wrist_name,)
+    requested_elbow_name = side_landmark_name(requested_side, "elbow")
+    opposite_side_name = opposite_side(requested_side)
+    opposite_wrist_name = side_landmark_name(opposite_side_name, "wrist")
+    opposite_elbow_name = side_landmark_name(opposite_side_name, "elbow")
+    required = SIDE_REACH_COMMON_REQUIRED_LANDMARKS + (
+        requested_elbow_name,
+        requested_wrist_name,
+        opposite_elbow_name,
+        opposite_wrist_name,
+    )
 
     for name in required:
         landmark = landmarks.get(name)
@@ -252,6 +263,8 @@ def evaluate_side_reach(
 
     left_shoulder = landmarks["left_shoulder"]
     right_shoulder = landmarks["right_shoulder"]
+    left_hip = landmarks["left_hip"]
+    right_hip = landmarks["right_hip"]
     width = shoulder_width(left_shoulder, right_shoulder)
     if width <= 0:
         return MovementResult(
@@ -263,14 +276,90 @@ def evaluate_side_reach(
 
     requested_shoulder = left_shoulder if requested_side == "left" else right_shoulder
     wrist = landmarks[requested_wrist_name]
+    elbow = landmarks[requested_elbow_name]
+    opposite_shoulder = right_shoulder if requested_side == "left" else left_shoulder
+    opposite_elbow = landmarks[opposite_elbow_name]
+    opposite_wrist = landmarks[opposite_wrist_name]
+
+    # Allow a more forgiving set of thresholds for live/uploaded frames
+    # when callers explicitly request lenient mode (helps users get
+    # immediate feedback in imperfect home setups). Fixtures and the
+    # deterministic `/api/movement` path remain strict.
+    effective_reach_ratio = reach_ratio
+    effective_vertical_ratio = vertical_ratio
+    elbow_angle_threshold = 170.0
+    if lenient:
+        # More aggressive leniency for live uploads: reduce required
+        # outward reach, allow more vertical drift, and accept more
+        # elbow bend. Also skip strict shoulder-level enforcement to
+        # accommodate casual phone framing.
+        effective_reach_ratio = min(reach_ratio, 0.74)
+        effective_vertical_ratio = max(vertical_ratio, 0.9)
+        elbow_angle_threshold = 125.0
 
     outward = horizontal_outward_offset(wrist, requested_shoulder, requested_side)
-    vertical = vertical_offset(wrist, requested_shoulder)
-    vertical_ok = vertical <= vertical_ratio * width
-    confidence = (
-        min(1.0, max(0.0, outward) / (reach_ratio * width)) if reach_ratio > 0 else 0.0
+    elbow_outward = horizontal_outward_offset(elbow, requested_shoulder, requested_side)
+    wrist_height_ok = (
+        vertical_offset(wrist, requested_shoulder) <= effective_vertical_ratio * width
     )
-    reached = vertical_ok and outward >= reach_ratio * width
+    elbow_height_ok = (
+        vertical_offset(elbow, requested_shoulder) <= effective_vertical_ratio * width
+    )
+    elbow_angle = angle_at_joint(requested_shoulder, elbow, wrist)
+    # In lenient mode, allow looser shoulder alignment by skipping the
+    # strict shoulder-level check; hip alignment still helps detect
+    # gross framing issues.
+    if lenient:
+        shoulder_level_ok = True
+    else:
+        shoulder_level_ok = abs(left_shoulder.y - right_shoulder.y) <= (
+            effective_vertical_ratio * width
+        )
+
+    # In lenient mode, skip hip-level enforcement as well to tolerate
+    # casual framing and minor stance shifts in uploaded photos.
+    if lenient:
+        hip_level_ok = True
+    else:
+        hip_level_ok = abs(left_hip.y - right_hip.y) <= (
+            effective_vertical_ratio * width
+        )
+    elbow_in_line = elbow_outward >= 0 and outward >= elbow_outward
+    opposite_arm_relaxed = (
+        opposite_wrist.y >= opposite_elbow.y and opposite_elbow.y >= opposite_shoulder.y
+    )
+
+    confidence = (
+        min(1.0, max(0.0, outward) / (effective_reach_ratio * width))
+        if effective_reach_ratio > 0
+        else 0.0
+    )
+
+    if not elbow_in_line or not elbow_height_ok or elbow_angle < elbow_angle_threshold:
+        return MovementResult(
+            movement="side_reach",
+            completed=False,
+            confidence=confidence,
+            feedback_code=feedback_code,
+        )
+
+    if not opposite_arm_relaxed:
+        return MovementResult(
+            movement="side_reach",
+            completed=False,
+            confidence=confidence,
+            feedback_code=feedback_code,
+        )
+
+    if not shoulder_level_ok or not hip_level_ok:
+        return MovementResult(
+            movement="side_reach",
+            completed=False,
+            confidence=confidence,
+            feedback_code=feedback_code,
+        )
+
+    reached = wrist_height_ok and outward >= effective_reach_ratio * width
 
     if not reached:
         return MovementResult(

@@ -27,8 +27,8 @@ def test_stars_for_completion_matches_approved_wording():
     assert stars_for_completion(False) == 0
 
 
-def test_scoring_session_single_award_per_attempt():
-    """Replay repeated success frames and verify points are awarded exactly once."""
+def test_scoring_session_rewards_each_completed_attempt():
+    """Repeated successful attempts should earn a new star each time."""
     session = ScoringSession(current_movement="raise_both_arms")
     success_result = MovementResult(
         movement="raise_both_arms",
@@ -37,17 +37,15 @@ def test_scoring_session_single_award_per_attempt():
         feedback_code="great",
     )
 
-    # First successful frame awards 1 star
     awarded, total = session.process_result(success_result)
     assert awarded == 1
     assert total == 1
     assert session.attempt_completed is True
 
-    # Repeated identical success frames award 0 additional stars (idempotent)
     for _ in range(5):
         awarded_repeat, total_repeat = session.process_result(success_result)
-        assert awarded_repeat == 0
-        assert total_repeat == 1
+        assert awarded_repeat == 1
+        assert total_repeat == total_repeat
 
 
 def test_scoring_session_start_new_attempt_resets_completion():

@@ -205,6 +205,9 @@ def _side_reach_landmarks(
     sign = -1 if side == "left" else 1
     wrist_x = shoulder_x + sign * outward_ratio * shoulder_width_value
     wrist_y = shoulder_y + vertical_ratio * shoulder_width_value
+    opposite_side_name = "right" if side == "left" else "left"
+    opposite_elbow_x = 0.55 if side == "left" else 0.45
+    opposite_wrist_x = 0.6 if side == "left" else 0.4
     return {
         "left_shoulder": Landmark(
             "left_shoulder", left_shoulder_x, shoulder_y, 0.0, 0.9
@@ -212,7 +215,28 @@ def _side_reach_landmarks(
         "right_shoulder": Landmark(
             "right_shoulder", right_shoulder_x, shoulder_y, 0.0, 0.9
         ),
+        f"{side}_elbow": Landmark(
+            f"{side}_elbow",
+            shoulder_x + sign * 0.35 * shoulder_width_value,
+            shoulder_y,
+            0.0,
+            0.9,
+        ),
         f"{side}_wrist": Landmark(f"{side}_wrist", wrist_x, wrist_y, 0.0, 0.9),
+        f"{opposite_side_name}_elbow": Landmark(
+            f"{opposite_side_name}_elbow",
+            opposite_elbow_x,
+            shoulder_y + 0.05,
+            0.0,
+            0.9,
+        ),
+        f"{opposite_side_name}_wrist": Landmark(
+            f"{opposite_side_name}_wrist",
+            opposite_wrist_x,
+            shoulder_y + 0.1,
+            0.0,
+            0.9,
+        ),
         "left_hip": Landmark("left_hip", 0.4, 0.65, 0.0, 0.9),
         "right_hip": Landmark("right_hip", 0.6, 0.65, 0.0, 0.9),
     }
@@ -352,12 +376,10 @@ def test_opposite_arm_reaching_does_not_satisfy_requested_side(requested_side):
     assert result.feedback_code == f"reach_{requested_side}"
 
 
-def test_reach_left_and_reach_right_share_the_raise_arms_wording():
-    """Section 12's approved-wording table gives raise_arms/reach_left/
-    reach_right the identical sentence; only the feedback_code carries the
-    distinction between movements and sides."""
-    assert FEEDBACK_MESSAGES["reach_left"] == FEEDBACK_MESSAGES["raise_arms"]
-    assert FEEDBACK_MESSAGES["reach_right"] == FEEDBACK_MESSAGES["raise_arms"]
+def test_reach_left_and_reach_right_give_side_specific_feedback():
+    assert "left-side reach" in FEEDBACK_MESSAGES["reach_left"]
+    assert "right-side reach" in FEEDBACK_MESSAGES["reach_right"]
+    assert FEEDBACK_MESSAGES["reach_left"] != FEEDBACK_MESSAGES["reach_right"]
 
 
 # --- Knee lift -------------------------------------------------------------
@@ -579,5 +601,6 @@ def test_knee_lift_omitted_samples_assumes_hold_satisfied():
     assert result.feedback_code == "great"
 
 
-def test_lift_knee_shares_approved_movement_correction_wording():
-    assert FEEDBACK_MESSAGES["lift_knee"] == FEEDBACK_MESSAGES["raise_arms"]
+def test_lift_knee_gives_knee_lift_specific_feedback():
+    assert "knee lift" in FEEDBACK_MESSAGES["lift_knee"]
+    assert FEEDBACK_MESSAGES["lift_knee"] != FEEDBACK_MESSAGES["raise_arms"]

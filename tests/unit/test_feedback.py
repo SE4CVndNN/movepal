@@ -41,11 +41,11 @@ def test_message_catalog_covers_all_observation_codes():
     "code,expected_substring",
     [
         ("great", "Awesome job! You've earned ⭐ 1 Star!"),
-        ("raise_arms", "Please adjust your pose slightly."),
-        ("reach_left", "Please adjust your pose slightly."),
-        ("reach_right", "Please adjust your pose slightly."),
-        ("lift_knee", "Please adjust your pose slightly."),
-        ("hold", "Please hold a bit longer for better validation."),
+        ("raise_arms", "both arms up"),
+        ("reach_left", "left-side reach"),
+        ("reach_right", "right-side reach"),
+        ("lift_knee", "knee lift"),
+        ("hold", "Hold your pose a little longer"),
         ("full_body_missing", "visible in the frame"),
         ("move_back", "Move slightly farther from the camera."),
     ],
@@ -58,7 +58,10 @@ def test_get_feedback_message_returns_friendly_text(code: str, expected_substrin
 def test_get_feedback_message_unknown_code_fallback():
     """Unknown codes must gracefully fall back to friendly default non-medical wording."""
     message = get_feedback_message("unknown_custom_observation")
-    assert message == "Please adjust your pose slightly."
+    assert (
+        message
+        == "This picture doesn't show the move we asked for. Try again with the right pose."
+    )
 
 
 def test_format_feedback_success_result():

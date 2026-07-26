@@ -123,7 +123,15 @@ def _evaluate_live_frame(pose_result: PoseResult, movement_code: str, side: str 
     if validation_error is not None:
         return validation_error
 
-    movement_result = _EVALUATORS[movement_code](pose_result.landmarks, side, None)
+    # For live/uploaded frames, use a slightly more forgiving evaluation
+    # for side_reach to improve usability for home users. Deterministic
+    # `/api/movement` fixture evaluations remain strict.
+    if movement_code == "side_reach":
+        movement_result = evaluate_side_reach(
+            pose_result.landmarks, side, consecutive_samples=None, lenient=True
+        )
+    else:
+        movement_result = _EVALUATORS[movement_code](pose_result.landmarks, side, None)
 
     state_service = SessionStateService(session)
     scoring_session = state_service.load_scoring_session()

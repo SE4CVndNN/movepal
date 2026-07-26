@@ -2,19 +2,19 @@
 
 ## Screen sequence
 
-start → activity choice → camera choice → (live camera | fallback sample) → feedback → (retry activity | summary)
+start → activity choice → camera choice → (live camera | fallback demo) → feedback → (retry activity | summary)
 
 ## Camera / fallback state table
 
-| Trigger                                             | Resulting state | User-facing message                                                                                   |
-| --------------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------- |
-| User clicks "Use Live Webcam" and grants permission | camera-live     | "Webcam connected successfully! Prepare to move."                                                     |
-| User clicks "Use Live Webcam" and denies permission | camera-fallback | "Camera access was denied. Please enable camera permissions in your browser settings to continue."    |
-| No camera device exists                             | camera-fallback | "No camera was detected. Please connect a webcam or use the local demo sample."                       |
-| Browser requires secure context or unsupported API  | camera-fallback | "Camera access requires a secure connection (HTTPS). Please use the local demo sample instead."       |
-| User clicks "Use Local Demo Sample" directly        | sample-picker   | "Using local demo feed. No camera access required."                                                   |
-| Sample selected for fallback evaluation             | feedback        | sample is evaluated via `/api/movement`; deterministic raise-both-arms result transitions to feedback |
-| User clicks "Stop Camera"                           | camera-choice   | (camera stream stopped, tracks released)                                                              |
+| Trigger                                            | Resulting state | User-facing message                                                                                          |
+| -------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------ |
+| User clicks "Use the camera" and grants permission | camera-live     | "Camera is on! Get ready to move."                                                                           |
+| User clicks "Use the camera" and denies permission | camera-fallback | "Camera access was denied. You can still try the demo for your chosen move."                                 |
+| No camera device exists                            | camera-fallback | "No camera was detected. You can still try the demo for your chosen move."                                   |
+| Browser requires secure context or unsupported API | camera-fallback | "Camera access requires a secure connection. Please use the built-in demo instead."                          |
+| User clicks "Try the built-in demo" directly       | camera-fallback | "Use the built-in demo for the move you already picked."                                                     |
+| User clicks "Start demo" on fallback screen        | feedback        | fallback move is evaluated via `/api/movement`; deterministic raise-both-arms result transitions to feedback |
+| User clicks "Stop Camera"                          | camera-choice   | (camera stream stopped, tracks released)                                                                     |
 
 ## Game state model (MP-011)
 
@@ -63,8 +63,9 @@ is connected to the actual game flow.
 - The live preview uses `navigator.mediaDevices.getUserMedia`, then draws bounded frames to a hidden canvas for upload.
 - Every uploaded frame is sent to `/api/frame` in a `FormData` request with the field name `image`.
 - Overlapping uploads are prevented with a single `requestInFlight` guard and button disabling.
-- A dedicated fallback sample picker was added so the app can run fully without a live camera.
-- A browser security-context failure now shows a clear message and falls back to sample mode.
+- The camera-choice screen now shows a preview of the selected move before the child chooses camera or fallback demo.
+- A dedicated fallback screen was added so the app can run fully without a live camera, and it shows the move the child already selected before starting the demo.
+- A browser security-context failure now shows a clear message and falls back to the demo screen.
 - Initially wrote the permission-denied message into `#camera-status` on the camera-choice screen, but that screen gets hidden immediately when switching to the fallback screen, so the message was never visible. Fixed by adding a dedicated `#fallback-reason` element on the fallback screen itself.
 - Visual/child-friendly design (MP-011) builds directly on the MP-006 flow rather than replacing it — same screens, same state machine, restyled and extended.
 - Kept core flow wording aligned with `docs/content_baseline.md` for input selection, live-camera guidance, and session summary copy. Slightly friendlier start-screen wording remains only in the welcome header, to preserve a lightweight child-friendly tone while retaining the approved disclaimer text.
@@ -88,7 +89,7 @@ Use this sequence to confirm the current fallback behavior end to end:
 2. Capture one frame and observe that the upload is bounded to at most `640 × 480` pixels.
 3. Simulate a server or network failure, then confirm the app stops periodic capture and moves to the fallback screen.
 4. Confirm all camera `MediaStream` tracks are stopped, `activeStream` is cleared, and the preview is detached.
-5. Enter the fallback selector and verify Raise Both Arms remains selectable while Side Reach and Knee Lift stay disabled.
+5. Confirm the fallback screen shows the already selected move and that "Start demo" begins the demo for that move.
 6. Complete the deterministic fallback and confirm the fallback result comes from `/api/movement`.
 7. Confirm no star is awarded from the pose extraction step alone.
 
@@ -104,8 +105,7 @@ Use this sequence to confirm the current fallback behavior end to end:
   no guaranteed-success right-side fixture exists yet.
 - A stale-response guard (`activityToken`) discards any response that
   arrives after the user has already switched to a different activity.
-- "Play again" is handled entirely on the client by switching the UI back
-  to the start screen; the current frontend does not call POST /api/session/reset.
+- "Play again" is handled by switching the UI back to the start screen and calling POST /api/session/reset to clear the current session state.
 - Reaching the summary screen is also client-side only; the frontend does not
   call POST /api/session/finish for the authoritative stars/attempted/completed
   counts.

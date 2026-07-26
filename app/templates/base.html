@@ -12,7 +12,9 @@
   <body data-app-state="idle">
     <header class="site-header">
       <div class="header-row">
-        <h1>MovePal</h1>
+        <div class="header-start">
+          <h1>MovePal</h1>
+        </div>
         <div
           id="score-region"
           class="score-badge"
@@ -30,6 +32,9 @@
     <footer>
       MovePal is a playful prototype, not a medical or diagnostic tool.
     </footer>
-    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+    <script
+      src="{{ url_for('static', filename='js/app.js') }}?v=2"
+      defer
+    ></script>
   </body>
 </html>
