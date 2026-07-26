@@ -141,10 +141,17 @@ h2 {
   position: relative;
   background: var(--color-surface);
   border-radius: var(--radius-lg);
-  padding: calc(var(--space-xl) + 0.75rem) var(--space-lg) var(--space-xl);
+  padding: calc(var(--space-xl) + 1.5rem) calc(var(--space-lg) + 0.5rem)
+    var(--space-xl);
   box-shadow: 0 0.75rem 2rem rgb(23 32 51 / 10%);
   text-align: center;
   margin-top: var(--space-lg);
+}
+
+.card-back-button + h2,
+.card-back-button + .move-preview,
+.card-back-button + .feedback-header {
+  margin-top: 0.85rem;
 }
 
 .card-back-button {
@@ -165,6 +172,35 @@ h2 {
 .card-back-button:focus-visible {
   transform: none;
   outline: 0.15rem solid rgba(58, 155, 168, 0.35);
+}
+
+.move-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin: var(--space-lg) 0;
+  padding: var(--space-sm);
+  border: 1px solid rgba(58, 155, 168, 0.12);
+  border-radius: 1.25rem;
+  background: rgba(220, 244, 255, 0.45);
+}
+
+.move-preview img {
+  width: min(12rem, 100%);
+  border-radius: 1rem;
+  box-shadow: 0 0.4rem 0.9rem rgb(23 32 51 / 10%);
+}
+
+.move-preview h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.move-preview p {
+  margin: 0;
+  color: var(--color-text-muted);
 }
 
 .card p {

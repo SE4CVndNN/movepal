@@ -27,6 +27,17 @@ let hasStartedSession = false;
 const scoreCount = document.querySelector("#score-count");
 const summaryStarCount = document.querySelector("#summary-star-count");
 const feedbackMessage = document.querySelector("#feedback-message");
+const selectedMoveAvatar = document.querySelector("#selected-move-avatar");
+const selectedMoveTitle = document.querySelector("#selected-move-title");
+const selectedMoveDescription = document.querySelector(
+  "#selected-move-description",
+);
+const fallbackMoveAvatar = document.querySelector("#fallback-move-avatar");
+const fallbackMoveTitle = document.querySelector("#fallback-move-title");
+const fallbackMoveDescription = document.querySelector(
+  "#fallback-move-description",
+);
+const startDemoButton = document.querySelector("#start-demo-btn");
 
 async function refreshSessionSummary() {
   try {
@@ -68,6 +79,65 @@ function updateFeedbackStatus(mode, detailText) {
       (mode === "retry"
         ? "Try again with a little more space and a stronger pose."
         : "Nice move! Keep going to collect more stars.");
+  }
+}
+
+const MOVE_PREVIEW = {
+  raise_both_arms: {
+    title: "Raise both arms",
+    description: "Stretch your arms up like a happy airplane.",
+    avatar: "/static/images/avatars/raise_both_arms.jpg",
+  },
+  side_reach: {
+    title: "Reach to the side",
+    description: "Reach out to the side with your arm and stretch.",
+    avatar: "/static/images/avatars/reach_to_the_side.jpg",
+  },
+  knee_lift_or_step: {
+    title: "Knee lift",
+    description: "Lift one knee up and hold it there like a strong superhero.",
+    avatar: "/static/images/avatars/knee-lift.jpg",
+  },
+};
+
+function getMovePreviewData(activity) {
+  return MOVE_PREVIEW[activity] || null;
+}
+
+function updateMovePreviews() {
+  const preview = getMovePreviewData(currentActivity);
+
+  if (preview) {
+    if (selectedMoveTitle) selectedMoveTitle.textContent = preview.title;
+    if (selectedMoveDescription)
+      selectedMoveDescription.textContent = preview.description;
+    if (selectedMoveAvatar) {
+      selectedMoveAvatar.src = preview.avatar;
+      selectedMoveAvatar.alt = preview.title;
+      selectedMoveAvatar.hidden = false;
+    }
+
+    if (fallbackMoveTitle) fallbackMoveTitle.textContent = preview.title;
+    if (fallbackMoveDescription)
+      fallbackMoveDescription.textContent =
+        "Start the demo for the move you already picked.";
+    if (fallbackMoveAvatar) {
+      fallbackMoveAvatar.src = preview.avatar;
+      fallbackMoveAvatar.alt = preview.title;
+      fallbackMoveAvatar.hidden = false;
+    }
+  } else {
+    if (selectedMoveTitle) selectedMoveTitle.textContent = "Pick a move first";
+    if (selectedMoveDescription)
+      selectedMoveDescription.textContent =
+        "After you choose a move, you can use the camera or try the demo.";
+    if (selectedMoveAvatar) selectedMoveAvatar.hidden = true;
+
+    if (fallbackMoveTitle) fallbackMoveTitle.textContent = "Your selected move";
+    if (fallbackMoveDescription)
+      fallbackMoveDescription.textContent =
+        "Start the demo for the move you already picked.";
+    if (fallbackMoveAvatar) fallbackMoveAvatar.hidden = true;
   }
 }
 
@@ -113,6 +183,9 @@ function showScreen(name) {
     section.hidden = section.dataset.screen !== name;
   });
   setAppState(SCREEN_TO_STATE[name] ?? "idle");
+  if (name === "camera-choice" || name === "camera-fallback") {
+    updateMovePreviews();
+  }
 }
 
 document.querySelectorAll("[data-goto]").forEach((button) => {
@@ -216,8 +289,66 @@ document
   });
 
 document.querySelector("#use-fallback-btn")?.addEventListener("click", () => {
-  showScreen("sample-picker");
+  if (!currentActivity) {
+    if (fallbackReason)
+      fallbackReason.textContent =
+        "Pick a move first, then we can try the demo for that move.";
+    showScreen("activity");
+    return;
+  }
+  showScreen("camera-fallback");
 });
+
+document
+  .querySelector("#start-demo-btn")
+  ?.addEventListener("click", async () => {
+    if (!currentActivity) return;
+    const statusEl = document.querySelector("#fallback-error");
+    const fixtureId = SUPPORTED_FALLBACK_FIXTURES[currentActivity];
+
+    if (!fixtureId) {
+      if (statusEl)
+        statusEl.textContent =
+          "This move is not available in the current fallback demo. Please choose Raise both arms.";
+      return;
+    }
+
+    if (statusEl) statusEl.textContent = "Running fallback demo…";
+    try {
+      const response = await fetch("/api/movement", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          movement: currentActivity,
+          side: currentSide,
+          fixture_id: fixtureId,
+        }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          payload.message || "The movement could not be evaluated.",
+        );
+      }
+
+      const mode = payload.completed ? "success" : "retry";
+      if (feedbackMessage) feedbackMessage.textContent = payload.feedback;
+      updateFeedbackStatus(
+        mode,
+        mode === "success"
+          ? "This result came from a deterministic movement fixture."
+          : undefined,
+      );
+      await refreshSessionSummary();
+      showScreen("feedback");
+      setAppState(mode);
+    } catch (_error) {
+      if (statusEl)
+        statusEl.textContent =
+          "The fallback demo could not be reached. Please try again later.";
+    }
+  });
 
 document.querySelector("#stop-camera-btn")?.addEventListener("click", () => {
   stopCamera();
@@ -333,12 +464,12 @@ function showCameraFallback(message) {
 }
 
 function getCurrentStatusElement() {
-  const sampleStatus = document.querySelector("#sample-upload-status");
+  const fallbackStatus = document.querySelector("#fallback-error");
   const uploadStatus = document.querySelector("#upload-status");
 
-  const sampleScreen = sampleStatus?.closest("[data-screen]");
-  if (sampleStatus && sampleScreen && !sampleScreen.hidden) {
-    return sampleStatus;
+  const fallbackScreen = fallbackStatus?.closest("[data-screen]");
+  if (fallbackStatus && fallbackScreen && !fallbackScreen.hidden) {
+    return fallbackStatus;
   }
 
   const uploadScreen = uploadStatus?.closest("[data-screen]");
@@ -346,7 +477,7 @@ function getCurrentStatusElement() {
     return uploadStatus;
   }
 
-  return sampleStatus || uploadStatus;
+  return uploadStatus || fallbackStatus;
 }
 
 function captureFrame() {

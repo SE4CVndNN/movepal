@@ -47,41 +47,17 @@ block content %}
   <button type="button" class="card-back-button" data-goto="activity">
     ← Back
   </button>
-  <h2>Choose how to play</h2>
-  <p>Use the camera, or try the demo if it is not ready.</p>
+  <h2>Ready for your move?</h2>
+  <div class="move-preview">
+    <img id="selected-move-avatar" src="" alt="" hidden />
+    <h3 id="selected-move-title">Pick a move first</h3>
+    <p id="selected-move-description">
+      After you choose a move, you can use the camera or try the demo.
+    </p>
+  </div>
   <button type="button" id="use-webcam-btn">Use the camera</button>
   <button type="button" id="use-fallback-btn">Try the demo</button>
   <p id="camera-status" role="status" aria-live="polite"></p>
-</section>
-
-<section class="card" data-screen="sample-picker" hidden>
-  <button type="button" class="card-back-button" data-goto="camera-choice">
-    ← Back
-  </button>
-  <h2>Pick a demo move</h2>
-  <p>Some demo moves work best on the left side.</p>
-  <div class="sample-list">
-    <button type="button" class="sample-choice" data-activity="raise_both_arms">
-      Raise both arms
-    </button>
-    <button
-      type="button"
-      class="sample-choice"
-      data-activity="side_reach"
-      data-side="left"
-    >
-      Reach to the side (left)
-    </button>
-    <button
-      type="button"
-      class="sample-choice"
-      data-activity="knee_lift_or_step"
-      data-side="left"
-    >
-      Knee lift (left)
-    </button>
-  </div>
-  <p id="sample-upload-status" role="status" aria-live="polite"></p>
 </section>
 
 <section class="card" data-screen="camera-live" hidden>
@@ -112,10 +88,15 @@ block content %}
   <p id="fallback-reason" role="status" aria-live="polite">
     No camera? That’s okay. You can still try the demo.
   </p>
-  <div class="fallback-actions">
-    <button type="button" data-goto="sample-picker">Pick a demo move</button>
-    <button type="button" data-goto="camera-choice">Try another way</button>
+  <div class="move-preview">
+    <img id="fallback-move-avatar" src="" alt="" hidden />
+    <h3 id="fallback-move-title">Your selected move</h3>
+    <p id="fallback-move-description">
+      Start the demo for the move you already picked.
+    </p>
   </div>
+  <button type="button" id="start-demo-btn">Start demo</button>
+  <button type="button" data-goto="camera-choice">Try camera again</button>
   <p id="fallback-error" role="status" aria-live="polite"></p>
 </section>
 
