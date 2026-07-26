@@ -177,7 +177,7 @@ document
     if (!isSecureContextForCamera()) {
       if (fallbackReason)
         fallbackReason.textContent =
-          "Camera access requires a secure connection (HTTPS). Please use the local demo sample instead.";
+          "The camera is not ready. That is okay. You can still try the demo.";
       showScreen("camera-fallback");
       return;
     }
@@ -185,38 +185,35 @@ document
     if (!isCameraApiSupported()) {
       if (fallbackReason)
         fallbackReason.textContent =
-          "This browser does not support camera access. Please use the local demo sample instead.";
+          "This browser cannot use the camera right now. You can still try the demo.";
       showScreen("camera-fallback");
       return;
     }
 
-    cameraStatus.textContent = "Requesting camera access…";
+    cameraStatus.textContent =
+      "Please allow camera access if the browser asks.";
     try {
       activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
       preview.srcObject = activeStream;
-      cameraStatus.textContent =
-        "Webcam connected successfully! Prepare to move.";
+      cameraStatus.textContent = "Camera is on! Get ready to move.";
 
       activeStream.getVideoTracks()[0].addEventListener("ended", () => {
         if (fallbackReason)
           fallbackReason.textContent =
-            "The camera stopped unexpectedly. Please use the local demo sample instead.";
+            "The camera stopped. That is okay. You can still try the demo.";
         stopCamera();
         showScreen("camera-fallback");
       });
 
       showScreen("camera-live");
       startPeriodicCapture();
-      cameraStatus.textContent =
-        "Webcam connected successfully! Prepare to move.";
+      cameraStatus.textContent = "Camera is on! Get ready to move.";
     } catch (error) {
       let reason;
       if (error.name === "NotAllowedError") {
-        reason =
-          "Camera access was denied. Please enable camera permissions in your browser settings to continue.";
+        reason = "Camera permission was not given. You can still try the demo.";
       } else {
-        reason =
-          "No camera was detected. Please connect a webcam or use the local demo sample.";
+        reason = "No camera was found. You can still try the demo.";
       }
       if (fallbackReason) fallbackReason.textContent = reason;
       showScreen("camera-fallback");
