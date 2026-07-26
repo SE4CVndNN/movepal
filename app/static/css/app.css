@@ -187,6 +187,44 @@ h2 {
   background: rgba(220, 244, 255, 0.45);
 }
 
+.upload-panel,
+.fallback-upload {
+  margin: var(--space-md) auto;
+  padding: var(--space-md);
+  max-width: 32rem;
+  border: 1px solid rgba(58, 155, 168, 0.12);
+  border-radius: 1.25rem;
+  background: rgba(230, 250, 255, 0.65);
+  text-align: left;
+}
+
+.upload-panel label,
+.fallback-upload label,
+.fallback-upload .fallback-help {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.upload-panel input,
+.fallback-upload input {
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.upload-panel button,
+.fallback-upload button {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.upload-panel p,
+.fallback-upload p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
 .move-preview img {
   width: min(12rem, 100%);
   border-radius: 1rem;
@@ -242,6 +280,12 @@ button:active {
   transform: translateY(-0.08rem) scale(1.025);
   box-shadow: 0 0.55rem 1rem rgb(209 71 126 / 35%);
   filter: brightness(1.02);
+}
+
+.secondary {
+  background: linear-gradient(135deg, #d8eef2, #bde4eb);
+  color: var(--color-text);
+  box-shadow: 0 0.3rem 0.6rem rgb(58 155 168 / 30%);
 }
 
 #use-fallback-btn,

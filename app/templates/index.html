@@ -52,12 +52,27 @@ block content %}
     <img id="selected-move-avatar" src="" alt="" hidden />
     <h3 id="selected-move-title">Pick a move first</h3>
     <p id="selected-move-description">
-      After you choose a move, you can use the camera or try the demo.
+      After you choose a move, you can use the camera, upload a photo, or try
+      the built-in demo.
     </p>
   </div>
   <button type="button" id="use-webcam-btn">Use the camera</button>
-  <button type="button" id="use-fallback-btn">Try the demo</button>
+  <button type="button" id="use-upload-btn">Upload a photo</button>
+  <button type="button" id="use-fallback-btn">Try the built-in demo</button>
   <p id="camera-status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="card" data-screen="camera-upload" hidden>
+  <button type="button" class="card-back-button" data-goto="camera-choice">
+    ← Back
+  </button>
+  <h2>Upload a photo</h2>
+  <div class="upload-panel">
+    <label for="camera-upload-input">Choose a photo of your move</label>
+    <input type="file" id="camera-upload-input" accept="image/jpeg,image/png" />
+    <button type="button" id="camera-upload-btn">Upload photo</button>
+    <p id="camera-upload-status" role="status" aria-live="polite"></p>
+  </div>
 </section>
 
 <section class="card" data-screen="camera-live" hidden>
@@ -95,9 +110,30 @@ block content %}
       Start the demo for the move you already picked.
     </p>
   </div>
-  <button type="button" id="start-demo-btn">Start demo</button>
+  <button type="button" id="start-demo-btn">Start built-in demo</button>
+  <button type="button" id="show-fallback-upload-btn" class="secondary">
+    Upload a photo instead
+  </button>
   <button type="button" data-goto="camera-choice">Try camera again</button>
   <p id="fallback-error" role="status" aria-live="polite"></p>
+</section>
+
+<section class="card" data-screen="fallback-upload" hidden>
+  <button type="button" class="card-back-button" data-goto="camera-fallback">
+    ← Back
+  </button>
+  <h2>Upload a photo</h2>
+  <p>Upload a photo instead of using the built-in demo.</p>
+  <div class="upload-panel">
+    <label for="fallback-upload-input">Choose a photo</label>
+    <input
+      type="file"
+      id="fallback-upload-input"
+      accept="image/jpeg,image/png"
+    />
+    <button type="button" id="fallback-upload-btn">Upload photo</button>
+    <p id="fallback-upload-status" role="status" aria-live="polite"></p>
+  </div>
 </section>
 
 <section class="card feedback-card" data-screen="feedback" hidden>

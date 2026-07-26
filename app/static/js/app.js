@@ -38,6 +38,12 @@ const fallbackMoveDescription = document.querySelector(
   "#fallback-move-description",
 );
 const startDemoButton = document.querySelector("#start-demo-btn");
+const cameraUploadInput = document.querySelector("#camera-upload-input");
+const cameraUploadButton = document.querySelector("#camera-upload-btn");
+const cameraUploadStatus = document.querySelector("#camera-upload-status");
+const fallbackUploadInput = document.querySelector("#fallback-upload-input");
+const fallbackUploadButton = document.querySelector("#fallback-upload-btn");
+const fallbackUploadStatus = document.querySelector("#fallback-upload-status");
 
 async function refreshSessionSummary() {
   try {
@@ -168,11 +174,20 @@ const SCREEN_TO_STATE = {
   start: "idle",
   activity: "idle",
   "camera-choice": "preparing",
+  "camera-upload": "preparing",
   "camera-live": "capturing",
   "camera-fallback": "capturing",
+  "fallback-upload": "preparing",
   feedback: "evaluating",
   summary: "summary",
 };
+
+function clearUploadState() {
+  if (cameraUploadInput) cameraUploadInput.value = "";
+  if (cameraUploadStatus) cameraUploadStatus.textContent = "";
+  if (fallbackUploadInput) fallbackUploadInput.value = "";
+  if (fallbackUploadStatus) fallbackUploadStatus.textContent = "";
+}
 
 function setAppState(state) {
   document.body.dataset.appState = state;
@@ -185,6 +200,9 @@ function showScreen(name) {
   setAppState(SCREEN_TO_STATE[name] ?? "idle");
   if (name === "camera-choice" || name === "camera-fallback") {
     updateMovePreviews();
+  }
+  if (name !== "camera-upload" && name !== "fallback-upload") {
+    clearUploadState();
   }
 }
 
@@ -466,6 +484,10 @@ function showCameraFallback(message) {
 function getCurrentStatusElement() {
   const fallbackStatus = document.querySelector("#fallback-error");
   const uploadStatus = document.querySelector("#upload-status");
+  const cameraUploadStatus = document.querySelector("#camera-upload-status");
+  const fallbackUploadStatus = document.querySelector(
+    "#fallback-upload-status",
+  );
 
   const fallbackScreen = fallbackStatus?.closest("[data-screen]");
   if (fallbackStatus && fallbackScreen && !fallbackScreen.hidden) {
@@ -477,7 +499,23 @@ function getCurrentStatusElement() {
     return uploadStatus;
   }
 
-  return uploadStatus || fallbackStatus;
+  const cameraUploadScreen = cameraUploadStatus?.closest("[data-screen]");
+  if (cameraUploadStatus && cameraUploadScreen && !cameraUploadScreen.hidden) {
+    return cameraUploadStatus;
+  }
+
+  const fallbackUploadScreen = fallbackUploadStatus?.closest("[data-screen]");
+  if (
+    fallbackUploadStatus &&
+    fallbackUploadScreen &&
+    !fallbackUploadScreen.hidden
+  ) {
+    return fallbackUploadStatus;
+  }
+
+  return (
+    cameraUploadStatus || uploadStatus || fallbackUploadStatus || fallbackStatus
+  );
 }
 
 function captureFrame() {
@@ -508,12 +546,12 @@ function captureFrame() {
   );
 }
 
-async function uploadFrame(blob, filename, requestToken) {
+async function uploadFrame(blob, filename, requestToken, statusEl) {
   if (requestInFlight) return null;
   setBusyRequest(true);
 
-  const statusEl = getCurrentStatusElement();
-  if (statusEl) statusEl.textContent = "Sending frame…";
+  const status = statusEl || getCurrentStatusElement();
+  if (status) status.textContent = "Sending frame…";
 
   const formData = new FormData();
   formData.append("image", blob, filename);
@@ -532,10 +570,14 @@ async function uploadFrame(blob, filename, requestToken) {
     }
 
     if (!response.ok) {
-      showCameraFallback(
+      const message =
         payload.message ||
-          "The server could not process the frame. Please use the no-camera fallback.",
-      );
+        "The server could not process the frame. Please use the no-camera fallback.";
+      if (status) {
+        status.textContent = message;
+      } else {
+        showCameraFallback(message);
+      }
       return null;
     }
 
@@ -586,9 +628,81 @@ async function uploadFrame(blob, filename, requestToken) {
   }
 }
 
+async function uploadSelectedPhoto(file, statusEl) {
+  if (!currentActivity) {
+    if (statusEl)
+      statusEl.textContent =
+        "Pick a move first, then upload a photo for that move.";
+    return null;
+  }
+  if (!file) {
+    if (statusEl) statusEl.textContent = "Choose a photo first.";
+    return null;
+  }
+
+  if (statusEl) statusEl.textContent = "Uploading photo…";
+  const requestToken = activityToken;
+  return uploadFrame(file, file.name || "upload.jpg", requestToken, statusEl);
+}
+
 document.querySelector("#capture-frame-btn")?.addEventListener("click", () => {
   if (!requestInFlight) {
     startPeriodicCapture();
+  }
+});
+
+document.querySelector("#use-upload-btn")?.addEventListener("click", () => {
+  if (!currentActivity) {
+    if (cameraStatus)
+      cameraStatus.textContent =
+        "Pick a move first, then upload a photo for that move.";
+    showScreen("activity");
+    return;
+  }
+  showScreen("camera-upload");
+});
+
+document
+  .querySelector("#show-fallback-upload-btn")
+  ?.addEventListener("click", () => {
+    showScreen("fallback-upload");
+  });
+
+document
+  .querySelector("#camera-upload-btn")
+  ?.addEventListener("click", async () => {
+    if (cameraUploadInput?.files?.length) {
+      await uploadSelectedPhoto(cameraUploadInput.files[0], cameraUploadStatus);
+    } else if (cameraUploadStatus) {
+      cameraUploadStatus.textContent = "Choose a photo first.";
+    }
+  });
+
+document
+  .querySelector("#fallback-upload-btn")
+  ?.addEventListener("click", async () => {
+    if (fallbackUploadInput?.files?.length) {
+      await uploadSelectedPhoto(
+        fallbackUploadInput.files[0],
+        fallbackUploadStatus,
+      );
+    } else if (fallbackUploadStatus) {
+      fallbackUploadStatus.textContent = "Choose a photo first.";
+    }
+  });
+
+cameraUploadInput?.addEventListener("change", async () => {
+  if (cameraUploadInput.files?.length) {
+    await uploadSelectedPhoto(cameraUploadInput.files[0], cameraUploadStatus);
+  }
+});
+
+fallbackUploadInput?.addEventListener("change", async () => {
+  if (fallbackUploadInput.files?.length) {
+    await uploadSelectedPhoto(
+      fallbackUploadInput.files[0],
+      fallbackUploadStatus,
+    );
   }
 });
 
