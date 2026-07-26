@@ -52,11 +52,12 @@ value. See docs/movement_specification.md section 4; MP-021 must record
 the justified final threshold(s).
 """
 
-DEFAULT_MINIMUM_COVERAGE = 0.6
+DEFAULT_MINIMUM_COVERAGE = 0.35
 """Fraction of TRACKED_LANDMARK_NAMES that must clear the visibility
 threshold before a detected pose counts as PoseStatus.SUCCESS rather than
-PoseStatus.LOW_VISIBILITY. A coarse framing pre-filter only -- movement
-rules still perform their own per-landmark, per-movement checks."""
+PoseStatus.LOW_VISIBILITY. The Sprint-1 game experience is intentionally
+more forgiving so children can play without needing a perfect full-body
+frame."""
 
 TRACKED_LANDMARK_NAMES: tuple[str, ...] = (
     "left_shoulder",

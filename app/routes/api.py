@@ -301,7 +301,7 @@ def _map_pose_result(result: PoseResult):
                 jsonify(
                     {
                         "status": "success",
-                        "message": "Pose visibility is too low.",
+                        "message": "We can still try with the pose we see.",
                         "pose_status": "low_visibility",
                     }
                 ),
