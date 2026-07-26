@@ -110,13 +110,53 @@ function getMovePreviewData(activity) {
   return MOVE_PREVIEW[activity] || null;
 }
 
+function getMoveDescription(activity, side) {
+  if (activity === "side_reach") {
+    return side
+      ? `Reach out to the ${side} with your arm and stretch.`
+      : "Reach out to the side with your arm and stretch.";
+  }
+  if (activity === "knee_lift_or_step") {
+    return side
+      ? `Lift your ${side} knee up and hold it there like a strong superhero.`
+      : "Lift one knee up and hold it there like a strong superhero.";
+  }
+  return MOVE_PREVIEW[activity]?.description || "";
+}
+
+function getFallbackFixtureId(activity, side) {
+  if (!activity) return null;
+  const mapping = SUPPORTED_FALLBACK_FIXTURES[activity];
+  if (!mapping) return null;
+  if (side) return mapping[side] || mapping.any || null;
+  return mapping.any || mapping.left || mapping.right || null;
+}
+
+function isFallbackDemoSupported(activity, side) {
+  return Boolean(getFallbackFixtureId(activity, side));
+}
+
 function updateMovePreviews() {
   const preview = getMovePreviewData(currentActivity);
+  const description = getMoveDescription(currentActivity, currentSide);
+  const demoSupported = isFallbackDemoSupported(currentActivity, currentSide);
+  const demoButton = document.querySelector("#use-fallback-btn");
+  const startDemoButton = document.querySelector("#start-demo-btn");
+
+  if (demoButton) {
+    demoButton.disabled = !demoSupported;
+    demoButton.textContent = demoSupported
+      ? "Try the built-in demo"
+      : "Built-in demo unavailable";
+  }
+  if (startDemoButton) {
+    startDemoButton.disabled = !demoSupported;
+  }
 
   if (preview) {
     if (selectedMoveTitle) selectedMoveTitle.textContent = preview.title;
     if (selectedMoveDescription)
-      selectedMoveDescription.textContent = preview.description;
+      selectedMoveDescription.textContent = description || preview.description;
     if (selectedMoveAvatar) {
       selectedMoveAvatar.src = preview.avatar;
       selectedMoveAvatar.alt = preview.title;
@@ -126,7 +166,7 @@ function updateMovePreviews() {
     if (fallbackMoveTitle) fallbackMoveTitle.textContent = preview.title;
     if (fallbackMoveDescription)
       fallbackMoveDescription.textContent =
-        "Start the demo for the move you already picked.";
+        description || "Start the demo for the move you already picked.";
     if (fallbackMoveAvatar) {
       fallbackMoveAvatar.src = preview.avatar;
       fallbackMoveAvatar.alt = preview.title;
@@ -322,12 +362,12 @@ document
   ?.addEventListener("click", async () => {
     if (!currentActivity) return;
     const statusEl = document.querySelector("#fallback-error");
-    const fixtureId = SUPPORTED_FALLBACK_FIXTURES[currentActivity];
+    const fixtureId = getFallbackFixtureId(currentActivity, currentSide);
 
     if (!fixtureId) {
       if (statusEl)
         statusEl.textContent =
-          "This move is not available in the current fallback demo. Please choose Raise both arms.";
+          "Built-in demo isn't available for this move and side yet. Upload a photo or choose another move.";
       return;
     }
 
@@ -389,9 +429,18 @@ const captureCountdown = document.querySelector("#capture-countdown");
 const captureFlash = document.querySelector("#capture-flash");
 
 const SUPPORTED_FALLBACK_FIXTURES = {
-  raise_both_arms: "synthetic_raise_arms_positive_001",
-  side_reach: "synthetic_side_reach_left_positive_001",
-  knee_lift_or_step: "synthetic_knee_lift_left_positive_001",
+  raise_both_arms: {
+    left: "synthetic_raise_arms_positive_001",
+    right: "synthetic_raise_arms_positive_001",
+  },
+  side_reach: {
+    left: "synthetic_side_reach_left_positive_001",
+    right: "synthetic_side_reach_right_negative_001",
+  },
+  knee_lift_or_step: {
+    left: "synthetic_knee_lift_left_positive_001",
+    right: "synthetic_knee_lift_right_negative_001",
+  },
 };
 
 function setBusyRequest(isBusy) {
@@ -720,11 +769,14 @@ document.querySelectorAll(".sample-choice").forEach((button) => {
       return;
     }
 
-    const fixtureId = SUPPORTED_FALLBACK_FIXTURES[activity];
+    const fixtureId = getFallbackFixtureId(
+      activity,
+      button.dataset.side || null,
+    );
     if (!fixtureId) {
       if (fallbackError) {
         fallbackError.textContent =
-          "This move is not available in the current fallback demo. Please choose Raise both arms.";
+          "This move is not available in the current fallback demo. Please choose Raise both arms or use upload instead.";
       }
       return;
     }

@@ -89,7 +89,27 @@ def format_feedback(
     visibility_ok = result.feedback_code not in VISIBILITY_FRAMING_CODES
 
     if session is not None:
+        # Call into the session to update stars. However, format_feedback
+        # must be idempotent for repeated frames within the same active
+        # attempt: if the session already reported the previous attempt as
+        # completed, do not allow this call to award additional stars or
+        # mutate the session state.
+        before_total = session.total_stars
+        before_attempt_count = session.attempt_count
+        before_attempt_completed = session.attempt_completed
+        before_current_movement = session.current_movement
+
         stars_awarded, total_stars = session.process_result(result)
+
+        if before_attempt_completed and result.completed:
+            # Revert any session-side mutation performed by process_result
+            # and report zero newly-awarded stars for idempotence.
+            session.total_stars = before_total
+            session.attempt_completed = before_attempt_completed
+            session.attempt_count = before_attempt_count
+            session.current_movement = before_current_movement
+            stars_awarded = 0
+            total_stars = before_total
     else:
         stars_awarded = 1 if result.completed else 0
         total_stars = stars_awarded

@@ -13,6 +13,7 @@ own side, never the mirrored preview's screen side.
 
 from __future__ import annotations
 
+import math
 from typing import Literal
 
 from app.services.pose_tracking import Landmark, landmark_distance
@@ -56,6 +57,21 @@ def horizontal_outward_offset(wrist: Landmark, shoulder: Landmark, side: Side) -
     if side == "left":
         return shoulder.x - wrist.x
     return wrist.x - shoulder.x
+
+
+def angle_at_joint(a: Landmark, b: Landmark, c: Landmark) -> float:
+    """Return the angle at landmark *b* formed by points *a-b-c* in degrees."""
+    bax = a.x - b.x
+    bay = a.y - b.y
+    bcx = c.x - b.x
+    bcy = c.y - b.y
+    dot = bax * bcx + bay * bcy
+    mag_a = (bax * bax + bay * bay) ** 0.5
+    mag_c = (bcx * bcx + bcy * bcy) ** 0.5
+    if mag_a <= 0 or mag_c <= 0:
+        return 0.0
+    cos_value = max(-1.0, min(1.0, dot / (mag_a * mag_c)))
+    return math.degrees(math.acos(cos_value))
 
 
 def vertical_offset(wrist: Landmark, shoulder: Landmark) -> float:

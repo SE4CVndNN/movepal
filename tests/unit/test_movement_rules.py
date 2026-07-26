@@ -205,6 +205,10 @@ def _side_reach_landmarks(
     sign = -1 if side == "left" else 1
     wrist_x = shoulder_x + sign * outward_ratio * shoulder_width_value
     wrist_y = shoulder_y + vertical_ratio * shoulder_width_value
+    opposite_side_name = "right" if side == "left" else "left"
+    opposite_shoulder_x = right_shoulder_x if side == "left" else left_shoulder_x
+    opposite_elbow_x = 0.55 if side == "left" else 0.45
+    opposite_wrist_x = 0.6 if side == "left" else 0.4
     return {
         "left_shoulder": Landmark(
             "left_shoulder", left_shoulder_x, shoulder_y, 0.0, 0.9
@@ -212,7 +216,28 @@ def _side_reach_landmarks(
         "right_shoulder": Landmark(
             "right_shoulder", right_shoulder_x, shoulder_y, 0.0, 0.9
         ),
+        f"{side}_elbow": Landmark(
+            f"{side}_elbow",
+            shoulder_x + sign * 0.35 * shoulder_width_value,
+            shoulder_y,
+            0.0,
+            0.9,
+        ),
         f"{side}_wrist": Landmark(f"{side}_wrist", wrist_x, wrist_y, 0.0, 0.9),
+        f"{opposite_side_name}_elbow": Landmark(
+            f"{opposite_side_name}_elbow",
+            opposite_elbow_x,
+            shoulder_y + 0.05,
+            0.0,
+            0.9,
+        ),
+        f"{opposite_side_name}_wrist": Landmark(
+            f"{opposite_side_name}_wrist",
+            opposite_wrist_x,
+            shoulder_y + 0.1,
+            0.0,
+            0.9,
+        ),
         "left_hip": Landmark("left_hip", 0.4, 0.65, 0.0, 0.9),
         "right_hip": Landmark("right_hip", 0.6, 0.65, 0.0, 0.9),
     }

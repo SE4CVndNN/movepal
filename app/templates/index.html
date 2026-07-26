@@ -30,7 +30,15 @@ block content %}
       data-side="left"
       data-goto="camera-choice"
     >
-      Reach to the side
+      Reach to the left
+    </button>
+    <button
+      type="button"
+      data-activity="side_reach"
+      data-side="right"
+      data-goto="camera-choice"
+    >
+      Reach to the right
     </button>
     <button
       type="button"
@@ -38,7 +46,15 @@ block content %}
       data-side="left"
       data-goto="camera-choice"
     >
-      Knee lift
+      Knee lift left
+    </button>
+    <button
+      type="button"
+      data-activity="knee_lift_or_step"
+      data-side="right"
+      data-goto="camera-choice"
+    >
+      Knee lift right
     </button>
   </div>
 </section>
@@ -143,6 +159,7 @@ block content %}
   <div class="feedback-header">
     <h2 id="feedback-message">Awesome job! You've earned ⭐ 1 Star!</h2>
   </div>
+  <div id="feedback-status" hidden></div>
   <p id="feedback-detail">Here is how your move went. Try again if you want!</p>
   <button type="button" data-goto="activity">Try another move</button>
   <button type="button" data-goto="summary">See my stars</button>

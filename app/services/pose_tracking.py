@@ -59,6 +59,12 @@ PoseStatus.LOW_VISIBILITY. The Sprint-1 game experience is intentionally
 more forgiving so children can play without needing a perfect full-body
 frame."""
 
+# When validating external evidence (conservative mode) require a higher
+# fraction of visible tracked landmarks so incomplete samples are flagged
+# as LOW_VISIBILITY.
+CONSERVATIVE_MINIMUM_COVERAGE = 0.75
+
+
 TRACKED_LANDMARK_NAMES: tuple[str, ...] = (
     "left_shoulder",
     "right_shoulder",
@@ -288,7 +294,11 @@ def pose_result_from_fixture_data(
     # - Otherwise (checked-in fixtures), use the number of present tracked
     #   landmarks so existing fixture semantics remain unchanged.
     if conservative:
+        # Conservative mode uses the full tracked-landmark denominator and
+        # a stricter minimum coverage threshold so incomplete fixtures are
+        # flagged as LOW_VISIBILITY.
         coverage_denominator = None
+        minimum_coverage = max(minimum_coverage, CONSERVATIVE_MINIMUM_COVERAGE)
     else:
         tracked_present = [name for name in TRACKED_LANDMARK_NAMES if name in landmarks]
         coverage_denominator = len(tracked_present) if tracked_present else None
