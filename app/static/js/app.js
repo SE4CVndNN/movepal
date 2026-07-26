@@ -66,7 +66,7 @@ function updateFeedbackMessage(amount, mode) {
   if (feedbackMessage) {
     if (mode === "retry") {
       feedbackMessage.textContent =
-        "Almost there! Try again with a little more bounce.";
+        "Great effort! Check the feedback above and try again with the right pose.";
     } else {
       if (amount === 1) {
         feedbackMessage.textContent = "You moved like a star! ⭐";
@@ -75,6 +75,17 @@ function updateFeedbackMessage(amount, mode) {
       }
     }
   }
+}
+
+function renderFeedbackText(payload) {
+  if (
+    payload.feedback_code === "lift_knee" &&
+    currentActivity === "knee_lift_or_step" &&
+    currentSide
+  ) {
+    return `I asked for a ${currentSide} knee lift. Try lifting your ${currentSide} knee up in front like a marching move.`;
+  }
+  return payload.feedback || "Try again with the right pose.";
 }
 
 function updateFeedbackStatus(mode, detailText) {
@@ -86,7 +97,7 @@ function updateFeedbackStatus(mode, detailText) {
     detail.textContent =
       detailText ??
       (mode === "retry"
-        ? "Try again with a little more space and a stronger pose."
+        ? "Check the feedback above and try again with the right pose."
         : "Nice move! Keep going to collect more stars.");
   }
   if (feedbackSecondaryButton) {
@@ -442,7 +453,8 @@ document
       }
 
       const mode = payload.completed ? "success" : "retry";
-      if (feedbackMessage) feedbackMessage.textContent = payload.feedback;
+      if (feedbackMessage)
+        feedbackMessage.textContent = renderFeedbackText(payload);
       updateFeedbackStatus(
         mode,
         mode === "success"
@@ -486,11 +498,11 @@ const SUPPORTED_FALLBACK_FIXTURES = {
   },
   side_reach: {
     left: "synthetic_side_reach_left_positive_001",
-    right: "synthetic_side_reach_right_negative_001",
+    right: "synthetic_side_reach_right_positive_001",
   },
   knee_lift_or_step: {
     left: "synthetic_knee_lift_left_positive_001",
-    right: "synthetic_knee_lift_right_negative_001",
+    right: "synthetic_knee_lift_right_positive_001",
   },
 };
 
@@ -685,7 +697,7 @@ async function uploadFrame(blob, filename, requestToken, statusEl) {
       stopPeriodicCapture();
       const mode = payload.completed ? "success" : "retry";
       if (feedbackMessage) {
-        feedbackMessage.textContent = payload.feedback;
+        feedbackMessage.textContent = renderFeedbackText(payload);
       }
       updateFeedbackStatus(mode);
       if (payload.completed && payload.stars > 0) {
@@ -858,7 +870,8 @@ document.querySelectorAll(".sample-choice").forEach((button) => {
       }
 
       const mode = payload.completed ? "success" : "retry";
-      if (feedbackMessage) feedbackMessage.textContent = payload.feedback;
+      if (feedbackMessage)
+        feedbackMessage.textContent = renderFeedbackText(payload);
       updateFeedbackStatus(
         mode,
         mode === "success"

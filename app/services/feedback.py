@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from app.services.movement_rules import MovementResult
     from app.services.scoring import ScoringSession
 
-_MOVEMENT_CORRECTION_TEXT = "Please adjust your pose slightly."
+_MOVEMENT_CORRECTION_TEXT = "This picture doesn't show the move we asked for. Try again with the right pose."
 """Shared wording for every movement-specific correction code.
 
 Section 12's table intentionally gives ``raise_arms``, ``reach_left``,
@@ -27,17 +27,17 @@ per key (and risking the two sides drifting apart).
 
 FEEDBACK_MESSAGES: dict[str, str] = {
     "great": "Awesome job! You've earned ⭐ 1 Star!",
-    "raise_arms": _MOVEMENT_CORRECTION_TEXT,
-    "reach_left": _MOVEMENT_CORRECTION_TEXT,
-    "reach_right": _MOVEMENT_CORRECTION_TEXT,
-    "lift_knee": _MOVEMENT_CORRECTION_TEXT,
+    "raise_arms": "You need both arms up. Try a picture with your hands above your shoulders.",
+    "reach_left": "I asked for a left-side reach. Use your left arm to stretch out to the side.",
+    "reach_right": "I asked for a right-side reach. Use your right arm to stretch out to the side.",
+    "lift_knee": "I asked for a knee lift. Try lifting your knee up in front like a marching move.",
     "move_back": "Move slightly farther from the camera.",
-    "hold": "Please hold a bit longer for better validation.",
+    "hold": "Hold your pose a little longer so I can see the whole move.",
     "full_body_missing": (
         "We lost track of you! Please step back so your full body is "
         "visible in the frame."
     ),
-    "try_again": "Try again.",
+    "try_again": "Looks like that one missed the move. Try again with the right pose.",
 }
 
 VISIBILITY_FRAMING_CODES: set[str] = {"full_body_missing", "move_back"}

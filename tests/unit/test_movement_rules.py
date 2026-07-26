@@ -377,12 +377,10 @@ def test_opposite_arm_reaching_does_not_satisfy_requested_side(requested_side):
     assert result.feedback_code == f"reach_{requested_side}"
 
 
-def test_reach_left_and_reach_right_share_the_raise_arms_wording():
-    """Section 12's approved-wording table gives raise_arms/reach_left/
-    reach_right the identical sentence; only the feedback_code carries the
-    distinction between movements and sides."""
-    assert FEEDBACK_MESSAGES["reach_left"] == FEEDBACK_MESSAGES["raise_arms"]
-    assert FEEDBACK_MESSAGES["reach_right"] == FEEDBACK_MESSAGES["raise_arms"]
+def test_reach_left_and_reach_right_give_side_specific_feedback():
+    assert "left-side reach" in FEEDBACK_MESSAGES["reach_left"]
+    assert "right-side reach" in FEEDBACK_MESSAGES["reach_right"]
+    assert FEEDBACK_MESSAGES["reach_left"] != FEEDBACK_MESSAGES["reach_right"]
 
 
 # --- Knee lift -------------------------------------------------------------
@@ -604,5 +602,6 @@ def test_knee_lift_omitted_samples_assumes_hold_satisfied():
     assert result.feedback_code == "great"
 
 
-def test_lift_knee_shares_approved_movement_correction_wording():
-    assert FEEDBACK_MESSAGES["lift_knee"] == FEEDBACK_MESSAGES["raise_arms"]
+def test_lift_knee_gives_knee_lift_specific_feedback():
+    assert "knee lift" in FEEDBACK_MESSAGES["lift_knee"]
+    assert FEEDBACK_MESSAGES["lift_knee"] != FEEDBACK_MESSAGES["raise_arms"]
