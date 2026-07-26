@@ -4,65 +4,87 @@ This document outlines the approved text strings for the MovePal user interface,
 
 ---
 
-## 1. Safety & Legal Disclaimer
-> **Constraint:** Do not mention treatment, rehabilitation, diagnosis, or therapist replacement.
+## 1. Page Header & Safety Text
 
-* **Main Disclaimer Banner:**  
-  "MovePal is a playful movement-practice prototype created for software-engineering education. It is not a medical device, diagnostic tool, rehabilitation system, treatment, or replacement for a physiotherapist or healthcare professional.
+> **Constraint:** Keep the player-facing copy simple, clear, and non-medical.
 
-  A success result means only that the current pose landmarks satisfied the project’s configured game rules. It does not establish that a movement is medically correct, safe for a particular person, or beneficial for a health condition."
+- **Brand Title:**  
+  "MovePal"
+- **Header Subtitle:**  
+  "Play, move, and collect stars."
+- **Start Screen Title:**  
+  "Let’s move and collect stars!"
+- **Start Screen Body:**  
+  "MovePal is a fun game for moving, smiling, and playing."
+- **Start Screen Disclaimer:**  
+  "This is just a game, not a doctor tool."
+- **Footer Disclaimer:**  
+  "MovePal is a playful prototype, not a medical or diagnostic tool."
 
 ---
 
 ## 2. Input Selection Screen
-* **Camera Choice Header:**  
-  "Choose Your Input Method"
-* **Webcam Button Text:**  
-  "Use Live Webcam"
-* **Explain why camera permission is requested:**  
-  "Please allow live camera access so you can have a live experience with MovePal."
-* **Permission Denied Message:**  
-  "Camera access was denied. Please enable camera permissions in your browser settings to continue."
-* **No Camera Detected Message:**  
-  "No camera was detected. Please connect a webcam or use the local demo sample."
-* **Transient processing and no-storage-by-default wording:**  
-  "Camera frames are processed temporarily and are not stored by default."
-* **Stop/Reset behavior:**  
-  "Please click on Stop Camera or Reset to stop recording."
-* **Webcam Success Notification:**  
-  "Webcam connected successfully! Prepare to move."
-* **Fallback Button Text:**  
-  "Use Local Demo Sample (No Camera)"
-* **Fallback Active Notification:**  
-  "Using local demo feed. No camera access required."
+
+> **Constraint:** Use brief labels and gentle camera guidance.
+
+- **Camera Choice Header:**  
+  "Choose how to play"
+- **Camera Choice Body:**  
+  "Use the camera, or try the demo if it is not ready."
+- **Webcam Button Text:**  
+  "Use the camera"
+- **Fallback Button Text:**  
+  "Try the demo"
+- **Camera Permission Prompt:**  
+  "Please allow camera access if the browser asks."
+- **Secure-context fallback:**  
+  "The camera is not ready. That is okay. You can still try the demo."
+- **Unsupported browser fallback:**  
+  "This browser cannot use the camera right now. You can still try the demo."
+- **Camera stopped fallback:**  
+  "The camera stopped. That is okay. You can still try the demo."
+- **Permission denied fallback:**  
+  "Camera permission was not given. You can still try the demo."
+- **No camera found fallback:**  
+  "No camera was found. You can still try the demo."
+- **Webcam success notification:**  
+  "Camera is on! Get ready to move."
 
 ---
 
-## 3. Pose & Visibility Feedback
-> **Constraint:** Use friendly, encouraging instructions when the neural network cannot detect the user's pose.
+## 3. Demo & Move Selection
 
-* **General Low Visibility Alert:**  
-  "We lost track of you! Please step back so your full body is visible in the frame."
-* **Camera Obstructed Alert:**  
-  "Looks a bit dark or blurry. Please adjust your lighting or clean your lens."
-* **Body Part Missing Alert:**  
-  "Keep your knees and hips in view so we can track your movements!"
-* **Incomplete Performance - not holding for enough time:**  
-  "Please hold a bit longer for better validation."
-* **Incomplete Performance - incorrect position:**  
-  "Please adjust your pose slightly."
+> **Constraint:** Keep the demo flow straightforward and kid-friendly.
+
+- **Demo Picker Title:**  
+  "Pick a demo move"
+- **Demo picker note:**  
+  "Some demo moves work best on the left side."
 
 ---
 
-## 4. Performance & Gamification Feedback
-> **Constraint:** Focus entirely on playfulness (stars, points) rather than physical health progression.
+## 4. Feedback & Result Messaging
 
-* **Movement Completed (Success):**  
-  * **Singular Success:** "Awesome job! You've earned ⭐ 1 Star!"
-  * **Plural Success:** "Awesome job! You've earned ⭐ {count} Stars!"
-* **Encouragement to Try Again (Retry):**  
-  "Keep going! Adjust your position and try that movement again."
-* **Session Summary Header:**  
-  "Session Complete!"
-* **Session Summary Body:**  
-  "You successfully completed your movements today and earned a total of ⭐ {count} Stars! Thanks for playing with MovePal!"
+> **Constraint:** Use positive, encouraging language for success and retry flows.
+
+- **Success feedback:**  
+  "You moved like a star! ⭐"
+- **Success feedback (plural):**  
+  "Star power! You earned ⭐ {count} stars!"
+- **Success detail:**  
+  "Nice move! Keep going to collect more stars."
+- **Retry feedback:**  
+  "Almost there! Try again with a little more bounce."
+- **Retry detail:**  
+  "Try again with a little more space and a stronger pose."
+
+---
+
+## 5. Session Summary
+
+> **Constraint:** Keep the completion screen celebratory.
+
+- **Summary Title:**  
+  "You did it!"
+- **Summary body:**  
+  "You earned ⭐ {count} stars! Thanks for playing with MovePal!"

@@ -60,36 +60,17 @@ body {
 }
 
 .site-header,
-main,
-footer {
+main {
   max-width: 44rem;
   margin: 0 auto;
   padding: var(--space-md);
 }
 
-body {
-  background:
-    radial-gradient(
-      8rem 8rem at 20% 15%,
-      rgba(255, 233, 149, 0.55),
-      transparent 30%
-    ),
-    radial-gradient(
-      6rem 6rem at 80% 10%,
-      rgba(255, 154, 179, 0.45),
-      transparent 30%
-    ),
-    radial-gradient(
-      7rem 7rem at 15% 75%,
-      rgba(139, 211, 221, 0.35),
-      transparent 28%
-    ),
-    radial-gradient(
-      10rem 10rem at 85% 75%,
-      rgba(179, 213, 255, 0.35),
-      transparent 28%
-    ),
-    linear-gradient(180deg, #fff9f0 0%, #fef0f8 35%, #fff5fd 100%);
+footer {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: var(--space-md);
+  text-align: center;
 }
 
 .site-header {
@@ -215,9 +196,9 @@ button:active {
 }
 
 .status-retry {
-  background: rgba(245, 130, 174, 0.14);
-  color: var(--color-retry-dark);
-  border-color: rgba(209, 71, 126, 0.2);
+  background: rgba(139, 211, 221, 0.08);
+  color: var(--color-secondary-dark);
+  border-color: rgba(58, 155, 168, 0.16);
 }
 
 .feedback-header {

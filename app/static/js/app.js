@@ -49,30 +49,25 @@ function updateFeedbackMessage(amount, mode) {
   if (feedbackMessage) {
     if (mode === "retry") {
       feedbackMessage.textContent =
-        "Keep going! Adjust your position and try that movement again.";
+        "Almost there! Try again with a little more bounce.";
     } else {
       if (amount === 1) {
-        feedbackMessage.textContent = "Awesome job! You've earned ⭐ 1 Star!";
+        feedbackMessage.textContent = "You moved like a star! ⭐";
       } else {
-        feedbackMessage.textContent = `Awesome job! You've earned ⭐ ${amount} Stars!`;
+        feedbackMessage.textContent = `Star power! You earned ⭐ ${amount} stars!`;
       }
     }
   }
 }
 
 function updateFeedbackStatus(mode, detailText) {
-  const statusBadge = document.querySelector("#feedback-status");
   const detail = document.querySelector("#feedback-detail");
-  if (statusBadge) {
-    statusBadge.textContent = mode === "retry" ? "Retry" : "Success";
-    statusBadge.className = `status-badge status-${mode}`;
-  }
   if (detail) {
     detail.textContent =
       detailText ??
       (mode === "retry"
         ? "Try again with a little more space and a stronger pose."
-        : "A deterministic fallback result was returned for this demo move.");
+        : "Nice move! Keep going to collect more stars.");
   }
 }
 
