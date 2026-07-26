@@ -23,6 +23,7 @@ let currentActivity = null;
 let currentSide = null;
 let activityToken = 0;
 let hasStartedSession = false;
+let feedbackRetryTarget = "fallback-upload";
 
 const scoreCount = document.querySelector("#score-count");
 const summaryStarCount = document.querySelector("#summary-star-count");
@@ -103,6 +104,11 @@ function updateFeedbackStatus(mode, detailText) {
   if (feedbackSecondaryButton) {
     feedbackSecondaryButton.textContent =
       mode === "retry" ? "Try again" : "Upload another photo";
+    if (mode === "retry") {
+      feedbackSecondaryButton.dataset.goto = feedbackRetryTarget;
+    } else {
+      feedbackSecondaryButton.dataset.goto = "fallback-upload";
+    }
   }
 }
 
@@ -641,6 +647,7 @@ function captureFrame() {
     return;
   }
 
+  feedbackRetryTarget = "camera-live";
   const { width, height } = getCaptureDimensions(
     video.videoWidth,
     video.videoHeight,
@@ -753,6 +760,7 @@ async function uploadSelectedPhoto(file, statusEl) {
   }
 
   if (statusEl) statusEl.textContent = "Uploading photo…";
+  feedbackRetryTarget = "camera-upload";
   const requestToken = activityToken;
   return uploadFrame(file, file.name || "upload.jpg", requestToken, statusEl);
 }
@@ -777,6 +785,7 @@ document.querySelector("#use-upload-btn")?.addEventListener("click", () => {
 document
   .querySelector("#show-fallback-upload-btn")
   ?.addEventListener("click", () => {
+    feedbackRetryTarget = "fallback-upload";
     showScreen("fallback-upload");
   });
 
