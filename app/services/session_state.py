@@ -35,8 +35,10 @@ def _default_state() -> dict[str, Any]:
     """Return a fresh, JSON-serializable session-state dict.
 
     ``attempted`` / ``completed`` are lists used as ordered sets of movement
-    names. The remaining fields mirror :class:`ScoringSession` so it can be
-    rehydrated and saved back on each request.
+    names, while ``attempted_count`` / ``completed_count`` track the number
+    of attempts and completed attempts over time. The remaining fields mirror
+    :class:`ScoringSession` so it can be rehydrated and saved back on each
+    request.
     """
     return {
         "total_stars": 0,
@@ -44,7 +46,9 @@ def _default_state() -> dict[str, Any]:
         "current_movement": None,
         "attempt_count": 0,
         "attempted": [],
+        "attempted_count": 0,
         "completed": [],
+        "completed_count": 0,
         "finished": False,
     }
 
@@ -66,6 +70,11 @@ class SessionStateService:
         if not isinstance(state, dict):
             state = _default_state()
             self._storage[STORAGE_KEY] = state
+
+        if "attempted_count" not in state:
+            state["attempted_count"] = len(state.get("attempted", []))
+        if "completed_count" not in state:
+            state["completed_count"] = len(state.get("completed", []))
         return state
 
     def _persist(self, state: dict[str, Any]) -> None:
@@ -96,15 +105,17 @@ class SessionStateService:
         self._persist(state)
 
     def record_attempt(self, movement: str) -> None:
-        """Record that *movement* was attempted (distinct movements only)."""
+        """Record that *movement* was attempted, counting every attempt."""
         state = self._state()
+        state["attempted_count"] += 1
         if movement not in state["attempted"]:
             state["attempted"].append(movement)
         self._persist(state)
 
     def record_completion(self, movement: str) -> None:
-        """Record that *movement* was completed (distinct movements only)."""
+        """Record that *movement* was completed, counting every completed attempt."""
         state = self._state()
+        state["completed_count"] += 1
         if movement not in state["completed"]:
             state["completed"].append(movement)
         self._persist(state)
@@ -132,8 +143,8 @@ class SessionStateService:
         """Build the non-identifying end-of-session summary."""
         state = self._state()
         return SessionSummary(
-            attempted_movements=len(state["attempted"]),
-            completed_movements=len(state["completed"]),
+            attempted_movements=state["attempted_count"],
+            completed_movements=state["completed_count"],
             stars=state["total_stars"],
         )
 
