@@ -58,7 +58,10 @@ def test_get_feedback_message_returns_friendly_text(code: str, expected_substrin
 def test_get_feedback_message_unknown_code_fallback():
     """Unknown codes must gracefully fall back to friendly default non-medical wording."""
     message = get_feedback_message("unknown_custom_observation")
-    assert message == "This picture doesn't show the move we asked for. Try again with the right pose."
+    assert (
+        message
+        == "This picture doesn't show the move we asked for. Try again with the right pose."
+    )
 
 
 def test_format_feedback_success_result():

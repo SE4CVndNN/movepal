@@ -244,14 +244,11 @@ def evaluate_side_reach(
     opposite_side_name = opposite_side(requested_side)
     opposite_wrist_name = side_landmark_name(opposite_side_name, "wrist")
     opposite_elbow_name = side_landmark_name(opposite_side_name, "elbow")
-    required = (
-        SIDE_REACH_COMMON_REQUIRED_LANDMARKS
-        + (
-            requested_elbow_name,
-            requested_wrist_name,
-            opposite_elbow_name,
-            opposite_wrist_name,
-        )
+    required = SIDE_REACH_COMMON_REQUIRED_LANDMARKS + (
+        requested_elbow_name,
+        requested_wrist_name,
+        opposite_elbow_name,
+        opposite_wrist_name,
     )
 
     for name in required:
@@ -280,9 +277,7 @@ def evaluate_side_reach(
     requested_shoulder = left_shoulder if requested_side == "left" else right_shoulder
     wrist = landmarks[requested_wrist_name]
     elbow = landmarks[requested_elbow_name]
-    opposite_shoulder = (
-        right_shoulder if requested_side == "left" else left_shoulder
-    )
+    opposite_shoulder = right_shoulder if requested_side == "left" else left_shoulder
     opposite_elbow = landmarks[opposite_elbow_name]
     opposite_wrist = landmarks[opposite_wrist_name]
 
@@ -326,11 +321,12 @@ def evaluate_side_reach(
     if lenient:
         hip_level_ok = True
     else:
-        hip_level_ok = abs(left_hip.y - right_hip.y) <= (effective_vertical_ratio * width)
+        hip_level_ok = abs(left_hip.y - right_hip.y) <= (
+            effective_vertical_ratio * width
+        )
     elbow_in_line = elbow_outward >= 0 and outward >= elbow_outward
     opposite_arm_relaxed = (
-        opposite_wrist.y >= opposite_elbow.y
-        and opposite_elbow.y >= opposite_shoulder.y
+        opposite_wrist.y >= opposite_elbow.y and opposite_elbow.y >= opposite_shoulder.y
     )
 
     confidence = (

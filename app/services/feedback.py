@@ -15,7 +15,9 @@ if TYPE_CHECKING:
     from app.services.movement_rules import MovementResult
     from app.services.scoring import ScoringSession
 
-_MOVEMENT_CORRECTION_TEXT = "This picture doesn't show the move we asked for. Try again with the right pose."
+_MOVEMENT_CORRECTION_TEXT = (
+    "This picture doesn't show the move we asked for. Try again with the right pose."
+)
 """Shared wording for every movement-specific correction code.
 
 Section 12's table intentionally gives ``raise_arms``, ``reach_left``,

@@ -206,7 +206,6 @@ def _side_reach_landmarks(
     wrist_x = shoulder_x + sign * outward_ratio * shoulder_width_value
     wrist_y = shoulder_y + vertical_ratio * shoulder_width_value
     opposite_side_name = "right" if side == "left" else "left"
-    opposite_shoulder_x = right_shoulder_x if side == "left" else left_shoulder_x
     opposite_elbow_x = 0.55 if side == "left" else 0.45
     opposite_wrist_x = 0.6 if side == "left" else 0.4
     return {

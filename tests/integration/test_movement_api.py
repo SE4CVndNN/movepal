@@ -44,7 +44,10 @@ def test_movement_negative_fixture_asks_to_raise_arms(client):
     assert response.status_code == 200
     assert payload["completed"] is False
     assert payload["feedback_code"] == "raise_arms"
-    assert payload["feedback"] == "You need both arms up. Try a picture with your hands above your shoulders."
+    assert (
+        payload["feedback"]
+        == "You need both arms up. Try a picture with your hands above your shoulders."
+    )
     assert payload["visibility_ok"] is True
 
 
