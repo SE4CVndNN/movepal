@@ -30,11 +30,13 @@ This document outlines the approved text strings for the MovePal user interface,
 - **Camera Choice Header:**  
   "Choose how to play"
 - **Camera Choice Body:**  
-  "Use the camera, or try the demo if it is not ready."
+  "After you choose a move, you can use the camera, upload a photo, or try the built-in demo."
 - **Webcam Button Text:**  
   "Use the camera"
+- **Upload Button Text:**  
+  "Upload a photo"
 - **Fallback Button Text:**  
-  "Try the demo"
+  "Try the built-in demo"
 - **Camera Permission Prompt:**  
   "Please allow camera access if the browser asks."
 - **Secure-context fallback:**  
@@ -59,7 +61,7 @@ This document outlines the approved text strings for the MovePal user interface,
 - **Demo Picker Title:**  
   "Pick a demo move"
 - **Demo picker note:**  
-  "Some demo moves work best on the left side."
+  "Pick the side you want to practice."
 
 ---
 
@@ -74,9 +76,9 @@ This document outlines the approved text strings for the MovePal user interface,
 - **Success detail:**  
   "Nice move! Keep going to collect more stars."
 - **Retry feedback:**  
-  "Almost there! Try again with a little more bounce."
+  "Great effort! Check the feedback above and try again with the right pose."
 - **Retry detail:**  
-  "Try again with a little more space and a stronger pose."
+  "Check the feedback above and try again with the right pose."
 
 ---
 

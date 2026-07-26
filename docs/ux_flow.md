@@ -6,15 +6,15 @@ start → activity choice → camera choice → (live camera | fallback demo) �
 
 ## Camera / fallback state table
 
-| Trigger                                             | Resulting state | User-facing message                                                                                          |
-| --------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------ |
-| User clicks "Use Live Webcam" and grants permission | camera-live     | "Webcam connected successfully! Prepare to move."                                                            |
-| User clicks "Use Live Webcam" and denies permission | camera-fallback | "Camera access was denied. You can still try the demo for your chosen move."                                 |
-| No camera device exists                             | camera-fallback | "No camera was detected. You can still try the demo for your chosen move."                                   |
-| Browser requires secure context or unsupported API  | camera-fallback | "Camera access requires a secure connection. Please use the demo version instead."                           |
-| User clicks "Try the demo" directly                 | camera-fallback | "Use the demo version for the move you already picked."                                                      |
-| User clicks "Start demo" on fallback screen         | feedback        | fallback move is evaluated via `/api/movement`; deterministic raise-both-arms result transitions to feedback |
-| User clicks "Stop Camera"                           | camera-choice   | (camera stream stopped, tracks released)                                                                     |
+| Trigger                                            | Resulting state | User-facing message                                                                                          |
+| -------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------ |
+| User clicks "Use the camera" and grants permission | camera-live     | "Camera is on! Get ready to move."                                                                           |
+| User clicks "Use the camera" and denies permission | camera-fallback | "Camera access was denied. You can still try the demo for your chosen move."                                 |
+| No camera device exists                            | camera-fallback | "No camera was detected. You can still try the demo for your chosen move."                                   |
+| Browser requires secure context or unsupported API | camera-fallback | "Camera access requires a secure connection. Please use the built-in demo instead."                          |
+| User clicks "Try the built-in demo" directly       | camera-fallback | "Use the built-in demo for the move you already picked."                                                     |
+| User clicks "Start demo" on fallback screen        | feedback        | fallback move is evaluated via `/api/movement`; deterministic raise-both-arms result transitions to feedback |
+| User clicks "Stop Camera"                          | camera-choice   | (camera stream stopped, tracks released)                                                                     |
 
 ## Game state model (MP-011)
 
