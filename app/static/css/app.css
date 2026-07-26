@@ -179,12 +179,15 @@ h2 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.65rem;
+  gap: 0.9rem;
   margin: var(--space-lg) 0;
-  padding: var(--space-sm);
-  border: 1px solid rgba(58, 155, 168, 0.12);
-  border-radius: 1.25rem;
-  background: rgba(220, 244, 255, 0.45);
+  padding: 1.5rem 1.25rem 1.75rem;
+  border: none;
+  border-radius: 2rem;
+  background: rgba(206, 233, 247, 1);
+  width: 100%;
+  max-width: 42rem;
+  box-shadow: 0 1rem 2rem rgb(23 32 51 / 12%);
 }
 
 .upload-panel,
@@ -226,19 +229,43 @@ h2 {
 }
 
 .move-preview img {
-  width: min(12rem, 100%);
+  width: min(16rem, 100%);
+  height: auto;
+  max-height: 12rem;
+  object-fit: contain;
   border-radius: 1rem;
   box-shadow: 0 0.4rem 0.9rem rgb(23 32 51 / 10%);
 }
 
+.move-preview img.full-photo {
+  /* Keep the image large and visible */
+  border-radius: 1rem;
+  max-height: 22rem;
+  width: min(28rem, 100%);
+  object-fit: contain;
+  box-shadow: none;
+  display: block;
+}
+
+.move-preview h3,
+.move-preview p {
+  margin: 0.25rem 0 0.5rem 0;
+}
+
 .move-preview h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
+  color: var(--color-primary-dark);
 }
 
 .move-preview p {
   margin: 0;
-  color: var(--color-text-muted);
+  color: var(--color-text);
+  font-size: 1.05rem;
+  max-width: 34rem;
+  text-align: center;
+  line-height: 1.6;
+  font-weight: 600;
 }
 
 .card p {
@@ -249,11 +276,11 @@ h2 {
 }
 
 .avatar {
-  width: 7rem;
-  height: 7rem;
+  width: 9rem;
+  height: 9rem;
   display: block;
   margin: 0 auto var(--space-md);
-  filter: drop-shadow(0 0.4rem 0.5rem rgb(23 32 51 / 15%));
+  filter: drop-shadow(0 0.5rem 0.8rem rgb(23 32 51 / 16%));
 }
 
 button {

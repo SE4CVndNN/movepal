@@ -91,18 +91,20 @@ function updateFeedbackStatus(mode, detailText) {
 const MOVE_PREVIEW = {
   raise_both_arms: {
     title: "Raise both arms",
-    description: "Stretch your arms up like a happy airplane.",
+    description: "Stretch your arms up high and keep them wide.",
     avatar: "/static/images/avatars/raise_both_arms.jpg",
   },
   side_reach: {
     title: "Reach to the side",
     description: "Reach out to the side with your arm and stretch.",
-    avatar: "/static/images/avatars/reach_to_the_side.jpg",
+    // Use a valid default file; specific left/right variants are applied
+    // when a side is selected in `updateMovePreviews()`.
+    avatar: "/static/images/avatars/reach-to-the-left.png",
   },
   knee_lift_or_step: {
     title: "Knee lift",
     description: "Lift one knee up and hold it there like a strong superhero.",
-    avatar: "/static/images/avatars/knee-lift.jpg",
+    avatar: "/static/images/avatars/knee-lift-left.png",
   },
 };
 
@@ -154,36 +156,78 @@ function updateMovePreviews() {
   }
 
   if (preview) {
+    // Hide decorative SVG avatars in the surrounding cards so the
+    // move preview image takes clear visual precedence when a move
+    // is selected.
+    document.querySelectorAll(".avatar").forEach((el) => (el.hidden = true));
     if (selectedMoveTitle) selectedMoveTitle.textContent = preview.title;
-    if (selectedMoveDescription)
+    if (selectedMoveDescription) {
       selectedMoveDescription.textContent = description || preview.description;
+      selectedMoveDescription.hidden = false;
+    }
     if (selectedMoveAvatar) {
-      selectedMoveAvatar.src = preview.avatar;
+      let avatarUrl = preview.avatar;
+      if (currentActivity === "side_reach" && currentSide) {
+        avatarUrl = `/static/images/avatars/reach-to-the-${currentSide}.png`;
+      }
+      if (currentActivity === "knee_lift_or_step" && currentSide) {
+        avatarUrl =
+          currentSide === "left"
+            ? "/static/images/avatars/knee-lift-left.png"
+            : "/static/images/avatars/knee-lift-right.jpg";
+      }
+      selectedMoveAvatar.src = avatarUrl;
+      selectedMoveAvatar.classList.add("full-photo");
       selectedMoveAvatar.alt = preview.title;
       selectedMoveAvatar.hidden = false;
     }
 
     if (fallbackMoveTitle) fallbackMoveTitle.textContent = preview.title;
-    if (fallbackMoveDescription)
+    if (fallbackMoveDescription) {
       fallbackMoveDescription.textContent =
         description || "Start the demo for the move you already picked.";
+      fallbackMoveDescription.hidden = false;
+    }
     if (fallbackMoveAvatar) {
-      fallbackMoveAvatar.src = preview.avatar;
+      let fallbackAvatar = preview.avatar;
+      if (currentActivity === "side_reach" && currentSide) {
+        fallbackAvatar = `/static/images/avatars/reach-to-the-${currentSide}.png`;
+      }
+      if (currentActivity === "knee_lift_or_step" && currentSide) {
+        fallbackAvatar =
+          currentSide === "left"
+            ? "/static/images/avatars/knee-lift-left.png"
+            : "/static/images/avatars/knee-lift-right.jpg";
+      }
+      fallbackMoveAvatar.src = fallbackAvatar;
+      fallbackMoveAvatar.classList.add("full-photo");
       fallbackMoveAvatar.alt = preview.title;
       fallbackMoveAvatar.hidden = false;
     }
   } else {
+    // No preview selected — restore decorative SVG avatars.
+    document.querySelectorAll(".avatar").forEach((el) => (el.hidden = false));
     if (selectedMoveTitle) selectedMoveTitle.textContent = "Pick a move first";
-    if (selectedMoveDescription)
+    if (selectedMoveDescription) {
       selectedMoveDescription.textContent =
         "After you choose a move, you can use the camera or try the demo.";
-    if (selectedMoveAvatar) selectedMoveAvatar.hidden = true;
+      selectedMoveDescription.hidden = false;
+    }
+    if (selectedMoveAvatar) {
+      selectedMoveAvatar.hidden = true;
+      selectedMoveAvatar.classList.remove("full-photo");
+    }
 
     if (fallbackMoveTitle) fallbackMoveTitle.textContent = "Your selected move";
-    if (fallbackMoveDescription)
+    if (fallbackMoveDescription) {
       fallbackMoveDescription.textContent =
         "Start the demo for the move you already picked.";
-    if (fallbackMoveAvatar) fallbackMoveAvatar.hidden = true;
+      fallbackMoveDescription.hidden = false;
+    }
+    if (fallbackMoveAvatar) {
+      fallbackMoveAvatar.hidden = true;
+      fallbackMoveAvatar.classList.remove("full-photo");
+    }
   }
 }
 
