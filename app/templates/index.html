@@ -10,6 +10,9 @@ block content %}
 </section>
 
 <section class="card" data-screen="activity" hidden>
+  <button type="button" class="card-back-button" data-goto="start">
+    ← Back
+  </button>
   {% set avatar_suffix = 'activity' %} {% include "partials/_avatar.html" %}
   <h2>Pick a move</h2>
   <p>Choose a move, then choose how to play.</p>
@@ -41,6 +44,9 @@ block content %}
 </section>
 
 <section class="card" data-screen="camera-choice" hidden>
+  <button type="button" class="card-back-button" data-goto="activity">
+    ← Back
+  </button>
   <h2>Choose how to play</h2>
   <p>Use the camera, or try the demo if it is not ready.</p>
   <button type="button" id="use-webcam-btn">Use the camera</button>
@@ -49,6 +55,9 @@ block content %}
 </section>
 
 <section class="card" data-screen="sample-picker" hidden>
+  <button type="button" class="card-back-button" data-goto="camera-choice">
+    ← Back
+  </button>
   <h2>Pick a demo move</h2>
   <p>Some demo moves work best on the left side.</p>
   <div class="sample-list">
@@ -76,6 +85,9 @@ block content %}
 </section>
 
 <section class="card" data-screen="camera-live" hidden>
+  <button type="button" class="card-back-button" data-goto="camera-choice">
+    ← Back
+  </button>
   <h2>Camera time!</h2>
   <div class="camera-stage">
     <div class="camera-feed-wrapper">
@@ -93,6 +105,9 @@ block content %}
 </section>
 
 <section class="card" data-screen="camera-fallback" hidden>
+  <button type="button" class="card-back-button" data-goto="camera-choice">
+    ← Back
+  </button>
   <h2>Demo time!</h2>
   <p id="fallback-reason" role="status" aria-live="polite">
     No camera? That’s okay. You can still try the demo.
@@ -105,6 +120,9 @@ block content %}
 </section>
 
 <section class="card feedback-card" data-screen="feedback" hidden>
+  <button type="button" class="card-back-button" data-goto="activity">
+    ← Back
+  </button>
   <div class="feedback-header">
     <h2 id="feedback-message">Awesome job! You've earned ⭐ 1 Star!</h2>
   </div>
@@ -122,6 +140,9 @@ block content %}
 </section>
 
 <section class="card" data-screen="summary" hidden>
+  <button type="button" class="card-back-button" data-goto="activity">
+    ← Back
+  </button>
   {% set avatar_suffix = 'summary' %} {% include "partials/_avatar.html" %}
   <h2>You did it!</h2>
   <p id="summary-text">
