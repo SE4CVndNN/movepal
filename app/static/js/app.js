@@ -259,6 +259,22 @@ function getAttemptStarReward() {
   return 1;
 }
 
+function updateCameraInstruction() {
+  if (!cameraInstruction) return;
+
+  if (currentActivity === "side_reach" && currentSide) {
+    cameraInstruction.textContent = `Reach with your ${currentSide} arm for this move.`;
+    return;
+  }
+
+  if (currentActivity === "knee_lift_or_step" && currentSide) {
+    cameraInstruction.textContent = `Lift your ${currentSide} knee for this move.`;
+    return;
+  }
+
+  cameraInstruction.textContent = "Use the selected move side above.";
+}
+
 function addStars(amount) {
   totalStars += amount;
   updateScoreDisplays();
@@ -308,6 +324,9 @@ function showScreen(name) {
   setAppState(SCREEN_TO_STATE[name] ?? "idle");
   if (name === "camera-choice" || name === "camera-fallback") {
     updateMovePreviews();
+  }
+  if (name === "camera-live") {
+    updateCameraInstruction();
   }
   if (name !== "camera-upload" && name !== "fallback-upload") {
     clearUploadState();
@@ -390,6 +409,7 @@ document
       activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
       preview.srcObject = activeStream;
       cameraStatus.textContent = "Camera is on! Get ready to move.";
+      updateCameraInstruction();
 
       activeStream.getVideoTracks()[0].addEventListener("ended", () => {
         if (fallbackReason)
@@ -654,7 +674,12 @@ function captureFrame() {
   );
   canvas.width = width;
   canvas.height = height;
-  canvas.getContext("2d").drawImage(video, 0, 0, width, height);
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    ctx.setTransform(-1, 0, 0, 1, width, 0);
+    ctx.drawImage(video, 0, 0, width, height);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }
   const requestToken = activityToken;
   canvas.toBlob(
     (blob) => {
@@ -671,7 +696,7 @@ async function uploadFrame(blob, filename, requestToken, statusEl) {
 
   const status = statusEl || getCurrentStatusElement();
   if (status) status.textContent = "Sending frame…";
-
+  updateCameraInstruction();
   const formData = new FormData();
   formData.append("image", blob, filename);
   if (currentActivity) formData.append("movement", currentActivity);
