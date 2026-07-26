@@ -63,6 +63,11 @@ function updateFeedbackStatus(mode, detailText) {
   }
 }
 
+function showRetryCameraButton(visible) {
+  const retryButton = document.querySelector("#retry-camera-btn");
+  if (retryButton) retryButton.hidden = !visible;
+}
+
 function getAttemptStarReward() {
   return 1;
 }
@@ -84,6 +89,14 @@ const SCREEN_TO_STATE = {
   feedback: "evaluating",
   summary: "summary",
 };
+
+const LEAVES_CAMERA_TARGETS = new Set([
+  "start",
+  "activity",
+  "camera-choice",
+  "sample-picker",
+  "summary",
+]);
 
 function setAppState(state) {
   document.body.dataset.appState = state;
@@ -121,9 +134,20 @@ document.querySelectorAll("[data-goto]").forEach((button) => {
       totalStars = 0;
       updateScoreDisplays();
     }
+    if (target !== "feedback") {
+      showRetryCameraButton(false);
+    }
+    // Any exit from the camera flow must release the stream; only the
+    // "Try again" hop back to camera-live is allowed to keep it open.
+    if (LEAVES_CAMERA_TARGETS.has(target)) {
+      stopCamera();
+    }
     showScreen(target);
     if (target === "feedback") {
       setAppState(mode);
+    }
+    if (target === "camera-live") {
+      startPeriodicCapture();
     }
   });
 });
@@ -219,6 +243,8 @@ let captureIntervalId = null;
 const captureFrameButton = document.querySelector("#capture-frame-btn");
 const sampleChoiceButtons = document.querySelectorAll(".sample-choice");
 const fallbackError = document.querySelector("#fallback-error");
+const captureCountdown = document.querySelector("#capture-countdown");
+const captureFlash = document.querySelector("#capture-flash");
 
 const SUPPORTED_FALLBACK_FIXTURES = {
   raise_both_arms: "synthetic_raise_arms_positive_001",
@@ -251,11 +277,60 @@ function getCaptureDimensions(sourceWidth, sourceHeight) {
   return { width, height };
 }
 
+// The user gets a visible "Get ready… 3, 2, 1" before the shutter fires, so
+// they know exactly which instant is being judged. The first two seconds read
+// as "Get ready…"; the last three count down as large numerals.
+const COUNTDOWN_SECONDS = 5;
+const COUNTDOWN_NUMERAL_FROM = 3;
+const FLASH_DURATION_MS = 180;
+let flashTimeoutId = null;
+
+function renderCountdown(text, isCounting) {
+  if (!captureCountdown) return;
+  captureCountdown.textContent = text;
+  captureCountdown.classList.toggle("is-counting", Boolean(isCounting));
+}
+
+function clearShutterFlash() {
+  if (flashTimeoutId != null) {
+    window.clearTimeout(flashTimeoutId);
+    flashTimeoutId = null;
+  }
+  captureFlash?.classList.remove("is-flashing");
+}
+
+function flashShutter() {
+  if (!captureFlash) return;
+  clearShutterFlash();
+  // Force a reflow so a back-to-back capture restarts the animation.
+  void captureFlash.offsetWidth;
+  captureFlash.classList.add("is-flashing");
+  // A timer, not `animationend`: browsers suspend CSS animations in
+  // backgrounded tabs, and a never-firing animationend would leave the white
+  // overlay covering the preview for good.
+  flashTimeoutId = window.setTimeout(clearShutterFlash, FLASH_DURATION_MS + 60);
+}
+
 function startPeriodicCapture() {
   stopPeriodicCapture();
-  captureIntervalId = window.setInterval(() => {
-    if (!requestInFlight) captureFrame();
-  }, 8000);
+
+  let remaining = COUNTDOWN_SECONDS;
+  const tick = () => {
+    if (remaining > COUNTDOWN_NUMERAL_FROM) {
+      renderCountdown("Get ready…", false);
+    } else if (remaining > 0) {
+      renderCountdown(String(remaining), true);
+    } else {
+      stopPeriodicCapture();
+      flashShutter();
+      captureFrame();
+      return;
+    }
+    remaining -= 1;
+  };
+
+  tick(); // show "Get ready…" immediately instead of a silent first second
+  captureIntervalId = window.setInterval(tick, 1000);
 }
 
 function stopPeriodicCapture() {
@@ -263,6 +338,8 @@ function stopPeriodicCapture() {
     window.clearInterval(captureIntervalId);
     captureIntervalId = null;
   }
+  clearShutterFlash();
+  renderCountdown("", false);
 }
 
 function stopCamera() {
@@ -303,6 +380,9 @@ function captureFrame() {
 
   if (!video.videoWidth || !video.videoHeight) {
     if (statusEl) statusEl.textContent = "Waiting for video preview...";
+    // No periodic tick backs us up any more, so restart the countdown rather
+    // than leaving the user staring at a preview that never captures.
+    startPeriodicCapture();
     return;
   }
 
@@ -313,6 +393,8 @@ function captureFrame() {
   canvas.width = width;
   canvas.height = height;
   canvas.getContext("2d").drawImage(video, 0, 0, width, height);
+  renderCountdown("Checking your pose…", false);
+
   const requestToken = activityToken;
   canvas.toBlob(
     (blob) => {
@@ -358,8 +440,16 @@ async function uploadFrame(blob, filename, requestToken) {
       stopPeriodicCapture();
       const mode = payload.completed ? "success" : "retry";
       if (feedbackMessage) feedbackMessage.textContent = payload.feedback;
-      updateFeedbackStatus(mode);
+      updateFeedbackStatus(
+        mode,
+        mode === "success"
+          ? "This result came from your live camera frame."
+          : undefined,
+      );
       if (payload.completed && payload.stars > 0) addStars(payload.stars);
+      // Keep the stream open so "Try again" can restart the countdown without
+      // a second permission prompt; leaving the flow stops it (see data-goto).
+      showRetryCameraButton(mode === "retry" && Boolean(activeStream));
       showScreen("feedback");
       setAppState(mode);
       return payload;
@@ -372,6 +462,11 @@ async function uploadFrame(blob, filename, requestToken) {
     };
     if (statusEl)
       statusEl.textContent = messages[payload.pose_status] || payload.message;
+
+    // Pose detection failed, so there is no verdict to show. The old 8s poll
+    // would have retried on its own; the countdown is one-shot, so restart it
+    // rather than leaving the user on a preview that never captures again.
+    startPeriodicCapture();
 
     return payload;
   } catch (_error) {
@@ -387,7 +482,12 @@ async function uploadFrame(blob, filename, requestToken) {
   }
 }
 
-document.querySelector("#capture-frame-btn")?.addEventListener("click", captureFrame);
+// "Capture Now" skips the remaining countdown rather than queueing a second one.
+captureFrameButton?.addEventListener("click", () => {
+  stopPeriodicCapture();
+  flashShutter();
+  captureFrame();
+});
 
 document.querySelectorAll(".sample-choice").forEach((button) => {
   button.addEventListener("click", async () => {

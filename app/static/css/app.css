@@ -267,6 +267,83 @@ button:active {
   box-shadow: 0 0.75rem 1.8rem rgb(23 32 51 / 12%);
 }
 
+.camera-stage {
+  position: relative;
+  display: inline-block;
+  max-width: 24rem;
+  width: 100%;
+}
+
+.camera-stage #camera-preview {
+  display: block;
+}
+
+.capture-countdown {
+  position: absolute;
+  inset: var(--space-md) 0 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  border-radius: 1.5rem;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: var(--font-size-lg);
+  text-align: center;
+  text-shadow: 0 0.15rem 0.4rem rgb(23 32 51 / 70%);
+}
+
+.capture-countdown:not(:empty) {
+  background: rgb(23 32 51 / 35%);
+}
+
+.capture-countdown.is-counting {
+  font-size: 5rem;
+  line-height: 1;
+}
+
+.capture-flash {
+  position: absolute;
+  inset: var(--space-md) 0 0 0;
+  border-radius: 1.5rem;
+  background: #ffffff;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.capture-flash.is-flashing {
+  animation: capture-flash-pulse 180ms ease-out;
+}
+
+@keyframes capture-flash-pulse {
+  0% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .capture-flash.is-flashing {
+    /* Hold a brief static tint instead of pulsing the whole frame. */
+    animation: capture-flash-hold 180ms steps(1, end);
+    background: rgb(255 255 255 / 25%);
+    outline: 0.35rem solid var(--color-secondary-dark);
+    outline-offset: -0.35rem;
+  }
+
+  @keyframes capture-flash-hold {
+    0%,
+    99% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+}
+
 body[data-app-state="capturing"] .score-badge {
   outline: 0.2rem solid var(--color-secondary-dark);
 }
