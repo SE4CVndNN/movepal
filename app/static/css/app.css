@@ -184,7 +184,7 @@ h2 {
   padding: 1.5rem 1.25rem 1.75rem;
   border: none;
   border-radius: 2rem;
-  background: rgba(206, 233, 247, 1);
+  background: rgba(255, 255, 255, 0.95);
   width: 100%;
   max-width: 42rem;
   box-shadow: 0 1rem 2rem rgb(23 32 51 / 12%);
@@ -195,9 +195,9 @@ h2 {
   margin: var(--space-md) auto;
   padding: var(--space-md);
   max-width: 32rem;
-  border: 1px solid rgba(58, 155, 168, 0.12);
+  border: 1px solid rgba(23, 32, 51, 0.08);
   border-radius: 1.25rem;
-  background: rgba(230, 250, 255, 0.65);
+  background: rgba(255, 255, 255, 0.95);
   text-align: left;
 }
 
@@ -309,17 +309,12 @@ button:active {
   filter: brightness(1.02);
 }
 
-.secondary {
-  background: linear-gradient(135deg, #d8eef2, #bde4eb);
-  color: var(--color-text);
-  box-shadow: 0 0.3rem 0.6rem rgb(58 155 168 / 30%);
-}
-
+.secondary,
 #use-fallback-btn,
 #stop-camera-btn {
-  background: linear-gradient(135deg, #d8eef2, #bde4eb);
+  background: linear-gradient(135deg, #f7d9e4, #d7e9f4);
   color: var(--color-text);
-  box-shadow: 0 0.3rem 0.6rem rgb(58 155 168 / 30%);
+  box-shadow: 0 0.35rem 0.8rem rgb(209 71 126 / 30%);
 }
 
 .status-badge {
