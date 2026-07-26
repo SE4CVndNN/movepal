@@ -393,7 +393,7 @@ button:active {
   align-items: center;
   gap: 0.75rem;
   width: 100%;
-  max-width: 24rem;
+  max-width: 34rem;
   margin: var(--space-md) auto 0;
 }
 
@@ -405,6 +405,8 @@ button:active {
 #camera-preview {
   width: 100%;
   max-width: 100%;
+  min-height: 20rem;
+  aspect-ratio: 4 / 3;
   border-radius: 1.5rem;
   background: black;
   box-shadow: 0 0.75rem 1.8rem rgb(23 32 51 / 12%);
