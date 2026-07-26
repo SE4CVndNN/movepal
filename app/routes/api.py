@@ -49,12 +49,25 @@ _EVALUATORS = {
 
 
 def get_pose_adapter() -> MediaPipePoseAdapter:
-    """Instantiate the pose adapter with current application config."""
+    """Return the app-wide pose adapter, creating it on first use.
+
+    The adapter caches its MediaPipe landmarker on the instance, so building a
+    fresh one per request would re-read the ~5.7 MB ``.task`` model from disk
+    for every uploaded frame. Caching on ``app.extensions`` keeps the model
+    load to once per process while staying per-app, so tests that build
+    several apps (or patch ``POSE_MODEL_PATH``) still get their own adapter.
+    """
     model_path = current_app.config.get(
         "POSE_MODEL_PATH",
         current_app.config.get("BASE_DIR", Path(".")) / "pose_landmarker_lite.task",
     )
-    return MediaPipePoseAdapter(model_path=model_path)
+    cached = current_app.extensions.get("pose_adapter")
+    if cached is not None and cached[0] == model_path:
+        return cached[1]
+
+    adapter = MediaPipePoseAdapter(model_path=model_path)
+    current_app.extensions["pose_adapter"] = (model_path, adapter)
+    return adapter
 
 
 @api_bp.get("/health")

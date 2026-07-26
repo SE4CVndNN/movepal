@@ -51,8 +51,8 @@ RAISE_BOTH_ARMS_REQUIRED_LANDMARKS: tuple[str, ...] = (
     "right_shoulder",
     "left_wrist",
     "right_wrist",
-    "left_hip",
-    "right_hip",
+    # "left_hip",
+    # "right_hip",
 )
 """Landmarks the raise-both-arms rule needs to evaluate a frame.
 

@@ -70,7 +70,17 @@ block content %}
 
 <section class="card" data-screen="camera-live" hidden>
   <h2>Live camera</h2>
-  <video id="camera-preview" autoplay playsinline muted></video>
+  <div class="camera-stage">
+    <video id="camera-preview" autoplay playsinline muted></video>
+    <div
+      id="capture-countdown"
+      class="capture-countdown"
+      role="status"
+      aria-live="assertive"
+      aria-atomic="true"
+    ></div>
+    <div id="capture-flash" class="capture-flash" aria-hidden="true"></div>
+  </div>
   <canvas id="capture-canvas" hidden></canvas>
   <p>Camera frames are processed temporarily and are not stored by default.</p>
   <p>
@@ -78,7 +88,7 @@ block content %}
     chooser.
   </p>
   <button type="button" id="stop-camera-btn">Stop Camera</button>
-  <button type="button" id="capture-frame-btn">Capture Frame</button>
+  <button type="button" id="capture-frame-btn">Capture Now</button>
   <p id="upload-status" role="status" aria-live="polite"></p>
 </section>
 
@@ -105,6 +115,9 @@ block content %}
     Pose detection and movement evaluation are separate. This screen shows the
     current deterministic fallback result for the selected move.
   </p>
+  <button type="button" id="retry-camera-btn" data-goto="camera-live" hidden>
+    Try again
+  </button>
   <button type="button" data-goto="activity">Try another move</button>
   <button type="button" data-goto="summary">See my total stars</button>
   <div hidden>

@@ -9,6 +9,9 @@ start → activity choice → camera choice → (live camera | fallback sample) 
 | Trigger                                             | Resulting state | User-facing message                                                                                   |
 | --------------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------- |
 | User clicks "Use Live Webcam" and grants permission | camera-live     | "Webcam connected successfully! Prepare to move."                                                     |
+| Camera preview is live, capture pending             | camera-live     | countdown overlay shows "Get ready…" then 3 / 2 / 1, then a shutter flash at the capture instant      |
+| Frame captured, awaiting evaluation                 | camera-live     | countdown overlay shows "Checking your pose…"; `#upload-status` shows "Sending frame…"                |
+| Attempt evaluated as retry, stream still open       | feedback        | "Try again" button restarts the countdown against the open stream (no second permission prompt)       |
 | User clicks "Use Live Webcam" and denies permission | camera-fallback | "Camera access was denied. Please enable camera permissions in your browser settings to continue."    |
 | No camera device exists                             | camera-fallback | "No camera was detected. Please connect a webcam or use the local demo sample."                       |
 | Browser requires secure context or unsupported API  | camera-fallback | "Camera access requires a secure connection (HTTPS). Please use the local demo sample instead."       |
@@ -45,10 +48,11 @@ this asset is free to reuse within the project.
 ## Score region
 
 A persistent star counter (`#score-region`) lives in the page header and
-is visible on every screen, separate from the end-of-session summary. Its
-increment logic is currently a placeholder: each "Simulate attempt"
-awards exactly one star. Real scoring will be wired up once `scoring.py`
-is connected to the actual game flow.
+is visible on every screen, separate from the end-of-session summary. It is
+driven by the `stars` field of the `/api/frame` and `/api/movement`
+responses, which come from `scoring.py`. The count is still held client-side
+in `totalStars`; the frontend does not read the authoritative server counters
+(see "Game loop integration" below).
 
 ## Accessibility notes
 
@@ -110,9 +114,33 @@ Use this sequence to confirm the current fallback behavior end to end:
   call POST /api/session/finish for the authoritative stars/attempted/completed
   counts.
 
+## Capture countdown and shutter
+
+Live capture is a deliberate one-shot snapshot, not a continuous stream —
+still avoiding WebSockets per task scope. What changed is that the timing is
+now visible instead of hidden:
+
+- The old model was a bare `setInterval(..., 8000)`. Because `setInterval` has
+  no leading call, the first frame was captured 8 seconds after the preview
+  appeared, with no countdown, no shutter, and no progress indicator. Users
+  could not tell when the photo was taken and were routinely caught mid-motion.
+- `startPeriodicCapture()` is now a countdown, not a poll: `COUNTDOWN_SECONDS`
+  (5) ticks once per second into `#capture-countdown`, rendering "Get ready…"
+  for the first two seconds and then 3 / 2 / 1 as large numerals. At zero it
+  clears itself, flashes `#capture-flash`, and captures exactly once.
+- `#capture-frame-btn` ("Capture Now") skips the remaining countdown rather
+  than queueing a second capture.
+- If the video element is not ready yet (`videoWidth === 0`) the countdown
+  restarts, since there is no longer a periodic tick to recover the attempt.
+- The flash animation is replaced by a static tint plus outline under
+  `prefers-reduced-motion: reduce`.
+
 ### Known limitations
 
-- Live camera captures every 8 seconds (fixed interval), not continuous —
-  a deliberate choice to avoid WebSockets/streaming per task scope.
+- One evaluated frame ends the capture session; the `hold` / two-consecutive-
+  samples rule stays unreachable from the live camera (`/api/frame` passes
+  `consecutive_samples=None`), because a one-shot capture model cannot
+  structurally produce two consecutive samples. See
+  `docs/movement_specification.md` "MP-014 decisions".
 - No mid-activity movement switching while a capture is in flight; the
   stale-response guard discards the result rather than applying it.
