@@ -162,6 +162,14 @@ block content %}
   <div id="feedback-status" hidden></div>
   <p id="feedback-detail">Here is how your move went. Try again if you want!</p>
   <button type="button" data-goto="activity">Try another move</button>
+  <button
+    type="button"
+    id="feedback-secondary-btn"
+    class="secondary"
+    data-goto="fallback-upload"
+  >
+    Try again
+  </button>
   <button type="button" data-goto="summary">See my stars</button>
   <div hidden>
     <button type="button" data-goto="feedback" data-feedback="success">

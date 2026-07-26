@@ -79,12 +79,19 @@ function updateFeedbackMessage(amount, mode) {
 
 function updateFeedbackStatus(mode, detailText) {
   const detail = document.querySelector("#feedback-detail");
+  const feedbackSecondaryButton = document.querySelector(
+    "#feedback-secondary-btn",
+  );
   if (detail) {
     detail.textContent =
       detailText ??
       (mode === "retry"
         ? "Try again with a little more space and a stronger pose."
         : "Nice move! Keep going to collect more stars.");
+  }
+  if (feedbackSecondaryButton) {
+    feedbackSecondaryButton.textContent =
+      mode === "retry" ? "Try again" : "Upload another photo";
   }
 }
 
