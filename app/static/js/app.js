@@ -45,6 +45,7 @@ const cameraUploadStatus = document.querySelector("#camera-upload-status");
 const fallbackUploadInput = document.querySelector("#fallback-upload-input");
 const fallbackUploadButton = document.querySelector("#fallback-upload-btn");
 const fallbackUploadStatus = document.querySelector("#fallback-upload-status");
+const cameraInstruction = document.querySelector("#camera-instruction");
 
 async function refreshSessionSummary() {
   try {
@@ -535,9 +536,15 @@ const SUPPORTED_FALLBACK_FIXTURES = {
 function setBusyRequest(isBusy) {
   requestInFlight = isBusy;
   if (captureFrameButton) captureFrameButton.disabled = isBusy;
+  if (cameraUploadButton) cameraUploadButton.disabled = isBusy;
+  if (fallbackUploadButton) fallbackUploadButton.disabled = isBusy;
   sampleChoiceButtons.forEach((button) => {
     button.disabled = isBusy;
   });
+}
+
+function setUploadStatus(statusEl, message) {
+  if (statusEl) statusEl.textContent = message;
 }
 
 function getCaptureDimensions(sourceWidth, sourceHeight) {
@@ -695,12 +702,18 @@ async function uploadFrame(blob, filename, requestToken, statusEl) {
   setBusyRequest(true);
 
   const status = statusEl || getCurrentStatusElement();
-  if (status) status.textContent = "Sending frame…";
+  if (status) setUploadStatus(status, "Sending frame…");
   updateCameraInstruction();
   const formData = new FormData();
   formData.append("image", blob, filename);
   if (currentActivity) formData.append("movement", currentActivity);
   if (currentSide) formData.append("side", currentSide);
+
+  const progressTimeout = window.setTimeout(() => {
+    if (status) {
+      status.textContent = "Still uploading… this may take a few more seconds.";
+    }
+  }, 8000);
 
   try {
     const response = await fetch("/api/frame", {
@@ -718,7 +731,7 @@ async function uploadFrame(blob, filename, requestToken, statusEl) {
         payload.message ||
         "The server could not process the frame. Please use the no-camera fallback.";
       if (status) {
-        status.textContent = message;
+        setUploadStatus(status, message);
       } else {
         showCameraFallback(message);
       }
@@ -748,7 +761,10 @@ async function uploadFrame(blob, filename, requestToken, statusEl) {
       low_visibility: "Pose visibility was too low — try again.",
     };
     if (statusEl)
-      statusEl.textContent = messages[payload.pose_status] || payload.message;
+      setUploadStatus(
+        statusEl,
+        messages[payload.pose_status] || payload.message,
+      );
 
     if (document.body.dataset.appState === "capturing" && activeStream) {
       window.setTimeout(() => {
@@ -768,6 +784,7 @@ async function uploadFrame(blob, filename, requestToken, statusEl) {
     );
     return null;
   } finally {
+    window.clearTimeout(progressTimeout);
     setBusyRequest(false);
   }
 }
@@ -784,7 +801,8 @@ async function uploadSelectedPhoto(file, statusEl) {
     return null;
   }
 
-  if (statusEl) statusEl.textContent = "Uploading photo…";
+  if (statusEl)
+    setUploadStatus(statusEl, "Uploading photo… This may take a few seconds.");
   feedbackRetryTarget = "camera-upload";
   const requestToken = activityToken;
   return uploadFrame(file, file.name || "upload.jpg", requestToken, statusEl);
