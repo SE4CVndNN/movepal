@@ -37,11 +37,12 @@ def stars_for_completion(completed: bool) -> int:
 
 
 class ScoringSession:
-    """Finite-state machine for tracking session score and attempt idempotency.
+    """Finite-state machine for tracking session score and attempt progress.
 
-    Prevents repeated success frames from awarding unlimited points by awarding
-    stars exactly once per successful attempt. Starting a new attempt or resetting
-    the session resets the attempt completion state.
+    Each completed attempt awards one star. Repeated success frames for the
+    same active attempt do not award extra stars until a new attempt is
+    started, but a new completed attempt on the same movement should still be
+    rewarded.
     """
 
     def __init__(self, current_movement: str | None = None) -> None:
@@ -51,7 +52,7 @@ class ScoringSession:
         self.attempt_count: int = 0 if current_movement is None else 1
 
     def process_result(self, result: MovementResult) -> tuple[int, int]:
-        """Evaluate a MovementResult and update total stars idempotently.
+        """Evaluate a MovementResult and update total stars for each completed attempt.
 
         Parameters
         ----------
@@ -82,6 +83,14 @@ class ScoringSession:
                 stars_awarded = stars_for_completion(True)
                 self.total_stars += stars_awarded
                 return stars_awarded, self.total_stars
+
+            if self.current_movement is not None and movement_name is not None:
+                self.start_new_attempt(movement_name)
+                self.attempt_completed = True
+                stars_awarded = stars_for_completion(True)
+                self.total_stars += stars_awarded
+                return stars_awarded, self.total_stars
+
             return 0, self.total_stars
 
         return 0, self.total_stars

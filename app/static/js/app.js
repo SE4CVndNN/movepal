@@ -22,10 +22,23 @@ let totalStars = 0;
 let currentActivity = null;
 let currentSide = null;
 let activityToken = 0;
+let hasStartedSession = false;
 
 const scoreCount = document.querySelector("#score-count");
 const summaryStarCount = document.querySelector("#summary-star-count");
 const feedbackMessage = document.querySelector("#feedback-message");
+
+async function refreshSessionSummary() {
+  try {
+    const response = await fetch("/api/session/summary");
+    if (!response.ok) return;
+    const payload = await response.json();
+    totalStars = Number(payload.stars || 0);
+    updateScoreDisplays();
+  } catch (_error) {
+    // Keep the existing client-side value if the summary cannot be refreshed.
+  }
+}
 
 function updateScoreDisplays() {
   if (scoreCount) scoreCount.textContent = totalStars;
@@ -72,6 +85,17 @@ function addStars(amount) {
   updateScoreDisplays();
 }
 
+async function resetSession() {
+  hasStartedSession = false;
+  totalStars = 0;
+  updateScoreDisplays();
+  try {
+    await fetch("/api/session/reset", { method: "POST" });
+  } catch (_error) {
+    // Ignore reset failures and keep the UI responsive.
+  }
+}
+
 // --- clickable flow state machine ---
 const screens = document.querySelectorAll("[data-screen]");
 
@@ -107,19 +131,17 @@ document.querySelectorAll("[data-goto]").forEach((button) => {
     const mode = button.dataset.feedback || "success";
     if (target === "feedback") {
       setAppState("evaluating");
-      if (mode === "success") {
-        const earnedStars = getAttemptStarReward();
-        addStars(earnedStars);
-        updateFeedbackMessage(earnedStars, "success");
-      } else {
-        updateFeedbackMessage(0, "retry");
-      }
       updateFeedbackStatus(mode);
       stopCamera();
     }
     if (target === "start") {
-      totalStars = 0;
-      updateScoreDisplays();
+      void resetSession();
+    }
+    if (target === "summary") {
+      void refreshSessionSummary();
+    }
+    if (target === "activity") {
+      hasStartedSession = true;
     }
     showScreen(target);
     if (target === "feedback") {
@@ -130,6 +152,8 @@ document.querySelectorAll("[data-goto]").forEach((button) => {
 
 // --- camera / fallback probe ---
 let activeStream = null;
+
+void resetSession();
 
 const cameraStatus = document.querySelector("#camera-status");
 const preview = document.querySelector("#camera-preview");
@@ -395,9 +419,15 @@ async function uploadFrame(blob, filename, requestToken) {
     if ("completed" in payload) {
       stopPeriodicCapture();
       const mode = payload.completed ? "success" : "retry";
-      if (feedbackMessage) feedbackMessage.textContent = payload.feedback;
+      if (feedbackMessage) {
+        feedbackMessage.textContent = payload.feedback;
+      }
       updateFeedbackStatus(mode);
-      if (payload.completed && payload.stars > 0) addStars(payload.stars);
+      if (payload.completed && payload.stars > 0) {
+        await refreshSessionSummary();
+      } else {
+        await refreshSessionSummary();
+      }
       showScreen("feedback");
       setAppState(mode);
       return payload;
@@ -495,7 +525,7 @@ document.querySelectorAll(".sample-choice").forEach((button) => {
           ? "This result came from a deterministic movement fixture."
           : undefined,
       );
-      if (payload.completed && payload.stars > 0) addStars(payload.stars);
+      await refreshSessionSummary();
       showScreen("feedback");
       setAppState(mode);
     } catch (_error) {
