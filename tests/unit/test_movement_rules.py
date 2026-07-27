@@ -28,7 +28,9 @@ RAISE_ARMS_FIXTURE_CASES = [
 ]
 
 
-@pytest.mark.parametrize("fixture_id, expected_completed, expected_code", RAISE_ARMS_FIXTURE_CASES)
+@pytest.mark.parametrize(
+    "fixture_id, expected_completed, expected_code", RAISE_ARMS_FIXTURE_CASES
+)
 def test_committed_raise_arms_fixtures_match_expected_outcome(
     fixture_id, expected_completed, expected_code
 ):
@@ -59,7 +61,9 @@ SIDE_REACH_FIXTURE_CASES = [
 ]
 
 
-@pytest.mark.parametrize("fixture_id, expected_completed, expected_code", SIDE_REACH_FIXTURE_CASES)
+@pytest.mark.parametrize(
+    "fixture_id, expected_completed, expected_code", SIDE_REACH_FIXTURE_CASES
+)
 def test_committed_side_reach_fixtures_match_expected_outcome(
     fixture_id, expected_completed, expected_code
 ):
@@ -91,7 +95,9 @@ KNEE_LIFT_FIXTURE_CASES = [
 ]
 
 
-@pytest.mark.parametrize("fixture_id, expected_completed, expected_code", KNEE_LIFT_FIXTURE_CASES)
+@pytest.mark.parametrize(
+    "fixture_id, expected_completed, expected_code", KNEE_LIFT_FIXTURE_CASES
+)
 def test_committed_knee_lift_fixtures_match_expected_outcome(
     fixture_id, expected_completed, expected_code
 ):
