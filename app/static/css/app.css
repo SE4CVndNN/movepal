@@ -263,8 +263,38 @@ button:active {
   max-width: 24rem;
   border-radius: 1.5rem;
   background: black;
-  margin-top: var(--space-md);
+  display: block;
   box-shadow: 0 0.75rem 1.8rem rgb(23 32 51 / 12%);
+}
+
+.camera-container {
+  position: relative;
+  width: 100%;
+  max-width: 24rem;
+  margin-top: var(--space-md);
+}
+
+.camera-container #camera-preview {
+  margin-top: 0;
+}
+
+#pose-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  border-radius: 1.5rem;
+}
+
+.movement-hint {
+  margin-top: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  background: rgb(139 211 221 / 25%);
+  color: var(--color-text);
+  font-weight: 600;
 }
 
 body[data-app-state="capturing"] .score-badge {

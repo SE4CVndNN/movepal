@@ -78,56 +78,37 @@
     stroke-width="4"
     stroke-linecap="round"
   />
-  <line
-    x1="60"
-    y1="95"
-    x2="42"
-    y2="95"
-    stroke="var(--color-primary-dark)"
-    stroke-width="8"
-    stroke-linecap="round"
-  />
-  <line
-    x1="140"
-    y1="95"
-    x2="158"
-    y2="90"
-    stroke="var(--color-primary-dark)"
-    stroke-width="8"
-    stroke-linecap="round"
-  />
-  <rect
-    x="72"
-    y="120"
-    width="22"
-    height="42"
-    rx="8"
-    fill="var(--color-secondary)"
-  />
-  <rect
-    x="106"
-    y="120"
-    width="22"
-    height="42"
-    rx="8"
-    fill="var(--color-secondary)"
-  />
-  <rect
-    x="75"
-    y="140"
-    width="14"
-    height="24"
-    rx="6"
-    fill="url(#robotLeg-{{ avatar_uid }})"
-  />
-  <rect
-    x="111"
-    y="140"
-    width="14"
-    height="24"
-    rx="6"
-    fill="url(#robotLeg-{{ avatar_uid }})"
-  />
+  {% set pose = avatar_pose|default('idle') %}
+  {# Left Arm #}
+  {% if pose == 'raise_both_arms' %}
+    <line x1="60" y1="75" x2="40" y2="35" stroke="var(--color-primary-dark)" stroke-width="8" stroke-linecap="round" />
+  {% elif pose == 'side_reach_left' %}
+    <line x1="60" y1="95" x2="20" y2="95" stroke="var(--color-primary-dark)" stroke-width="8" stroke-linecap="round" />
+  {% else %}
+    <line x1="60" y1="95" x2="42" y2="95" stroke="var(--color-primary-dark)" stroke-width="8" stroke-linecap="round" />
+  {% endif %}
+
+  {# Right Arm #}
+  {% if pose == 'raise_both_arms' %}
+    <line x1="140" y1="75" x2="160" y2="35" stroke="var(--color-primary-dark)" stroke-width="8" stroke-linecap="round" />
+  {% elif pose == 'side_reach_right' %}
+    <line x1="140" y1="95" x2="180" y2="95" stroke="var(--color-primary-dark)" stroke-width="8" stroke-linecap="round" />
+  {% else %}
+    <line x1="140" y1="95" x2="158" y2="90" stroke="var(--color-primary-dark)" stroke-width="8" stroke-linecap="round" />
+  {% endif %}
+
+  {# Legs #}
+  {% if pose == 'knee_lift' or pose == 'knee_lift_left' %}
+    <rect x="72" y="105" width="22" height="42" rx="8" fill="var(--color-secondary)" />
+    <rect x="106" y="120" width="22" height="42" rx="8" fill="var(--color-secondary)" />
+    <rect x="75" y="125" width="14" height="24" rx="6" fill="url(#robotLeg-{{ avatar_uid }})" />
+    <rect x="111" y="140" width="14" height="24" rx="6" fill="url(#robotLeg-{{ avatar_uid }})" />
+  {% else %}
+    <rect x="72" y="120" width="22" height="42" rx="8" fill="var(--color-secondary)" />
+    <rect x="106" y="120" width="22" height="42" rx="8" fill="var(--color-secondary)" />
+    <rect x="75" y="140" width="14" height="24" rx="6" fill="url(#robotLeg-{{ avatar_uid }})" />
+    <rect x="111" y="140" width="14" height="24" rx="6" fill="url(#robotLeg-{{ avatar_uid }})" />
+  {% endif %}
   <rect x="82" y="48" width="12" height="8" rx="4" fill="var(--color-retry)" />
   <rect x="106" y="48" width="12" height="8" rx="4" fill="var(--color-retry)" />
   <circle cx="35" cy="45" r="8" fill="var(--color-secondary)" opacity="0.8" />

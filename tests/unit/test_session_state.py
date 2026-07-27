@@ -39,21 +39,21 @@ def test_record_attempt_counts_distinct_movements():
     assert service.build_summary().attempted_movements == 3
 
 
-def test_record_completion_counts_distinct_movements():
+def test_record_completion_counts_every_successful_attempt():
     service = SessionStateService({})
 
     service.record_completion("raise_both_arms")
-    service.record_completion("raise_both_arms")  # duplicate ignored
+    service.record_completion("raise_both_arms")
     service.record_completion("side_reach")
 
-    assert service.build_summary().completed_movements == 2
+    assert service.build_summary().completed_movements == 3
 
 
 def test_records_all_three_activities():
     """Acceptance: a session records all three activities."""
     service = SessionStateService({})
     for movement in ("raise_both_arms", "side_reach", "knee_lift_or_step"):
-        service.record_result(_success(movement), completed=True)
+        service.record_result(_success(movement), completed=True, stars_awarded=1)
 
     summary = service.build_summary()
     assert summary.attempted_movements == 3
@@ -78,7 +78,7 @@ def test_scoring_session_round_trip_persists_stars():
 def test_record_result_updates_attempt_and_completion():
     service = SessionStateService({})
 
-    service.record_result(_success("raise_both_arms"), completed=True)
+    service.record_result(_success("raise_both_arms"), completed=True, stars_awarded=1)
     incomplete = MovementResult(
         movement="side_reach",
         completed=False,
@@ -99,7 +99,7 @@ def test_reset_clears_all_state():
     scoring = service.load_scoring_session()
     scoring.process_result(_success("raise_both_arms"))
     service.save_scoring_session(scoring)
-    service.record_result(_success("raise_both_arms"), completed=True)
+    service.record_result(_success("raise_both_arms"), completed=True, stars_awarded=1)
     service.finish()
 
     service.reset()
@@ -114,7 +114,7 @@ def test_reset_clears_all_state():
 
 def test_finish_marks_finished_and_returns_summary():
     service = SessionStateService({})
-    service.record_result(_success("raise_both_arms"), completed=True)
+    service.record_result(_success("raise_both_arms"), completed=True, stars_awarded=1)
 
     summary = service.finish()
 
@@ -130,7 +130,7 @@ def test_finish_is_idempotent_and_awards_no_stars():
     scoring = service.load_scoring_session()
     scoring.process_result(_success("raise_both_arms"))
     service.save_scoring_session(scoring)
-    service.record_result(_success("raise_both_arms"), completed=True)
+    service.record_result(_success("raise_both_arms"), completed=True, stars_awarded=1)
 
     first = service.finish()
     second = service.finish()

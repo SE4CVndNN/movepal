@@ -81,7 +81,61 @@ class ScoringSession:
                 self.attempt_completed = True
                 stars_awarded = stars_for_completion(True)
                 self.total_stars += stars_awarded
+                # #region agent log
+                import json as _json
+                import time as _time
+                from pathlib import Path as _Path
+                _log_path = _Path(__file__).resolve().parents[2] / "debug-583a4f.log"
+                try:
+                    with _log_path.open("a", encoding="utf-8") as _f:
+                        _f.write(
+                            _json.dumps(
+                                {
+                                    "sessionId": "583a4f",
+                                    "hypothesisId": "H3-H5",
+                                    "location": "scoring.py:process_result",
+                                    "message": "star awarded on completion",
+                                    "data": {
+                                        "movement": movement_name,
+                                        "stars_awarded": stars_awarded,
+                                        "total_stars": self.total_stars,
+                                        "attempt_count": self.attempt_count,
+                                    },
+                                    "timestamp": int(_time.time() * 1000),
+                                }
+                            )
+                            + "\n"
+                        )
+                except OSError:
+                    pass
+                # #endregion
                 return stars_awarded, self.total_stars
+            # #region agent log
+            import json as _json
+            import time as _time
+            from pathlib import Path as _Path
+            _log_path = _Path(__file__).resolve().parents[2] / "debug-583a4f.log"
+            try:
+                with _log_path.open("a", encoding="utf-8") as _f:
+                    _f.write(
+                        _json.dumps(
+                            {
+                                "sessionId": "583a4f",
+                                "hypothesisId": "H3",
+                                "location": "scoring.py:process_result",
+                                "message": "star blocked - attempt already completed",
+                                "data": {
+                                    "movement": movement_name,
+                                    "attempt_completed": self.attempt_completed,
+                                },
+                                "timestamp": int(_time.time() * 1000),
+                            }
+                        )
+                        + "\n"
+                    )
+            except OSError:
+                pass
+            # #endregion
             return 0, self.total_stars
 
         return 0, self.total_stars

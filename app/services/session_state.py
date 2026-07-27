@@ -46,6 +46,7 @@ def _default_state() -> dict[str, Any]:
         "attempted": [],
         "completed": [],
         "finished": False,
+        "consecutive_samples": {},
     }
 
 
@@ -102,12 +103,45 @@ class SessionStateService:
             state["attempted"].append(movement)
         self._persist(state)
 
-    def record_completion(self, movement: str) -> None:
-        """Record that *movement* was completed (distinct movements only)."""
+    def reset_consecutive_samples(self, movement: str) -> None:
+        """Clear the hold counter for *movement* when a new attempt starts."""
         state = self._state()
-        if movement not in state["completed"]:
-            state["completed"].append(movement)
+        if "consecutive_samples" not in state or not isinstance(
+            state["consecutive_samples"], dict
+        ):
+            state["consecutive_samples"] = {}
+        state["consecutive_samples"][movement] = 0
         self._persist(state)
+
+    def record_completion(self, movement: str) -> None:
+        """Record that *movement* was completed for this attempt."""
+        state = self._state()
+        state["completed"].append(movement)
+        self._persist(state)
+
+    def get_consecutive_samples(self, movement: str) -> int:
+        """Return the current consecutive valid frame count for *movement*."""
+        state = self._state()
+        samples = state.get("consecutive_samples")
+        if not isinstance(samples, dict):
+            return 0
+        return int(samples.get(movement, 0))
+
+    def update_consecutive_samples(self, movement: str, satisfied: bool) -> int:
+        """Increment or reset consecutive valid frame count for *movement*."""
+        state = self._state()
+        if "consecutive_samples" not in state or not isinstance(
+            state["consecutive_samples"], dict
+        ):
+            state["consecutive_samples"] = {}
+        samples = state["consecutive_samples"]
+        if satisfied:
+            new_count = int(samples.get(movement, 0)) + 1
+        else:
+            new_count = 0
+        samples[movement] = new_count
+        self._persist(state)
+        return new_count
 
     def reset(self) -> None:
         """Replace all state with a clean default session."""
@@ -137,13 +171,20 @@ class SessionStateService:
             stars=state["total_stars"],
         )
 
-    def record_result(self, result: MovementResult, *, completed: bool) -> None:
+    def record_result(
+        self,
+        result: MovementResult,
+        *,
+        completed: bool,
+        stars_awarded: int = 0,
+    ) -> None:
         """Record one evaluated movement result against the summary counters.
 
-        Always counts the movement as attempted; counts it as completed when
-        *completed* is true. Star totals are owned by :class:`ScoringSession`
-        (persisted via :meth:`save_scoring_session`), not re-derived here.
+        Always counts the movement as attempted; counts it as completed only
+        when *completed* is true and a star was awarded for this attempt.
+        Star totals are owned by :class:`ScoringSession` (persisted via
+        :meth:`save_scoring_session`), not re-derived here.
         """
         self.record_attempt(result.movement)
-        if completed:
+        if completed and stars_awarded > 0:
             self.record_completion(result.movement)
