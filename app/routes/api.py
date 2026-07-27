@@ -49,12 +49,24 @@ _EVALUATORS = {
 
 
 def get_pose_adapter() -> MediaPipePoseAdapter:
-    """Instantiate the pose adapter with current application config."""
+    """Return the app-scoped pose adapter, creating it on first use.
+
+    ``MediaPipePoseAdapter`` keeps its loaded landmarker on the adapter
+    instance. Reusing that instance avoids reading and initializing the model
+    again for every uploaded frame. The cache belongs to the Flask app, so
+    separate app instances and tests do not share adapter state.
+    """
     model_path = current_app.config.get(
         "POSE_MODEL_PATH",
         current_app.config.get("BASE_DIR", Path(".")) / "pose_landmarker_lite.task",
     )
-    return MediaPipePoseAdapter(model_path=model_path)
+    cached = current_app.extensions.get("pose_adapter")
+    if cached is not None and cached[0] == model_path:
+        return cached[1]
+
+    adapter = MediaPipePoseAdapter(model_path=model_path)
+    current_app.extensions["pose_adapter"] = (model_path, adapter)
+    return adapter
 
 
 @api_bp.get("/health")

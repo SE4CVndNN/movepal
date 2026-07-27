@@ -100,6 +100,19 @@ def test_missing_required_landmark_returns_full_body_missing():
     assert result.confidence == 0.0
 
 
+def test_raise_both_arms_accepts_upper_body_frame_without_hips():
+    landmarks = _base_landmarks()
+    del landmarks["left_hip"]
+    del landmarks["right_hip"]
+    landmarks["left_wrist"] = Landmark("left_wrist", 0.3, 0.1, 0.0, 0.9)
+    landmarks["right_wrist"] = Landmark("right_wrist", 0.7, 0.1, 0.0, 0.9)
+
+    result = evaluate_raise_both_arms(landmarks, consecutive_samples=2)
+
+    assert result.completed is True
+    assert result.feedback_code == "great"
+
+
 def test_condition_met_but_insufficient_consecutive_samples_holds():
     fixture = load_raise_both_arms_fixture("synthetic_raise_arms_positive_001")
     landmarks = landmarks_from_fixture(fixture)

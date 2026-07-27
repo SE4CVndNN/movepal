@@ -52,22 +52,17 @@ RAISE_BOTH_ARMS_REQUIRED_LANDMARKS: tuple[str, ...] = (
     "right_shoulder",
     "left_wrist",
     "right_wrist",
-    "left_hip",
-    "right_hip",
 )
 """Landmarks the raise-both-arms rule needs to evaluate a frame.
 
-Elbows are deliberately excluded here even though earlier prose in
-docs/movement_specification.md section 6 lists them as a "minimum
-required landmark". The executable acceptance matrix's progress
-measurement never reads elbow coordinates, and the checked-in negative/
-borderline/low-visibility fixtures in
+Elbows and hips are deliberately excluded because the executable rule uses
+only shoulder width and each wrist's height relative to its matching shoulder.
+The checked-in negative/borderline/low-visibility fixtures in
 data/landmarks/raise_both_arms_fixtures.json omit elbow landmarks entirely
 while still expecting a non-``full_body_missing`` result. Requiring
-elbows here would make those fixtures fail for the wrong reason (missing
-landmark) instead of the intended one (arms not raised). This is a
-recorded MP-014 contract-mismatch fix; see the "MP-014 decisions" note at
-the end of movement_specification.md.
+unread lower-body landmarks also prevents a valid upper-body camera frame
+from being evaluated. See the ``MP-014 decisions`` note in
+docs/movement_specification.md.
 """
 
 

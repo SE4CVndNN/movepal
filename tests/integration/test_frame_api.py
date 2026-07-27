@@ -7,6 +7,8 @@ from pathlib import Path
 
 import pytest
 
+from app import create_app
+from app.routes.api import get_pose_adapter
 from app.services.pose_tracking import PoseResult, PoseStatus
 
 
@@ -20,6 +22,35 @@ class MockPoseAdapter:
     def estimate(self, image_path: str | Path) -> PoseResult:
         self.last_estimated_path = Path(image_path)
         return self.result
+
+
+def test_pose_adapter_is_reused_within_one_flask_app(app):
+    with app.app_context():
+        first = get_pose_adapter()
+        second = get_pose_adapter()
+
+    assert first is second
+
+
+def test_pose_adapter_cache_is_isolated_between_flask_apps():
+    first_app = create_app({"TESTING": True, "SECRET_KEY": "first"})
+    second_app = create_app({"TESTING": True, "SECRET_KEY": "second"})
+
+    with first_app.app_context():
+        first = get_pose_adapter()
+    with second_app.app_context():
+        second = get_pose_adapter()
+
+    assert first is not second
+
+
+def test_pose_adapter_is_replaced_when_model_path_changes(app, tmp_path):
+    with app.app_context():
+        first = get_pose_adapter()
+        app.config["POSE_MODEL_PATH"] = tmp_path / "different-model.task"
+        second = get_pose_adapter()
+
+    assert first is not second
 
 
 def test_process_frame_success(client, monkeypatch):

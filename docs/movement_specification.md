@@ -98,16 +98,17 @@ Raise both arms above the shoulders so the game can recognize the pose.
 - right shoulder;
 - left wrist;
 - right wrist;
-- torso reference such as hips when needed for scale/framing.
 
-> **MP-014 correction:** an earlier draft of this list also required left/
-> right elbow. The executable acceptance matrix in section 12 never reads
-> elbow coordinates, and the checked-in negative/borderline/low-visibility
+> **MP-014 correction:** earlier drafts also required elbows and hips. The
+> executable rule uses shoulder width and wrist height only; it never reads
+> elbow or hip coordinates. The checked-in negative/borderline/low-visibility
 > fixtures in
 > [`raise_both_arms_fixtures.json`](../data/landmarks/raise_both_arms_fixtures.json)
 > omit elbows entirely while still expecting a `retry`/`raise_arms` result
-> rather than a missing-landmark failure. MP-014's implementation
-> (`app/services/movement_rules.py`) therefore does not require elbows for
+> rather than a missing-landmark failure. Requiring hips would also reject a
+> usable upper-body camera frame even though the movement calculation does not
+> need them. MP-014's implementation (`app/services/movement_rules.py`)
+> therefore requires only the two shoulders and two wrists for
 > `raise_both_arms`; see "MP-014 decisions" at the end of this document.
 
 ### Provisional logical rule
@@ -323,7 +324,7 @@ The checked-in synthetic fixture set is split by activity: [`raise_both_arms_fix
 
 | Activity | Start / visibility prerequisites | Progress measurement | Success and hold | Retry outcome |
 |---|---|---|---|---|
-| Raise both arms | Both shoulders, wrists, elbows, and hips present; visibility >= 0.50 | Each wrist is at least `0.40 * shoulder_width` above its matching shoulder (`y` decreases upward) | Both conditions true for 2 consecutive evaluated samples | `raise_arms`; visibility/framing failure takes precedence |
+| Raise both arms | Both shoulders and wrists present; visibility >= 0.50 | Each wrist is at least `0.40 * shoulder_width` above its matching shoulder (`y` decreases upward) | Both conditions true for 2 consecutive evaluated samples | `raise_arms`; visibility/framing failure takes precedence |
 | Side reach — left | Both shoulders, left elbow/wrist, and hips present; visibility >= 0.50 | Left wrist is outward by >= `0.85 * shoulder_width`; its vertical offset is <= `0.50 * shoulder_width` | Condition true for 2 consecutive samples | `reach_left`; a right-arm reach does not satisfy the request |
 | Side reach — right | Both shoulders, right elbow/wrist, and hips present; visibility >= 0.50 | Right wrist is outward by >= `0.85 * shoulder_width`; its vertical offset is <= `0.50 * shoulder_width` | Condition true for 2 consecutive samples | `reach_right`; a left-arm reach does not satisfy the request |
 | Knee lift / step — requested side | Target hip, knee, ankle, opposite hip, and opposite ankle present; visibility >= 0.50 | `knee.y <= hip.y + 0.35 * distance(hip, ankle)` | Condition true for 2 consecutive samples | `lift_knee`; a still frame cannot independently prove a dynamic step |
