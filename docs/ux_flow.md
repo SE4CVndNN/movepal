@@ -60,7 +60,9 @@ is connected to the actual game flow.
 ## Decisions and fixes made during implementation
 
 - Camera permission is requested only after the user clicks "Use Live Webcam".
-- The live preview uses `navigator.mediaDevices.getUserMedia`, then draws bounded frames to a hidden canvas for upload.
+- The live preview uses `navigator.mediaDevices.getUserMedia`, draws one
+  bounded frame to a hidden canvas, and immediately stops every camera track
+  before encoding or uploading the picture.
 - Every uploaded frame is sent to `/api/frame` in a `FormData` request with the field name `image`.
 - Overlapping uploads are prevented with a single `requestInFlight` guard and button disabling.
 - The camera-choice screen now shows a preview of the selected move before the child chooses camera or fallback demo.
@@ -87,11 +89,15 @@ Use this sequence to confirm the current fallback behavior end to end:
 
 1. Start camera mode and grant browser camera permission.
 2. Capture one frame and observe that the upload is bounded to at most `640 × 480` pixels.
-3. Simulate a server or network failure, then confirm the app stops periodic capture and moves to the fallback screen.
-4. Confirm all camera `MediaStream` tracks are stopped, `activeStream` is cleared, and the preview is detached.
-5. Confirm the fallback screen shows the already selected move and that "Start demo" begins the demo for that move.
-6. Complete the deterministic fallback and confirm the fallback result comes from `/api/movement`.
-7. Confirm no star is awarded from the pose extraction step alone.
+3. Confirm the camera indicator turns off immediately after the picture is
+   copied to the canvas, before the server response is received.
+4. Simulate a server or network failure, then confirm the app moves to the
+   fallback screen without reopening the camera.
+5. Confirm all camera `MediaStream` tracks are stopped, `activeStream` is
+   cleared, and the preview is detached.
+6. Confirm the fallback screen shows the already selected move and that "Start demo" begins the demo for that move.
+7. Complete the deterministic fallback and confirm the fallback result comes from `/api/movement`.
+8. Confirm no star is awarded from the pose extraction step alone.
 
 ## Game loop integration (MP-019)
 
@@ -101,6 +107,13 @@ Use this sequence to confirm the current fallback behavior end to end:
   landmarks when a `movement` (and `side`, where required) field is sent,
   reusing the same feedback/session code path as /api/movement — live
   camera and fallback return identical response shapes.
+- Live/uploaded Side Reach requires both shoulders plus the requested
+  anatomical side's elbow and wrist. The unrelated arm and hips do not block
+  a clear live reach when they are cropped or briefly low visibility. Strict
+  deterministic fixture evaluation keeps the full documented posture checks.
+- Side Reach derives "outward" from the observed shoulder midpoint, so raw
+  camera frames and horizontally mirrored input preserve the same anatomical
+  left/right result.
 - Fallback demo for side_reach and knee_lift_or_step is left-side only;
   no guaranteed-success right-side fixture exists yet.
 - A stale-response guard (`activityToken`) discards any response that
@@ -112,7 +125,8 @@ Use this sequence to confirm the current fallback behavior end to end:
 
 ### Known limitations
 
-- Live camera captures every 8 seconds (fixed interval), not continuous —
-  a deliberate choice to avoid WebSockets/streaming per task scope.
+- Live camera access is one-shot: each attempt opens a short preview,
+  captures one frame after the countdown, and releases the device. Retrying
+  requires a new explicit camera action.
 - No mid-activity movement switching while a capture is in flight; the
   stale-response guard discards the result rather than applying it.

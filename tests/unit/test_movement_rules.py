@@ -254,6 +254,51 @@ def test_full_reach_succeeds_symmetrically(side):
 
 
 @pytest.mark.parametrize("side", ["left", "right"])
+def test_live_side_reach_does_not_require_unrelated_arm_or_hips(side):
+    landmarks = _side_reach_landmarks(side, outward_ratio=1.0)
+    opposite = "right" if side == "left" else "left"
+    del landmarks[f"{opposite}_elbow"]
+    del landmarks[f"{opposite}_wrist"]
+    del landmarks["left_hip"]
+    del landmarks["right_hip"]
+
+    result = evaluate_side_reach(
+        landmarks,
+        side,
+        consecutive_samples=2,
+        lenient=True,
+    )
+
+    assert result.completed is True
+    assert result.feedback_code == "great"
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_live_side_reach_survives_horizontal_frame_mirroring(side):
+    landmarks = _side_reach_landmarks(side, outward_ratio=1.0)
+    mirrored = {
+        name: Landmark(
+            item.name,
+            1.0 - item.x,
+            item.y,
+            item.z,
+            item.visibility,
+        )
+        for name, item in landmarks.items()
+    }
+
+    result = evaluate_side_reach(
+        mirrored,
+        side,
+        consecutive_samples=2,
+        lenient=True,
+    )
+
+    assert result.completed is True
+    assert result.feedback_code == "great"
+
+
+@pytest.mark.parametrize("side", ["left", "right"])
 def test_arm_down_returns_reach_code_symmetrically(side):
     landmarks = _side_reach_landmarks(side, outward_ratio=0.0)
 

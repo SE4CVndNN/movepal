@@ -5,6 +5,8 @@ from __future__ import annotations
 import io
 from pathlib import Path
 
+import pytest
+
 from app.services.pose_tracking import PoseResult, PoseStatus
 
 
@@ -197,3 +199,49 @@ def test_frame_with_movement_evaluates_when_pose_succeeds(client, monkeypatch):
     payload = response.get_json()
     assert response.status_code == 200
     assert "completed" in payload
+
+
+@pytest.mark.parametrize(
+    "side, fixture_id",
+    [
+        ("left", "synthetic_side_reach_left_positive_001"),
+        ("right", "synthetic_side_reach_right_positive_001"),
+    ],
+)
+def test_live_frame_side_reach_evaluates_both_anatomical_sides(
+    client, monkeypatch, side, fixture_id
+):
+    from app.services.movement_rules import (
+        landmarks_from_fixture,
+        load_side_reach_fixture,
+    )
+
+    fixture = load_side_reach_fixture(fixture_id)
+    landmarks = landmarks_from_fixture(fixture)
+
+    class SideReachPoseAdapter:
+        def estimate(self, image_path):
+            return PoseResult(status=PoseStatus.SUCCESS, landmarks=landmarks)
+
+    monkeypatch.setattr(
+        "app.routes.api.get_pose_adapter",
+        lambda: SideReachPoseAdapter(),
+    )
+
+    data = {
+        "image": (io.BytesIO(b"safe synthetic bytes"), "frame.png"),
+        "movement": "side_reach",
+        "side": side,
+    }
+    response = client.post(
+        "/api/frame",
+        data=data,
+        content_type="multipart/form-data",
+    )
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["movement"] == "side_reach"
+    assert payload["completed"] is True
+    assert payload["feedback_code"] == "great"
+    assert payload["stars"] == 1

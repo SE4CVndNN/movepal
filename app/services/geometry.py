@@ -43,17 +43,33 @@ def shoulder_width(left_shoulder: Landmark, right_shoulder: Landmark) -> float:
     return landmark_distance(left_shoulder, right_shoulder)
 
 
-def horizontal_outward_offset(wrist: Landmark, shoulder: Landmark, side: Side) -> float:
+def horizontal_outward_offset(
+    wrist: Landmark,
+    shoulder: Landmark,
+    side: Side,
+    opposite_shoulder: Landmark | None = None,
+) -> float:
     """Signed horizontal distance *wrist* has moved outward from *shoulder*.
 
     Positive means the wrist is farther from the torso midline than the
     shoulder on *side*; negative means it has crossed inward, toward or
-    past the midline. Normalized image ``x`` grows toward the viewer's
-    right (docs/movement_specification.md section 12), so "outward" is a
-    decreasing ``x`` on the left side and an increasing ``x`` on the
-    right side -- this is the one place the left/right mirroring needs an
-    explicit sign; every other helper here treats both sides identically.
+    past the midline.
+
+    When both shoulders are available, their observed midpoint determines
+    the outward direction. This works for raw MediaPipe frames and for
+    horizontally mirrored input without changing anatomical left/right
+    labels. ``side`` remains as the documented fallback for callers that
+    only have one shoulder.
     """
+    if opposite_shoulder is not None:
+        midline_x = (shoulder.x + opposite_shoulder.x) / 2
+        shoulder_offset = shoulder.x - midline_x
+        wrist_offset = wrist.x - midline_x
+
+        if shoulder_offset == 0 or wrist_offset * shoulder_offset < 0:
+            return -abs(wrist_offset)
+        return abs(wrist_offset) - abs(shoulder_offset)
+
     if side == "left":
         return shoulder.x - wrist.x
     return wrist.x - shoulder.x

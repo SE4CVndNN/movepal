@@ -422,7 +422,8 @@ document
 
       showScreen("camera-live");
       startPeriodicCapture();
-      cameraStatus.textContent = "Camera is on! Get ready to move.";
+      cameraStatus.textContent =
+        "Camera is on for this picture only. Get ready to move.";
     } catch (error) {
       let reason;
       if (error.name === "NotAllowedError") {
@@ -674,7 +675,9 @@ function captureFrame() {
     return;
   }
 
-  feedbackRetryTarget = "camera-live";
+  // A retry starts from the camera choice so a fresh, short-lived stream is
+  // requested. The previous stream is never kept alive between attempts.
+  feedbackRetryTarget = "camera-choice";
   const { width, height } = getCaptureDimensions(
     video.videoWidth,
     video.videoHeight,
@@ -688,9 +691,20 @@ function captureFrame() {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
   const requestToken = activityToken;
+  // The pixels are now copied into the canvas, so release the camera before
+  // encoding or uploading the image. This keeps camera access limited to the
+  // single capture instead of the rest of the game session.
+  stopCamera();
   canvas.toBlob(
     (blob) => {
-      if (blob) uploadFrame(blob, "frame.jpg", requestToken);
+      if (blob) {
+        uploadFrame(blob, "frame.jpg", requestToken);
+      } else {
+        if (statusEl)
+          statusEl.textContent =
+            "The picture could not be prepared. Please try the camera again.";
+        showScreen("camera-choice");
+      }
     },
     "image/jpeg",
     0.85,
@@ -765,14 +779,6 @@ async function uploadFrame(blob, filename, requestToken, statusEl) {
         statusEl,
         messages[payload.pose_status] || payload.message,
       );
-
-    if (document.body.dataset.appState === "capturing" && activeStream) {
-      window.setTimeout(() => {
-        if (document.body.dataset.appState === "capturing" && activeStream) {
-          startPeriodicCapture();
-        }
-      }, 900);
-    }
 
     return payload;
   } catch (_error) {

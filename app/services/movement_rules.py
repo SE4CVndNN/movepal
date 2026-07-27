@@ -244,12 +244,24 @@ def evaluate_side_reach(
     opposite_side_name = opposite_side(requested_side)
     opposite_wrist_name = side_landmark_name(opposite_side_name, "wrist")
     opposite_elbow_name = side_landmark_name(opposite_side_name, "elbow")
-    required = SIDE_REACH_COMMON_REQUIRED_LANDMARKS + (
-        requested_elbow_name,
-        requested_wrist_name,
-        opposite_elbow_name,
-        opposite_wrist_name,
-    )
+    if lenient:
+        # Live camera and uploaded-image evaluation only needs the torso scale
+        # and the requested arm. Requiring the opposite arm and both hips made
+        # an otherwise clear side reach fail when those unrelated landmarks
+        # were cropped or briefly low visibility.
+        required = (
+            "left_shoulder",
+            "right_shoulder",
+            requested_elbow_name,
+            requested_wrist_name,
+        )
+    else:
+        required = SIDE_REACH_COMMON_REQUIRED_LANDMARKS + (
+            requested_elbow_name,
+            requested_wrist_name,
+            opposite_elbow_name,
+            opposite_wrist_name,
+        )
 
     for name in required:
         landmark = landmarks.get(name)
@@ -263,8 +275,6 @@ def evaluate_side_reach(
 
     left_shoulder = landmarks["left_shoulder"]
     right_shoulder = landmarks["right_shoulder"]
-    left_hip = landmarks["left_hip"]
-    right_hip = landmarks["right_hip"]
     width = shoulder_width(left_shoulder, right_shoulder)
     if width <= 0:
         return MovementResult(
@@ -278,8 +288,6 @@ def evaluate_side_reach(
     wrist = landmarks[requested_wrist_name]
     elbow = landmarks[requested_elbow_name]
     opposite_shoulder = right_shoulder if requested_side == "left" else left_shoulder
-    opposite_elbow = landmarks[opposite_elbow_name]
-    opposite_wrist = landmarks[opposite_wrist_name]
 
     # Allow a more forgiving set of thresholds for live/uploaded frames
     # when callers explicitly request lenient mode (helps users get
@@ -297,8 +305,18 @@ def evaluate_side_reach(
         effective_vertical_ratio = max(vertical_ratio, 0.9)
         elbow_angle_threshold = 125.0
 
-    outward = horizontal_outward_offset(wrist, requested_shoulder, requested_side)
-    elbow_outward = horizontal_outward_offset(elbow, requested_shoulder, requested_side)
+    outward = horizontal_outward_offset(
+        wrist,
+        requested_shoulder,
+        requested_side,
+        opposite_shoulder,
+    )
+    elbow_outward = horizontal_outward_offset(
+        elbow,
+        requested_shoulder,
+        requested_side,
+        opposite_shoulder,
+    )
     wrist_height_ok = (
         vertical_offset(wrist, requested_shoulder) <= effective_vertical_ratio * width
     )
@@ -320,15 +338,20 @@ def evaluate_side_reach(
     # casual framing and minor stance shifts in uploaded photos.
     if lenient:
         hip_level_ok = True
+        opposite_arm_relaxed = True
     else:
+        left_hip = landmarks["left_hip"]
+        right_hip = landmarks["right_hip"]
         hip_level_ok = abs(left_hip.y - right_hip.y) <= (
             effective_vertical_ratio * width
         )
+        opposite_elbow = landmarks[opposite_elbow_name]
+        opposite_wrist = landmarks[opposite_wrist_name]
+        opposite_arm_relaxed = (
+            opposite_wrist.y >= opposite_elbow.y
+            and opposite_elbow.y >= opposite_shoulder.y
+        )
     elbow_in_line = elbow_outward >= 0 and outward >= elbow_outward
-    opposite_arm_relaxed = (
-        opposite_wrist.y >= opposite_elbow.y and opposite_elbow.y >= opposite_shoulder.y
-    )
-
     confidence = (
         min(1.0, max(0.0, outward) / (effective_reach_ratio * width))
         if effective_reach_ratio > 0
