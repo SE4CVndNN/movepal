@@ -51,7 +51,7 @@ def run_evaluation() -> int:
         fixtures = load_movement_fixtures(filename)
         movement_stats = {
             "total": len(fixtures),
-            "correct_outcomes": 0,
+            "fixture_matches": 0,
             "feedback_matches": 0,
             "tp": 0,
             "tn": 0,
@@ -64,7 +64,19 @@ def run_evaluation() -> int:
         for fixture in fixtures:
             total_fixtures += 1
             fid = fixture["fixture_id"]
-            split = fixture.get("split", "tuning")
+            if "split" not in fixture:
+                raise KeyError(
+                    f"Fixture '{fixture.get('fixture_id', '?')}' is missing a required "
+                    "'split' field. Every fixture must explicitly declare "
+                    "'split': 'tuning' or 'split': 'held_out'."
+                )
+            split = fixture["split"]
+            _VALID_SPLITS = {"tuning", "held_out"}
+            if split not in _VALID_SPLITS:
+                raise ValueError(
+                    f"Fixture '{fixture.get('fixture_id', '?')}' has unknown split "
+                    f"'{split}'. Expected one of: {sorted(_VALID_SPLITS)}"
+                )
             category = fixture.get("category", "unknown")
             requested_side = fixture.get("requested_side", "both")
             expected_completed = fixture["expected_completed"]
@@ -97,7 +109,7 @@ def run_evaluation() -> int:
             overall_match = completed_match and feedback_match
 
             if overall_match:
-                movement_stats["correct_outcomes"] += 1
+                movement_stats["fixture_matches"] += 1
                 total_matches += 1
 
             if feedback_match:
@@ -154,31 +166,33 @@ def run_evaluation() -> int:
     print("                      EVALUATION SUMMARY                          ")
     print("==================================================================\n")
 
-    print("| Movement | Total | Correct | Accuracy | TP | TN | FP | FN |")
+    print("| Movement | Total | Fixture Matches | Match Rate | TP | TN | FP | FN |")
     print("| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
     for m_name, m_stats in results_by_movement.items():
-        acc = (
-            (m_stats["correct_outcomes"] / m_stats["total"]) * 100
+        match_rate = (
+            (m_stats["fixture_matches"] / m_stats["total"]) * 100
             if m_stats["total"] > 0
             else 0.0
         )
         print(
-            f"| {m_name:<18} | {m_stats['total']:>5} | {m_stats['correct_outcomes']:>7} | "
-            f"{acc:>7.1f}% | {m_stats['tp']:>2} | {m_stats['tn']:>2} | "
+            f"| {m_name:<18} | {m_stats['total']:>5} | {m_stats['fixture_matches']:>15} | "
+            f"{match_rate:>9.1f}% | {m_stats['tp']:>2} | {m_stats['tn']:>2} | "
             f"{m_stats['fp']:>2} | {m_stats['fn']:>2} |"
         )
 
-    print("\n| Split | Total Fixtures | Correct | Accuracy | TP | TN | FP | FN |")
+    print(
+        "\n| Split | Total Fixtures | Fixture Matches | Match Rate | TP | TN | FP | FN |"
+    )
     print("| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
     for split_name, s_stats in split_counts.items():
-        acc = (
+        match_rate = (
             (s_stats["correct"] / s_stats["total"]) * 100
             if s_stats["total"] > 0
             else 0.0
         )
         print(
-            f"| {split_name:<10} | {s_stats['total']:>14} | {s_stats['correct']:>7} | "
-            f"{acc:>7.1f}% | {s_stats['tp']:>2} | {s_stats['tn']:>2} | "
+            f"| {split_name:<10} | {s_stats['total']:>14} | {s_stats['correct']:>15} | "
+            f"{match_rate:>9.1f}% | {s_stats['tp']:>2} | {s_stats['tn']:>2} | "
             f"{s_stats['fp']:>2} | {s_stats['fn']:>2} |"
         )
 

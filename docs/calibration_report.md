@@ -44,7 +44,7 @@ Rules were evaluated using `scripts/evaluate_rules.py`. Every fixture was evalua
 
 ### Performance by Movement
 
-| Movement | Total Fixtures | Correct Outcomes | Accuracy | True Positive (TP) | True Negative (TN) | False Positive (FP) | False Negative (FN) |
+| Movement | Total Fixtures | Fixture Matches | Match Rate | True Positive (TP) | True Negative (TN) | False Positive (FP) | False Negative (FN) |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | **Raise Both Arms** | 8 | 8 | 100.0% | 2 | 6 | 0 | 0 |
 | **Side Reach** | 8 | 8 | 100.0% | 2 | 6 | 0 | 0 |
@@ -52,14 +52,14 @@ Rules were evaluated using `scripts/evaluate_rules.py`. Every fixture was evalua
 
 ### Performance by Dataset Split
 
-| Split | Total Fixtures | Correct Outcomes | Accuracy | TP | TN | FP | FN |
+| Split | Total Fixtures | Fixture Matches | Match Rate | TP | TN | FP | FN |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | **Tuning Split** | 12 | 12 | 100.0% | 3 | 9 | 0 | 0 |
 | **Held-Out Split** | 12 | 12 | 100.0% | 3 | 9 | 0 | 0 |
 | **Overall Dataset** | **24** | **24** | **100.0%** | **6** | **18** | **0** | **0** |
 
 > [!NOTE]
-> All 24 fixtures achieved 100% agreement between expected labels and actual rule outputs for both `completed` status and exact `feedback_code`.
+> All 24 fixtures achieved 100% fixture match rate — expected labels and actual rule outputs agreed on both `completed` status and exact `feedback_code` for every synthetic fixture. These results represent deterministic synthetic fixture agreement, not validated real-world accuracy.
 
 ---
 
