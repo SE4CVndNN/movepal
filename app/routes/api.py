@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from time import perf_counter
 from typing import Any
 
 from flask import Blueprint, current_app, jsonify, request, session
@@ -20,7 +21,12 @@ from app.services.movement_rules import (
     load_raise_both_arms_fixture,
     load_side_reach_fixture,
 )
-from app.services.pose_tracking import MediaPipePoseAdapter, PoseResult, PoseStatus
+from app.services.pose_tracking import (
+    TRACKED_LANDMARK_NAMES,
+    MediaPipePoseAdapter,
+    PoseResult,
+    PoseStatus,
+)
 from app.services.session_state import SessionStateService
 from app.services.session_summary import SessionSummary
 
@@ -78,6 +84,7 @@ def health():
 
 @api_bp.post("/frame")
 def frame():
+    total_started = perf_counter()
     if "image" not in request.files:
         return jsonify({"status": "error", "message": "No image file provided."}), 400
 
@@ -104,12 +111,149 @@ def frame():
 
     movement_code = request.form.get("movement")
     if movement_code and movement_code in SUPPORTED_MOVEMENTS:
-        return _evaluate_live_frame(result, movement_code, request.form.get("side"))
+        evaluation_started = perf_counter()
+        response = _evaluate_live_frame(result, movement_code, request.form.get("side"))
+        current_app.logger.info(
+            "frame_request movement_seconds=%.4f total_seconds=%.4f",
+            perf_counter() - evaluation_started,
+            perf_counter() - total_started,
+        )
+        return response
 
+    current_app.logger.info(
+        "frame_request movement_seconds=%.4f total_seconds=%.4f",
+        0.0,
+        perf_counter() - total_started,
+    )
     return _map_pose_result(result)
 
 
 VALID_SIDES = {"left", "right"}
+PREVIEW_VISIBILITY_THRESHOLD = 0.5
+
+
+def _required_preview_landmarks(
+    movement_code: str, side: str | None
+) -> tuple[str, ...]:
+    if movement_code == "raise_both_arms":
+        return ("left_shoulder", "right_shoulder", "left_wrist", "right_wrist")
+    if movement_code == "side_reach" and side in VALID_SIDES:
+        return (
+            "left_shoulder",
+            "right_shoulder",
+            f"{side}_elbow",
+            f"{side}_wrist",
+            "left_hip",
+            "right_hip",
+        )
+    if movement_code == "knee_lift_or_step" and side in VALID_SIDES:
+        return (
+            "left_hip",
+            "right_hip",
+            f"{side}_knee",
+            f"{side}_ankle",
+        )
+    return ()
+
+
+def _preview_guidance(
+    pose_result: PoseResult, movement_code: str, side: str | None
+) -> tuple[bool, str]:
+    if pose_result.status == PoseStatus.NO_POSE:
+        return False, "Move into the center of the camera so I can see you."
+    if pose_result.status == PoseStatus.ERROR:
+        return False, "The movement checker needs a quick reset. Please try again."
+
+    required = _required_preview_landmarks(movement_code, side)
+    missing = [
+        name
+        for name in required
+        if name not in pose_result.landmarks
+        or pose_result.landmarks[name].visibility < PREVIEW_VISIBILITY_THRESHOLD
+    ]
+    if not missing:
+        return True, "Great! Hold still."
+    if pose_result.status == PoseStatus.LOW_VISIBILITY:
+        return (
+            False,
+            "Improve the lighting so I can see your pose.",
+        )
+    if movement_code == "raise_both_arms":
+        return False, "Step back so I can see your shoulders and hands."
+    if movement_code == "side_reach" and side:
+        return False, f"Make sure your {side} arm is visible."
+    if movement_code == "knee_lift_or_step" and side:
+        return False, f"Make sure your {side} knee and ankle are visible."
+    return False, "Step back so I can see the body parts for this move."
+
+
+@api_bp.get("/pose/readiness")
+def pose_readiness():
+    """Initialize the app-scoped model without evaluating or scoring a frame."""
+    started = perf_counter()
+    try:
+        adapter = get_pose_adapter()
+        warm_up = getattr(adapter, "warm_up", None)
+        if warm_up is not None:
+            warm_up()
+    except Exception:
+        current_app.logger.error("pose_readiness_failed")
+        return jsonify(
+            {"status": "error", "message": "Movement checker unavailable."}
+        ), 503
+    current_app.logger.info(
+        "pose_readiness total_seconds=%.4f", perf_counter() - started
+    )
+    return jsonify({"status": "ready"}), 200
+
+
+@api_bp.post("/pose/preview")
+def pose_preview():
+    """Return transient drawing landmarks without movement evaluation or scoring."""
+    movement_code = request.form.get("movement")
+    side = request.form.get("side")
+    if movement_code not in SUPPORTED_MOVEMENTS:
+        return jsonify({"status": "error", "message": "Unsupported movement."}), 400
+    validation_error = _validate_side_for_movement(movement_code, side)
+    if validation_error is not None:
+        return validation_error
+    if "image" not in request.files:
+        return jsonify({"status": "error", "message": "No image file provided."}), 400
+    file = request.files["image"]
+    filename = file.filename or ""
+    extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    mimetype = (file.mimetype or "").split(";")[0].strip().lower()
+    if (
+        extension
+        not in current_app.config.get(
+            "ALLOWED_IMAGE_EXTENSIONS", {"jpg", "jpeg", "png"}
+        )
+        or mimetype not in ALLOWED_MIME_TYPES
+    ):
+        return jsonify({"status": "error", "message": "Unsupported image format."}), 415
+
+    result = process_frame(file, get_pose_adapter())
+    ready, guidance = _preview_guidance(result, movement_code, side)
+    display_landmarks = {
+        name: {
+            "x": landmark.x,
+            "y": landmark.y,
+            "visibility": landmark.visibility,
+        }
+        for name, landmark in result.landmarks.items()
+        if name in TRACKED_LANDMARK_NAMES
+    }
+    return (
+        jsonify(
+            {
+                "pose_status": result.status.value,
+                "ready_for_capture": ready,
+                "guidance": guidance,
+                "display_landmarks": display_landmarks,
+            }
+        ),
+        200,
+    )
 
 
 def _validate_side_for_movement(movement_code: str, side: str | None):

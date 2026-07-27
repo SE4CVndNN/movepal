@@ -38,11 +38,15 @@ docs/movement_specification.md for the full compatibility write-up):
 from __future__ import annotations
 
 import json
+import logging
+import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_VISIBILITY_THRESHOLD = 0.5
 """Starting per-landmark visibility cutoff.
@@ -223,6 +227,10 @@ class MediaPipePoseAdapter:
             self._landmarker = vision.PoseLandmarker.create_from_options(options)
         return self._landmarker
 
+    def warm_up(self) -> None:
+        """Initialize the reusable landmarker without processing an image."""
+        self._get_landmarker()
+
     def estimate(self, image_path: str | Path) -> PoseResult:
         """Run pose estimation on an image file and return a PoseResult.
 
@@ -234,8 +242,17 @@ class MediaPipePoseAdapter:
             import mediapipe as mp
 
             landmarker = self._get_landmarker()
+            decode_started = time.perf_counter()
             mp_image = mp.Image.create_from_file(str(image_path))
+            decode_seconds = time.perf_counter() - decode_started
+            inference_started = time.perf_counter()
             result = landmarker.detect(mp_image)
+            inference_seconds = time.perf_counter() - inference_started
+            logger.info(
+                "pose_estimate decode_seconds=%.4f inference_seconds=%.4f",
+                decode_seconds,
+                inference_seconds,
+            )
         except Exception as exc:  # noqa: BLE001 - convert any provider failure
             return PoseResult(status=PoseStatus.ERROR, error=str(exc))
 

@@ -97,8 +97,9 @@ block content %}
   </button>
   <h2>Camera time!</h2>
   <div class="camera-stage">
-    <div class="camera-feed-wrapper">
+    <div class="camera-feed-wrapper camera-preview-container">
       <video id="camera-preview" autoplay playsinline muted></video>
+      <canvas id="skeleton-overlay" aria-hidden="true"></canvas>
       <canvas id="capture-canvas" hidden></canvas>
       <div
         id="capture-processing"

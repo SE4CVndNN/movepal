@@ -53,6 +53,82 @@ def test_pose_adapter_is_replaced_when_model_path_changes(app, tmp_path):
     assert first is not second
 
 
+def test_pose_readiness_warms_reused_adapter_without_exposing_path(client, monkeypatch):
+    class ReadyAdapter:
+        def __init__(self):
+            self.warm_count = 0
+
+        def warm_up(self):
+            self.warm_count += 1
+
+    adapter = ReadyAdapter()
+    monkeypatch.setattr("app.routes.api.get_pose_adapter", lambda: adapter)
+
+    first = client.get("/api/pose/readiness")
+    second = client.get("/api/pose/readiness")
+
+    assert first.status_code == second.status_code == 200
+    assert first.get_json() == {"status": "ready"}
+    assert "path" not in first.get_data(as_text=True).lower()
+    assert adapter.warm_count == 2
+
+
+def test_pose_preview_is_transient_and_has_no_scoring_side_effect(client, monkeypatch):
+    from app.services.movement_rules import (
+        landmarks_from_fixture,
+        load_raise_both_arms_fixture,
+    )
+
+    fixture = load_raise_both_arms_fixture("synthetic_raise_arms_positive_001")
+    landmarks = landmarks_from_fixture(fixture)
+    captured_paths = []
+
+    class PreviewAdapter:
+        def estimate(self, image_path):
+            path = Path(image_path)
+            captured_paths.append(path)
+            assert path.exists()
+            return PoseResult(status=PoseStatus.SUCCESS, landmarks=landmarks)
+
+    monkeypatch.setattr("app.routes.api.get_pose_adapter", lambda: PreviewAdapter())
+    before = client.get("/api/session/summary").get_json()
+    response = client.post(
+        "/api/pose/preview",
+        data={
+            "image": (io.BytesIO(b"synthetic bytes"), "preview.jpg"),
+            "movement": "raise_both_arms",
+        },
+        content_type="multipart/form-data",
+    )
+    after = client.get("/api/session/summary").get_json()
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["ready_for_capture"] is True
+    assert set(payload) == {
+        "pose_status",
+        "ready_for_capture",
+        "guidance",
+        "display_landmarks",
+    }
+    assert set(payload["display_landmarks"]) <= {
+        "left_shoulder",
+        "right_shoulder",
+        "left_elbow",
+        "right_elbow",
+        "left_wrist",
+        "right_wrist",
+        "left_hip",
+        "right_hip",
+        "left_knee",
+        "right_knee",
+        "left_ankle",
+        "right_ankle",
+    }
+    assert before == after
+    assert captured_paths and not captured_paths[0].exists()
+
+
 def test_process_frame_success(client, monkeypatch):
     mock_adapter = MockPoseAdapter(PoseResult(status=PoseStatus.SUCCESS))
     monkeypatch.setattr("app.routes.api.get_pose_adapter", lambda: mock_adapter)

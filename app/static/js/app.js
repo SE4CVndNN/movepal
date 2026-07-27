@@ -320,6 +320,9 @@ function setAppState(state) {
 
 function showScreen(name) {
   if (name !== "camera-live") {
+    stopCamera();
+  }
+  if (name !== "camera-live") {
     clearCapturedFrame();
   }
   screens.forEach((section) => {
@@ -372,9 +375,47 @@ let activeStream = null;
 
 const cameraStatus = document.querySelector("#camera-status");
 const preview = document.querySelector("#camera-preview");
+const skeletonOverlay = document.querySelector("#skeleton-overlay");
 const captureCanvas = document.querySelector("#capture-canvas");
 const captureProcessing = document.querySelector("#capture-processing");
 const fallbackReason = document.querySelector("#fallback-reason");
+const CAMERA_STATES = Object.freeze([
+  "idle",
+  "loading-model",
+  "opening-camera",
+  "finding-pose",
+  "pose-ready",
+  "countdown",
+  "captured",
+  "processing",
+  "feedback",
+]);
+let cameraState = "idle";
+let previewLoopActive = false;
+let previewRequestInFlight = false;
+let previewTimerId = null;
+let stablePoseChecks = 0;
+let lastReadyPreviewAt = 0;
+let finalCaptureStarted = false;
+let cameraSessionId = 0;
+let readinessRequestController = null;
+let previewRequestController = null;
+
+function transitionCameraState(nextState) {
+  if (!CAMERA_STATES.includes(nextState)) return;
+  cameraState = nextState;
+  document.body.dataset.cameraState = nextState;
+  if (captureFrameButton) {
+    captureFrameButton.disabled = nextState !== "pose-ready";
+  }
+}
+
+function setCameraGuidance(message) {
+  if (cameraStatus) cameraStatus.textContent = message;
+  if (cameraInstruction && cameraState !== "loading-model") {
+    cameraInstruction.textContent = message;
+  }
+}
 
 void resetSession();
 
@@ -393,7 +434,11 @@ function isCameraApiSupported() {
 document
   .querySelector("#use-webcam-btn")
   ?.addEventListener("click", async () => {
+    stopCamera();
+    const requestedSessionId = cameraSessionId;
     clearCapturedFrame();
+    finalCaptureStarted = false;
+    setBusyRequest(false);
     if (!isSecureContextForCamera()) {
       if (fallbackReason)
         fallbackReason.textContent =
@@ -410,15 +455,40 @@ document
       return;
     }
 
-    cameraStatus.textContent =
-      "Please allow camera access if the browser asks.";
+    transitionCameraState("loading-model");
+    cameraStatus.textContent = "Loading the movement checker…";
     try {
-      activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
-      preview.srcObject = activeStream;
-      cameraStatus.textContent = "Camera is on! Get ready to move.";
+      readinessRequestController = new AbortController();
+      const readinessResponse = await fetch("/api/pose/readiness", {
+        signal: readinessRequestController.signal,
+      });
+      if (requestedSessionId !== cameraSessionId) return;
+      if (!readinessResponse.ok) throw new Error("readiness");
+      cameraStatus.textContent =
+        "Movement checker is ready. Let’s find your pose.";
+      transitionCameraState("opening-camera");
+      const requestedStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+      });
+      if (requestedSessionId !== cameraSessionId) {
+        requestedStream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+      activeStream = requestedStream;
+      preview.srcObject = requestedStream;
+      // Keep the video visible while it starts. Some browsers do not produce
+      // metadata or frames for a video whose parent section is still hidden.
+      showScreen("camera-live");
+      await preview.play();
+      await waitForVideoMetadata(preview);
+      if (requestedSessionId !== cameraSessionId) {
+        stopCamera();
+        return;
+      }
       updateCameraInstruction();
 
-      activeStream.getVideoTracks()[0].addEventListener("ended", () => {
+      requestedStream.getVideoTracks()[0].addEventListener("ended", () => {
+        if (requestedSessionId !== cameraSessionId) return;
         if (fallbackReason)
           fallbackReason.textContent =
             "The camera stopped. That is okay. You can still try the demo.";
@@ -426,11 +496,16 @@ document
         showScreen("camera-fallback");
       });
 
-      showScreen("camera-live");
-      startPeriodicCapture();
-      cameraStatus.textContent =
-        "Camera is on for this picture only. Get ready to move.";
+      transitionCameraState("finding-pose");
+      setCameraGuidance("Move into the center so I can find your pose.");
+      startPosePreviewLoop();
     } catch (error) {
+      if (
+        error.name === "AbortError" ||
+        requestedSessionId !== cameraSessionId
+      ) {
+        return;
+      }
       let reason;
       if (error.name === "NotAllowedError") {
         reason = "Camera permission was not given. You can still try the demo.";
@@ -439,6 +514,10 @@ document
       }
       if (fallbackReason) fallbackReason.textContent = reason;
       showScreen("camera-fallback");
+    } finally {
+      if (requestedSessionId === cameraSessionId) {
+        readinessRequestController = null;
+      }
     }
   });
 
@@ -467,7 +546,7 @@ document
       return;
     }
 
-    if (statusEl) statusEl.textContent = "Running fallback demo…";
+    if (statusEl) statusEl.textContent = "";
     try {
       const response = await fetch("/api/movement", {
         method: "POST",
@@ -512,6 +591,21 @@ document.querySelector("#stop-camera-btn")?.addEventListener("click", () => {
 
 // Safety net: stop the camera if the user navigates away without clicking "Stop".
 window.addEventListener("beforeunload", stopCamera);
+window.addEventListener("pagehide", stopCamera);
+document.addEventListener("visibilitychange", () => {
+  // Some browsers briefly mark the page hidden while their native camera
+  // permission prompt is open. Do not cancel readiness/getUserMedia at that
+  // point or the camera can never open. Once a real stream exists, hiding the
+  // page still releases it immediately.
+  if (document.hidden && activeStream !== null) {
+    stopCamera();
+    showScreen("camera-choice");
+    if (cameraStatus) {
+      cameraStatus.textContent =
+        "The camera was turned off when this page was hidden.";
+    }
+  }
+});
 
 const MAX_CAPTURE_WIDTH = 640;
 const MAX_CAPTURE_HEIGHT = 480;
@@ -519,6 +613,9 @@ const FRAME_REQUEST_TIMEOUT_MS = 15000;
 let requestInFlight = false;
 let captureCountdownTimerId = null;
 let captureCountdownValue = 0;
+const PREVIEW_INTERVAL_MS = 650;
+const PREVIEW_MAX_WIDTH = 320;
+const REQUIRED_STABLE_POSE_CHECKS = 2;
 
 const captureFrameButton = document.querySelector("#capture-frame-btn");
 const sampleChoiceButtons = document.querySelectorAll(".sample-choice");
@@ -595,16 +692,217 @@ function showCaptureFlash() {
   window.setTimeout(() => captureFlash.classList.remove("is-visible"), 380);
 }
 
-function startPeriodicCapture() {
-  stopPeriodicCapture();
-  if (!activeStream || !preview || requestInFlight) return;
+function waitForVideoMetadata(video) {
+  if (video.videoWidth > 0 && video.videoHeight > 0) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const timeoutId = window.setTimeout(
+      () => reject(new Error("Video metadata timed out.")),
+      8000,
+    );
+    video.addEventListener(
+      "loadedmetadata",
+      () => {
+        window.clearTimeout(timeoutId);
+        if (video.videoWidth > 0 && video.videoHeight > 0) resolve();
+        else reject(new Error("Video dimensions are unavailable."));
+      },
+      { once: true },
+    );
+  });
+}
 
-  captureCountdownValue = 4;
+function clearSkeletonOverlay() {
+  if (!skeletonOverlay) return;
+  const context = skeletonOverlay.getContext("2d");
+  context?.clearRect(0, 0, skeletonOverlay.width, skeletonOverlay.height);
+}
+
+const SKELETON_CONNECTIONS = [
+  ["left_shoulder", "right_shoulder"],
+  ["left_shoulder", "left_elbow"],
+  ["left_elbow", "left_wrist"],
+  ["right_shoulder", "right_elbow"],
+  ["right_elbow", "right_wrist"],
+  ["left_shoulder", "left_hip"],
+  ["right_shoulder", "right_hip"],
+  ["left_hip", "right_hip"],
+  ["left_hip", "left_knee"],
+  ["left_knee", "left_ankle"],
+  ["right_hip", "right_knee"],
+  ["right_knee", "right_ankle"],
+];
+
+function drawSkeleton(displayLandmarks) {
+  if (!skeletonOverlay || !preview.videoWidth || !preview.videoHeight) {
+    return false;
+  }
+  skeletonOverlay.width = preview.videoWidth;
+  skeletonOverlay.height = preview.videoHeight;
+  const context = skeletonOverlay.getContext("2d");
+  if (!context) return false;
+  context.clearRect(0, 0, skeletonOverlay.width, skeletonOverlay.height);
+  context.lineWidth = Math.max(5, skeletonOverlay.width / 120);
+  context.lineCap = "round";
+  context.strokeStyle = "#8cf4ff";
+  for (const [firstName, secondName] of SKELETON_CONNECTIONS) {
+    const first = displayLandmarks[firstName];
+    const second = displayLandmarks[secondName];
+    if (!first || !second || first.visibility < 0.5 || second.visibility < 0.5)
+      continue;
+    context.beginPath();
+    context.moveTo(first.x * skeletonOverlay.width, first.y * skeletonOverlay.height);
+    context.lineTo(second.x * skeletonOverlay.width, second.y * skeletonOverlay.height);
+    context.stroke();
+  }
+  context.fillStyle = "#ffe56b";
+  for (const landmark of Object.values(displayLandmarks)) {
+    if (landmark.visibility < 0.5) continue;
+    context.beginPath();
+    context.arc(
+      landmark.x * skeletonOverlay.width,
+      landmark.y * skeletonOverlay.height,
+      Math.max(6, skeletonOverlay.width / 90),
+      0,
+      Math.PI * 2,
+    );
+    context.fill();
+  }
+  return Object.keys(displayLandmarks).length > 0;
+}
+
+function stopPosePreviewLoop() {
+  previewLoopActive = false;
+  if (previewTimerId != null) {
+    window.clearTimeout(previewTimerId);
+    previewTimerId = null;
+  }
+  stablePoseChecks = 0;
+  lastReadyPreviewAt = 0;
+}
+
+function startPosePreviewLoop() {
+  stopPosePreviewLoop();
+  previewLoopActive = true;
+  void analyzePreviewFrame();
+}
+
+async function analyzePreviewFrame() {
+  if (
+    !previewLoopActive ||
+    previewRequestInFlight ||
+    !activeStream ||
+    !preview.videoWidth ||
+    !preview.videoHeight
+  )
+    return;
+  const previewSessionId = cameraSessionId;
+  let requestController = null;
+  previewRequestInFlight = true;
+  const previewCanvas = document.createElement("canvas");
+  const scale = Math.min(1, PREVIEW_MAX_WIDTH / preview.videoWidth);
+  previewCanvas.width = Math.max(1, Math.round(preview.videoWidth * scale));
+  previewCanvas.height = Math.max(1, Math.round(preview.videoHeight * scale));
+  previewCanvas
+    .getContext("2d")
+    ?.drawImage(preview, 0, 0, previewCanvas.width, previewCanvas.height);
+
+  try {
+    const blob = await new Promise((resolve) =>
+      previewCanvas.toBlob(resolve, "image/jpeg", 0.72),
+    );
+    if (!blob || !previewLoopActive) return;
+    const formData = new FormData();
+    formData.append("image", blob, "preview.jpg");
+    formData.append("movement", currentActivity);
+    if (currentSide) formData.append("side", currentSide);
+    requestController = new AbortController();
+    previewRequestController = requestController;
+    const response = await fetch("/api/pose/preview", {
+      method: "POST",
+      body: formData,
+      signal: requestController.signal,
+    });
+    const payload = await response.json();
+    if (!previewLoopActive || previewSessionId !== cameraSessionId) return;
+    const skeletonDrawn =
+      response.ok &&
+      payload.pose_status === "success" &&
+      drawSkeleton(payload.display_landmarks || {});
+    const ready = skeletonDrawn && payload.ready_for_capture === true;
+    setCameraGuidance(payload.guidance || "Let’s find your pose.");
+    if (ready) {
+      stablePoseChecks += 1;
+      lastReadyPreviewAt = Date.now();
+      if (
+        stablePoseChecks >= REQUIRED_STABLE_POSE_CHECKS &&
+        cameraState !== "countdown"
+      ) {
+        transitionCameraState("pose-ready");
+        startCountdown();
+      }
+    } else if (cameraState === "countdown") {
+      // Readiness is latched once the skeleton has been stable long enough to
+      // start the countdown. A single noisy preview must not cancel the photo.
+      setCameraGuidance("Hold that pose until the picture is taken.");
+    } else {
+      stablePoseChecks = 0;
+      lastReadyPreviewAt = 0;
+      if (!skeletonDrawn) clearSkeletonOverlay();
+      transitionCameraState("finding-pose");
+    }
+  } catch (error) {
+    if (
+      error.name === "AbortError" ||
+      !previewLoopActive ||
+      previewSessionId !== cameraSessionId
+    )
+      return;
+    if (cameraState === "countdown") {
+      setCameraGuidance("Hold that pose until the picture is taken.");
+      return;
+    }
+    stablePoseChecks = 0;
+    lastReadyPreviewAt = 0;
+    clearSkeletonOverlay();
+    cancelCountdown();
+    transitionCameraState("finding-pose");
+    setCameraGuidance(
+      "I lost your pose for a moment. Hold still and try again.",
+    );
+  } finally {
+    if (previewRequestController === requestController) {
+      previewRequestController = null;
+    }
+    if (previewSessionId === cameraSessionId) {
+      previewRequestInFlight = false;
+      if (previewLoopActive) {
+        previewTimerId = window.setTimeout(
+          analyzePreviewFrame,
+          PREVIEW_INTERVAL_MS,
+        );
+      }
+    }
+  }
+}
+
+function startCountdown() {
+  if (
+    cameraState === "countdown" ||
+    !activeStream ||
+    !previewLoopActive ||
+    requestInFlight
+  )
+    return;
+  cancelCountdown();
+  transitionCameraState("countdown");
+  setCameraGuidance("Great! Hold that pose.");
+
+  captureCountdownValue = 3;
   updateCaptureCountdown(captureCountdownValue);
   captureCountdownTimerId = window.setInterval(() => {
     captureCountdownValue -= 1;
     if (captureCountdownValue <= 0) {
-      stopPeriodicCapture();
+      cancelCountdown();
       showCaptureFlash();
       captureFrame();
     } else {
@@ -613,7 +911,7 @@ function startPeriodicCapture() {
   }, 1000);
 }
 
-function stopPeriodicCapture() {
+function cancelCountdown() {
   if (captureCountdownTimerId != null) {
     window.clearInterval(captureCountdownTimerId);
     captureCountdownTimerId = null;
@@ -622,10 +920,22 @@ function stopPeriodicCapture() {
 }
 
 function stopCamera() {
-  stopPeriodicCapture();
+  cameraSessionId += 1;
+  readinessRequestController?.abort();
+  readinessRequestController = null;
+  previewRequestController?.abort();
+  previewRequestController = null;
+  cancelCountdown();
+  stopPosePreviewLoop();
+  clearSkeletonOverlay();
   activeStream?.getTracks().forEach((track) => track.stop());
   activeStream = null;
-  if (preview) preview.srcObject = null;
+  previewRequestInFlight = false;
+  if (preview) {
+    preview.pause();
+    preview.srcObject = null;
+  }
+  if (cameraState !== "feedback") transitionCameraState("idle");
 }
 
 function showCapturedFrame() {
@@ -691,12 +1001,15 @@ function captureFrame() {
   const video = document.querySelector("#camera-preview");
   const canvas = captureCanvas;
   const statusEl = getCurrentStatusElement();
-  if (!video || !canvas) return;
+  if (!video || !canvas || finalCaptureStarted) return;
 
   if (!video.videoWidth || !video.videoHeight) {
     if (statusEl) statusEl.textContent = "Waiting for video preview...";
     return;
   }
+  finalCaptureStarted = true;
+  transitionCameraState("captured");
+  stopPosePreviewLoop();
 
   // A retry starts from the camera choice so a fresh, short-lived stream is
   // requested. The previous stream is never kept alive between attempts.
@@ -709,9 +1022,7 @@ function captureFrame() {
   canvas.height = height;
   const ctx = canvas.getContext("2d");
   if (ctx) {
-    ctx.setTransform(-1, 0, 0, 1, width, 0);
     ctx.drawImage(video, 0, 0, width, height);
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
   showCapturedFrame();
   const requestToken = activityToken;
@@ -722,6 +1033,7 @@ function captureFrame() {
   canvas.toBlob(
     (blob) => {
       if (blob) {
+        transitionCameraState("processing");
         uploadFrame(blob, "frame.jpg", requestToken);
       } else {
         if (statusEl)
@@ -733,6 +1045,34 @@ function captureFrame() {
     "image/jpeg",
     0.85,
   );
+}
+
+async function handleFrameEvaluationResult(payload, requestToken) {
+  if (requestToken !== undefined && requestToken !== activityToken) return null;
+  stopCamera();
+  transitionCameraState("feedback");
+  feedbackRetryTarget = "camera-choice";
+  const completed = payload.completed === true;
+  const poseMessages = {
+    no_pose:
+      "I could not see your pose. Step back, face the camera, and try again.",
+    low_visibility:
+      "I could not see the movement clearly. Improve the lighting and try again.",
+    error:
+      "The movement checker needs a quick reset. Please try again or use the no-camera option.",
+  };
+  const mode = completed ? "success" : "retry";
+  if (feedbackMessage) {
+    feedbackMessage.textContent =
+      payload.feedback ||
+      poseMessages[payload.pose_status] ||
+      "Nice try! Check the movement tip and try again.";
+  }
+  updateFeedbackStatus(mode);
+  await refreshSessionSummary();
+  showScreen("feedback");
+  setAppState(mode);
+  return payload;
 }
 
 async function uploadFrame(blob, filename, requestToken, statusEl) {
@@ -771,32 +1111,12 @@ async function uploadFrame(blob, filename, requestToken, statusEl) {
     }
 
     if (!response.ok) {
-      const message =
-        payload.message ||
-        "The server could not process the frame. Please use the no-camera fallback.";
-      if (status) {
-        setUploadStatus(status, message);
-      } else {
-        showCameraFallback(message);
-      }
-      return null;
+      payload.completed = false;
+      payload.pose_status = payload.pose_status || "error";
     }
 
     if ("completed" in payload) {
-      stopPeriodicCapture();
-      const mode = payload.completed ? "success" : "retry";
-      if (feedbackMessage) {
-        feedbackMessage.textContent = renderFeedbackText(payload);
-      }
-      updateFeedbackStatus(mode);
-      if (payload.completed && payload.stars > 0) {
-        await refreshSessionSummary();
-      } else {
-        await refreshSessionSummary();
-      }
-      showScreen("feedback");
-      setAppState(mode);
-      return payload;
+      return handleFrameEvaluationResult(payload, requestToken);
     }
 
     const messages = {
@@ -804,13 +1124,9 @@ async function uploadFrame(blob, filename, requestToken, statusEl) {
       no_pose: "No pose detected in that frame — try again.",
       low_visibility: "Pose visibility was too low — try again.",
     };
-    if (statusEl)
-      setUploadStatus(
-        statusEl,
-        messages[payload.pose_status] || payload.message,
-      );
-
-    return payload;
+    payload.completed = false;
+    payload.feedback = messages[payload.pose_status] || payload.message;
+    return handleFrameEvaluationResult(payload, requestToken);
   } catch (error) {
     if (requestToken !== undefined && requestToken !== activityToken) {
       return null;
@@ -819,10 +1135,14 @@ async function uploadFrame(blob, filename, requestToken, statusEl) {
       error.name === "AbortError"
         ? "Pose checking took too long. Please try again or use the no-camera fallback."
         : "Frame upload failed. Please use the no-camera fallback or try again later.";
-    showCameraFallback(
-      message,
+    return handleFrameEvaluationResult(
+      {
+        completed: false,
+        pose_status: "error",
+        feedback: message,
+      },
+      requestToken,
     );
-    return null;
   } finally {
     window.clearTimeout(progressTimeout);
     window.clearTimeout(requestTimeout);
@@ -850,8 +1170,8 @@ async function uploadSelectedPhoto(file, statusEl) {
 }
 
 document.querySelector("#capture-frame-btn")?.addEventListener("click", () => {
-  if (!requestInFlight) {
-    startPeriodicCapture();
+  if (!requestInFlight && cameraState === "pose-ready") {
+    startCountdown();
   }
 });
 
@@ -937,7 +1257,7 @@ document.querySelectorAll(".sample-choice").forEach((button) => {
       return;
     }
 
-    if (statusEl) statusEl.textContent = "Running fallback demo…";
+    if (statusEl) statusEl.textContent = "";
     if (fallbackError) fallbackError.textContent = "";
 
     const requestToken = activityToken;

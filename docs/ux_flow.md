@@ -2,7 +2,33 @@
 
 ## Screen sequence
 
-start → activity choice → camera choice → (live camera | fallback demo) → feedback → (retry activity | summary)
+start → activity choice → camera choice → camera preparation → live camera → feedback → (retry activity | summary)
+
+Camera preparation uses explicit states:
+
+```text
+idle → loading-model → opening-camera → finding-pose → pose-ready
+→ countdown → captured → processing → feedback
+```
+
+`GET /api/pose/readiness` initializes the application-scoped cached MediaPipe
+landmarker before camera permission is requested. It performs no pose
+evaluation and cannot update scoring.
+
+After video metadata and non-zero dimensions are available, a bounded
+low-resolution preview loop sends at most one in-flight transient request to
+`POST /api/pose/preview`. The response contains only the tracked display
+points needed for the visible skeleton. Preview frames and landmarks are not
+persisted, and the preview endpoint never evaluates a movement or awards a
+star.
+
+The countdown remains hidden until two consecutive preview responses confirm
+that the movement-specific body parts are visible and the skeleton has been
+drawn. Readiness is then latched for the three-second countdown so that one
+noisy preview cannot repeatedly cancel the picture. At zero, one bounded raw
+frame is copied for final evaluation; the preview loop and camera tracks stop,
+`video.srcObject` is cleared, and the skeleton canvas is cleared before
+`POST /api/frame`.
 
 ## Camera / fallback state table
 
@@ -60,6 +86,12 @@ is connected to the actual game flow.
 ## Decisions and fixes made during implementation
 
 - Camera permission is requested only after the user clicks "Use Live Webcam".
+- Leaving the camera screen, pressing Back/Stop, leaving the page, and
+  starting a different attempt cancel pending readiness/preview work and stop
+  every camera track. Hiding the page stops an active stream, while the
+  browser's native permission prompt is allowed to finish opening it. A late
+  result from an invalidated attempt is discarded and its returned tracks are
+  stopped, so it cannot reopen the camera.
 - The live preview uses `navigator.mediaDevices.getUserMedia`, draws one
   bounded frame to a hidden canvas, and immediately stops every camera track
   before encoding or uploading the picture.
