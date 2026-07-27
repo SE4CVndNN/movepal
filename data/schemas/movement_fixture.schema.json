@@ -9,7 +9,7 @@
     "required": [
       "fixture_id", "schema_version", "source_type", "provenance_reference",
       "description", "expected_status", "annotator", "movement", "requested_side",
-      "expected_completed", "expected_feedback_code", "category",
+      "expected_completed", "expected_feedback_code", "category", "split",
       "observed_consecutive_samples", "landmarks"
     ],
     "properties": {
@@ -24,7 +24,8 @@
       "requested_side": {"enum": ["left", "right", "both"]},
       "expected_completed": {"type": "boolean"},
       "expected_feedback_code": {"enum": ["great", "raise_arms", "reach_left", "reach_right", "lift_knee", "full_body_missing"]},
-      "category": {"enum": ["positive", "negative", "borderline", "low_visibility"]},
+      "category": {"enum": ["positive", "negative", "borderline", "low_visibility", "framing"]},
+      "split": {"enum": ["tuning", "held_out"]},
       "observed_consecutive_samples": {"type": "integer", "minimum": 0},
       "landmarks": {
         "type": "object",

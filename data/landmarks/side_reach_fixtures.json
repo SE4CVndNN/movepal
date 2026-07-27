@@ -3,206 +3,189 @@
     "fixture_id": "synthetic_side_reach_left_positive_001",
     "schema_version": "1.0",
     "source_type": "synthetic",
-    "provenance_reference": "hand-authored for MP-007",
+    "provenance_reference": "hand-authored for MP-007 / MP-021 calibration",
     "description": "User's left wrist reaches outward by at least one shoulder width.",
     "expected_status": "success",
-    "annotator": "MP-007 team",
+    "annotator": "MP-021 team",
     "movement": "side_reach",
     "requested_side": "left",
     "expected_completed": true,
     "expected_feedback_code": "great",
     "category": "positive",
+    "split": "tuning",
     "observed_consecutive_samples": 2,
     "landmarks": {
-      "left_shoulder": {
-        "x": 0.35,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_shoulder": {
-        "x": 0.65,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "left_elbow": {
-        "x": 0.15,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "left_wrist": {
-        "x": 0.04,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "left_hip": {
-        "x": 0.4,
-        "y": 0.65,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_hip": {
-        "x": 0.6,
-        "y": 0.65,
-        "z": 0,
-        "visibility": 0.9
-      }
+      "left_shoulder": {"x": 0.35, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "right_shoulder": {"x": 0.65, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "left_elbow": {"x": 0.15, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "left_wrist": {"x": 0.04, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "left_hip": {"x": 0.40, "y": 0.65, "z": 0.0, "visibility": 0.90},
+      "right_hip": {"x": 0.60, "y": 0.65, "z": 0.0, "visibility": 0.90}
+    }
+  },
+  {
+    "fixture_id": "synthetic_side_reach_right_positive_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-021 held-out set",
+    "description": "Held-out positive case: Right wrist reaches outward horizontally by 1.0 shoulder width.",
+    "expected_status": "success",
+    "annotator": "MP-021 team",
+    "movement": "side_reach",
+    "requested_side": "right",
+    "expected_completed": true,
+    "expected_feedback_code": "great",
+    "category": "positive",
+    "split": "held_out",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {"x": 0.35, "y": 0.40, "z": 0.0, "visibility": 0.95},
+      "right_shoulder": {"x": 0.65, "y": 0.40, "z": 0.0, "visibility": 0.95},
+      "right_elbow": {"x": 0.85, "y": 0.40, "z": 0.0, "visibility": 0.95},
+      "right_wrist": {"x": 0.96, "y": 0.40, "z": 0.0, "visibility": 0.95},
+      "left_hip": {"x": 0.40, "y": 0.65, "z": 0.0, "visibility": 0.95},
+      "right_hip": {"x": 0.60, "y": 0.65, "z": 0.0, "visibility": 0.95}
     }
   },
   {
     "fixture_id": "synthetic_side_reach_right_negative_001",
     "schema_version": "1.0",
     "source_type": "synthetic",
-    "provenance_reference": "hand-authored for MP-007",
+    "provenance_reference": "hand-authored for MP-007 / MP-021 calibration",
     "description": "Requested right arm remains down while the other arm reaches.",
     "expected_status": "retry",
-    "annotator": "MP-007 team",
+    "annotator": "MP-021 team",
     "movement": "side_reach",
     "requested_side": "right",
     "expected_completed": false,
     "expected_feedback_code": "reach_right",
     "category": "negative",
+    "split": "tuning",
     "observed_consecutive_samples": 2,
     "landmarks": {
-      "left_shoulder": {
-        "x": 0.35,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_shoulder": {
-        "x": 0.65,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "left_wrist": {
-        "x": 0.04,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_wrist": {
-        "x": 0.7,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "left_hip": {
-        "x": 0.4,
-        "y": 0.65,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_hip": {
-        "x": 0.6,
-        "y": 0.65,
-        "z": 0,
-        "visibility": 0.9
-      }
+      "left_shoulder": {"x": 0.35, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "right_shoulder": {"x": 0.65, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "left_wrist": {"x": 0.04, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "right_wrist": {"x": 0.70, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "left_hip": {"x": 0.40, "y": 0.65, "z": 0.0, "visibility": 0.90},
+      "right_hip": {"x": 0.60, "y": 0.65, "z": 0.0, "visibility": 0.90}
+    }
+  },
+  {
+    "fixture_id": "synthetic_side_reach_left_negative_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-021 held-out set",
+    "description": "Held-out negative case: Requested left arm remains down at rest.",
+    "expected_status": "retry",
+    "annotator": "MP-021 team",
+    "movement": "side_reach",
+    "requested_side": "left",
+    "expected_completed": false,
+    "expected_feedback_code": "reach_left",
+    "category": "negative",
+    "split": "held_out",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {"x": 0.35, "y": 0.40, "z": 0.0, "visibility": 0.95},
+      "right_shoulder": {"x": 0.65, "y": 0.40, "z": 0.0, "visibility": 0.95},
+      "left_wrist": {"x": 0.30, "y": 0.65, "z": 0.0, "visibility": 0.95},
+      "right_wrist": {"x": 0.70, "y": 0.65, "z": 0.0, "visibility": 0.95},
+      "left_hip": {"x": 0.40, "y": 0.65, "z": 0.0, "visibility": 0.95},
+      "right_hip": {"x": 0.60, "y": 0.65, "z": 0.0, "visibility": 0.95}
     }
   },
   {
     "fixture_id": "synthetic_side_reach_left_borderline_001",
     "schema_version": "1.0",
     "source_type": "synthetic",
-    "provenance_reference": "hand-authored for MP-007",
+    "provenance_reference": "hand-authored for MP-007 / MP-021 calibration",
     "description": "User's left reach is 0.80 shoulder widths, just below 0.85.",
     "expected_status": "retry",
-    "annotator": "MP-007 team",
+    "annotator": "MP-021 team",
     "movement": "side_reach",
     "requested_side": "left",
     "expected_completed": false,
     "expected_feedback_code": "reach_left",
     "category": "borderline",
+    "split": "tuning",
     "observed_consecutive_samples": 2,
     "landmarks": {
-      "left_shoulder": {
-        "x": 0.35,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_shoulder": {
-        "x": 0.65,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "left_elbow": {
-        "x": 0.2,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "left_wrist": {
-        "x": 0.11,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "left_hip": {
-        "x": 0.4,
-        "y": 0.65,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_hip": {
-        "x": 0.6,
-        "y": 0.65,
-        "z": 0,
-        "visibility": 0.9
-      }
+      "left_shoulder": {"x": 0.35, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "right_shoulder": {"x": 0.65, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "left_elbow": {"x": 0.20, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "left_wrist": {"x": 0.11, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "left_hip": {"x": 0.40, "y": 0.65, "z": 0.0, "visibility": 0.90},
+      "right_hip": {"x": 0.60, "y": 0.65, "z": 0.0, "visibility": 0.90}
+    }
+  },
+  {
+    "fixture_id": "synthetic_side_reach_right_borderline_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-021 held-out set",
+    "description": "Held-out borderline case: Right reach is 0.82 shoulder widths, just short of 0.85.",
+    "expected_status": "retry",
+    "annotator": "MP-021 team",
+    "movement": "side_reach",
+    "requested_side": "right",
+    "expected_completed": false,
+    "expected_feedback_code": "reach_right",
+    "category": "borderline",
+    "split": "held_out",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {"x": 0.35, "y": 0.40, "z": 0.0, "visibility": 0.95},
+      "right_shoulder": {"x": 0.65, "y": 0.40, "z": 0.0, "visibility": 0.95},
+      "right_wrist": {"x": 0.896, "y": 0.40, "z": 0.0, "visibility": 0.95},
+      "left_hip": {"x": 0.40, "y": 0.65, "z": 0.0, "visibility": 0.95},
+      "right_hip": {"x": 0.60, "y": 0.65, "z": 0.0, "visibility": 0.95}
     }
   },
   {
     "fixture_id": "synthetic_side_reach_right_low_visibility_001",
     "schema_version": "1.0",
     "source_type": "synthetic",
-    "provenance_reference": "hand-authored for MP-007",
-    "description": "Requested right wrist has low visibility.",
+    "provenance_reference": "hand-authored for MP-007 / MP-021 calibration",
+    "description": "Requested right wrist has low visibility (0.20).",
     "expected_status": "low_visibility",
-    "annotator": "MP-007 team",
+    "annotator": "MP-021 team",
     "movement": "side_reach",
     "requested_side": "right",
     "expected_completed": false,
     "expected_feedback_code": "full_body_missing",
     "category": "low_visibility",
+    "split": "tuning",
     "observed_consecutive_samples": 0,
     "landmarks": {
-      "left_shoulder": {
-        "x": 0.35,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_shoulder": {
-        "x": 0.65,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_wrist": {
-        "x": 0.96,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.2
-      },
-      "left_hip": {
-        "x": 0.4,
-        "y": 0.65,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_hip": {
-        "x": 0.6,
-        "y": 0.65,
-        "z": 0,
-        "visibility": 0.9
-      }
+      "left_shoulder": {"x": 0.35, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "right_shoulder": {"x": 0.65, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "right_wrist": {"x": 0.96, "y": 0.40, "z": 0.0, "visibility": 0.20},
+      "left_hip": {"x": 0.40, "y": 0.65, "z": 0.0, "visibility": 0.90},
+      "right_hip": {"x": 0.60, "y": 0.65, "z": 0.0, "visibility": 0.90}
+    }
+  },
+  {
+    "fixture_id": "synthetic_side_reach_left_framing_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-021 held-out set",
+    "description": "Framing failure: Left wrist drifts downwards (vertical offset > 0.50 shoulder width).",
+    "expected_status": "retry",
+    "annotator": "MP-021 team",
+    "movement": "side_reach",
+    "requested_side": "left",
+    "expected_completed": false,
+    "expected_feedback_code": "reach_left",
+    "category": "framing",
+    "split": "held_out",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {"x": 0.35, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "right_shoulder": {"x": 0.65, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "left_wrist": {"x": 0.04, "y": 0.60, "z": 0.0, "visibility": 0.90},
+      "left_hip": {"x": 0.40, "y": 0.65, "z": 0.0, "visibility": 0.90},
+      "right_hip": {"x": 0.60, "y": 0.65, "z": 0.0, "visibility": 0.90}
     }
   }
 ]

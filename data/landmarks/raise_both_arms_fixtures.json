@@ -3,224 +3,195 @@
     "fixture_id": "synthetic_raise_arms_positive_001",
     "schema_version": "1.0",
     "source_type": "synthetic",
-    "provenance_reference": "hand-authored for MP-007",
+    "provenance_reference": "hand-authored for MP-007 / MP-021 calibration",
     "description": "Both wrists are clearly above their matching shoulders.",
     "expected_status": "success",
-    "annotator": "MP-007 team",
+    "annotator": "MP-021 team",
     "movement": "raise_both_arms",
     "requested_side": "both",
     "expected_completed": true,
     "expected_feedback_code": "great",
     "category": "positive",
+    "split": "tuning",
     "observed_consecutive_samples": 2,
     "landmarks": {
-      "left_shoulder": {
-        "x": 0.42,
-        "y": 0.3,
-        "z": -0.02,
-        "visibility": 0.99
-      },
-      "right_shoulder": {
-        "x": 0.58,
-        "y": 0.3,
-        "z": -0.02,
-        "visibility": 0.99
-      },
-      "left_elbow": {
-        "x": 0.4,
-        "y": 0.2,
-        "z": -0.01,
-        "visibility": 0.97
-      },
-      "right_elbow": {
-        "x": 0.6,
-        "y": 0.2,
-        "z": -0.01,
-        "visibility": 0.97
-      },
-      "left_wrist": {
-        "x": 0.41,
-        "y": 0.1,
-        "z": 0,
-        "visibility": 0.95
-      },
-      "right_wrist": {
-        "x": 0.59,
-        "y": 0.1,
-        "z": 0,
-        "visibility": 0.95
-      },
-      "left_hip": {
-        "x": 0.45,
-        "y": 0.6,
-        "z": 0,
-        "visibility": 0.99
-      },
-      "right_hip": {
-        "x": 0.55,
-        "y": 0.6,
-        "z": 0,
-        "visibility": 0.99
-      }
+      "left_shoulder": {"x": 0.42, "y": 0.30, "z": -0.02, "visibility": 0.99},
+      "right_shoulder": {"x": 0.58, "y": 0.30, "z": -0.02, "visibility": 0.99},
+      "left_elbow": {"x": 0.40, "y": 0.20, "z": -0.01, "visibility": 0.97},
+      "right_elbow": {"x": 0.60, "y": 0.20, "z": -0.01, "visibility": 0.97},
+      "left_wrist": {"x": 0.41, "y": 0.10, "z": 0.0, "visibility": 0.95},
+      "right_wrist": {"x": 0.59, "y": 0.10, "z": 0.0, "visibility": 0.95},
+      "left_hip": {"x": 0.45, "y": 0.60, "z": 0.0, "visibility": 0.99},
+      "right_hip": {"x": 0.55, "y": 0.60, "z": 0.0, "visibility": 0.99}
+    }
+  },
+  {
+    "fixture_id": "synthetic_raise_arms_positive_002",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-021 held-out set",
+    "description": "Held-out positive case: Arms fully extended high overhead.",
+    "expected_status": "success",
+    "annotator": "MP-021 team",
+    "movement": "raise_both_arms",
+    "requested_side": "both",
+    "expected_completed": true,
+    "expected_feedback_code": "great",
+    "category": "positive",
+    "split": "held_out",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {"x": 0.38, "y": 0.35, "z": -0.02, "visibility": 0.98},
+      "right_shoulder": {"x": 0.62, "y": 0.35, "z": -0.02, "visibility": 0.98},
+      "left_elbow": {"x": 0.36, "y": 0.20, "z": -0.01, "visibility": 0.96},
+      "right_elbow": {"x": 0.64, "y": 0.20, "z": -0.01, "visibility": 0.96},
+      "left_wrist": {"x": 0.35, "y": 0.05, "z": 0.0, "visibility": 0.95},
+      "right_wrist": {"x": 0.65, "y": 0.05, "z": 0.0, "visibility": 0.95},
+      "left_hip": {"x": 0.40, "y": 0.65, "z": 0.0, "visibility": 0.98},
+      "right_hip": {"x": 0.60, "y": 0.65, "z": 0.0, "visibility": 0.98}
     }
   },
   {
     "fixture_id": "synthetic_raise_arms_negative_001",
     "schema_version": "1.0",
     "source_type": "synthetic",
-    "provenance_reference": "hand-authored for MP-007",
-    "description": "Arms remain down.",
+    "provenance_reference": "hand-authored for MP-007 / MP-021 calibration",
+    "description": "Both arms remain down at hips.",
     "expected_status": "retry",
-    "annotator": "MP-007 team",
+    "annotator": "MP-021 team",
     "movement": "raise_both_arms",
     "requested_side": "both",
     "expected_completed": false,
     "expected_feedback_code": "raise_arms",
     "category": "negative",
+    "split": "tuning",
     "observed_consecutive_samples": 2,
     "landmarks": {
-      "left_shoulder": {
-        "x": 0.3,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_shoulder": {
-        "x": 0.7,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "left_wrist": {
-        "x": 0.3,
-        "y": 0.65,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_wrist": {
-        "x": 0.7,
-        "y": 0.65,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "left_hip": {
-        "x": 0.35,
-        "y": 0.65,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_hip": {
-        "x": 0.65,
-        "y": 0.65,
-        "z": 0,
-        "visibility": 0.9
-      }
+      "left_shoulder": {"x": 0.30, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "right_shoulder": {"x": 0.70, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "left_wrist": {"x": 0.30, "y": 0.65, "z": 0.0, "visibility": 0.90},
+      "right_wrist": {"x": 0.70, "y": 0.65, "z": 0.0, "visibility": 0.90},
+      "left_hip": {"x": 0.35, "y": 0.65, "z": 0.0, "visibility": 0.90},
+      "right_hip": {"x": 0.65, "y": 0.65, "z": 0.0, "visibility": 0.90}
+    }
+  },
+  {
+    "fixture_id": "synthetic_raise_arms_negative_002",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-021 held-out set",
+    "description": "Held-out negative case: Only left arm is raised while right arm stays down.",
+    "expected_status": "retry",
+    "annotator": "MP-021 team",
+    "movement": "raise_both_arms",
+    "requested_side": "both",
+    "expected_completed": false,
+    "expected_feedback_code": "raise_arms",
+    "category": "negative",
+    "split": "held_out",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {"x": 0.35, "y": 0.40, "z": 0.0, "visibility": 0.95},
+      "right_shoulder": {"x": 0.65, "y": 0.40, "z": 0.0, "visibility": 0.95},
+      "left_wrist": {"x": 0.35, "y": 0.10, "z": 0.0, "visibility": 0.95},
+      "right_wrist": {"x": 0.65, "y": 0.65, "z": 0.0, "visibility": 0.95},
+      "left_hip": {"x": 0.40, "y": 0.65, "z": 0.0, "visibility": 0.95},
+      "right_hip": {"x": 0.60, "y": 0.65, "z": 0.0, "visibility": 0.95}
     }
   },
   {
     "fixture_id": "synthetic_raise_arms_borderline_001",
     "schema_version": "1.0",
     "source_type": "synthetic",
-    "provenance_reference": "hand-authored for MP-007",
-    "description": "Both wrists are just below the configured scaled shoulder margin.",
+    "provenance_reference": "hand-authored for MP-007 / MP-021 calibration",
+    "description": "Both wrists are just below the 0.40 shoulder width margin.",
     "expected_status": "retry",
-    "annotator": "MP-007 team",
+    "annotator": "MP-021 team",
     "movement": "raise_both_arms",
     "requested_side": "both",
     "expected_completed": false,
     "expected_feedback_code": "raise_arms",
     "category": "borderline",
+    "split": "tuning",
     "observed_consecutive_samples": 2,
     "landmarks": {
-      "left_shoulder": {
-        "x": 0.3,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_shoulder": {
-        "x": 0.7,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "left_wrist": {
-        "x": 0.3,
-        "y": 0.25,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_wrist": {
-        "x": 0.7,
-        "y": 0.25,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "left_hip": {
-        "x": 0.35,
-        "y": 0.65,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_hip": {
-        "x": 0.65,
-        "y": 0.65,
-        "z": 0,
-        "visibility": 0.9
-      }
+      "left_shoulder": {"x": 0.30, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "right_shoulder": {"x": 0.70, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "left_wrist": {"x": 0.30, "y": 0.25, "z": 0.0, "visibility": 0.90},
+      "right_wrist": {"x": 0.70, "y": 0.25, "z": 0.0, "visibility": 0.90},
+      "left_hip": {"x": 0.35, "y": 0.65, "z": 0.0, "visibility": 0.90},
+      "right_hip": {"x": 0.65, "y": 0.65, "z": 0.0, "visibility": 0.90}
+    }
+  },
+  {
+    "fixture_id": "synthetic_raise_arms_borderline_002",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-021 held-out set",
+    "description": "Held-out borderline case: Wrists raised to shoulder level (y=0.40) but not above.",
+    "expected_status": "retry",
+    "annotator": "MP-021 team",
+    "movement": "raise_both_arms",
+    "requested_side": "both",
+    "expected_completed": false,
+    "expected_feedback_code": "raise_arms",
+    "category": "borderline",
+    "split": "held_out",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {"x": 0.35, "y": 0.40, "z": 0.0, "visibility": 0.95},
+      "right_shoulder": {"x": 0.65, "y": 0.40, "z": 0.0, "visibility": 0.95},
+      "left_wrist": {"x": 0.20, "y": 0.40, "z": 0.0, "visibility": 0.95},
+      "right_wrist": {"x": 0.80, "y": 0.40, "z": 0.0, "visibility": 0.95},
+      "left_hip": {"x": 0.40, "y": 0.65, "z": 0.0, "visibility": 0.95},
+      "right_hip": {"x": 0.60, "y": 0.65, "z": 0.0, "visibility": 0.95}
     }
   },
   {
     "fixture_id": "synthetic_raise_arms_low_visibility_001",
     "schema_version": "1.0",
     "source_type": "synthetic",
-    "provenance_reference": "hand-authored for MP-007",
-    "description": "A required wrist is below the visibility threshold.",
+    "provenance_reference": "hand-authored for MP-007 / MP-021 calibration",
+    "description": "A required wrist is below the 0.50 visibility threshold.",
     "expected_status": "low_visibility",
-    "annotator": "MP-007 team",
+    "annotator": "MP-021 team",
     "movement": "raise_both_arms",
     "requested_side": "both",
     "expected_completed": false,
     "expected_feedback_code": "full_body_missing",
     "category": "low_visibility",
+    "split": "tuning",
     "observed_consecutive_samples": 0,
     "landmarks": {
-      "left_shoulder": {
-        "x": 0.3,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_shoulder": {
-        "x": 0.7,
-        "y": 0.4,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "left_wrist": {
-        "x": 0.2,
-        "y": 0.2,
-        "z": 0,
-        "visibility": 0.2
-      },
-      "right_wrist": {
-        "x": 0.8,
-        "y": 0.2,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "left_hip": {
-        "x": 0.35,
-        "y": 0.65,
-        "z": 0,
-        "visibility": 0.9
-      },
-      "right_hip": {
-        "x": 0.65,
-        "y": 0.65,
-        "z": 0,
-        "visibility": 0.9
-      }
+      "left_shoulder": {"x": 0.30, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "right_shoulder": {"x": 0.70, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "left_wrist": {"x": 0.20, "y": 0.20, "z": 0.0, "visibility": 0.20},
+      "right_wrist": {"x": 0.80, "y": 0.20, "z": 0.0, "visibility": 0.90},
+      "left_hip": {"x": 0.35, "y": 0.65, "z": 0.0, "visibility": 0.90},
+      "right_hip": {"x": 0.65, "y": 0.65, "z": 0.0, "visibility": 0.90}
+    }
+  },
+  {
+    "fixture_id": "synthetic_raise_arms_framing_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for MP-021 held-out set",
+    "description": "Framing failure: Left shoulder missing due to tight crop.",
+    "expected_status": "retry",
+    "annotator": "MP-021 team",
+    "movement": "raise_both_arms",
+    "requested_side": "both",
+    "expected_completed": false,
+    "expected_feedback_code": "full_body_missing",
+    "category": "framing",
+    "split": "held_out",
+    "observed_consecutive_samples": 0,
+    "landmarks": {
+      "right_shoulder": {"x": 0.70, "y": 0.40, "z": 0.0, "visibility": 0.90},
+      "left_wrist": {"x": 0.30, "y": 0.10, "z": 0.0, "visibility": 0.90},
+      "right_wrist": {"x": 0.70, "y": 0.10, "z": 0.0, "visibility": 0.90},
+      "left_hip": {"x": 0.35, "y": 0.65, "z": 0.0, "visibility": 0.90},
+      "right_hip": {"x": 0.65, "y": 0.65, "z": 0.0, "visibility": 0.90}
     }
   }
 ]
