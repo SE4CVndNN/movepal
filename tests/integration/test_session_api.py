@@ -65,6 +65,25 @@ def test_repeated_success_frames_do_not_double_count(client):
     }
 
 
+def test_start_attempt_allows_another_star_for_same_movement(client):
+    client.post("/api/movement", json=SUCCESS_REQUEST)
+    assert _summary(client)["stars"] == 1
+
+    reset_attempt = client.post(
+        "/api/session/start-attempt",
+        json={"movement": "raise_both_arms"},
+    )
+    assert reset_attempt.status_code == 200
+
+    second = client.post("/api/movement", json=SUCCESS_REQUEST)
+    assert second.get_json()["stars"] == 1
+    assert _summary(client) == {
+        "attempted_movements": 1,
+        "completed_movements": 2,
+        "stars": 2,
+    }
+
+
 def test_reset_clears_state(client):
     client.post("/api/movement", json=SUCCESS_REQUEST)
     assert _summary(client)["stars"] == 1

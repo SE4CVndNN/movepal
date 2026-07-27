@@ -28,10 +28,16 @@ block content %}
       Raise both arms
     </button>
     <button type="button" data-activity="side_reach" data-side="left" data-goto="camera-choice">
-      Reach to the side
+      Reach to the side (left)
+    </button>
+    <button type="button" data-activity="side_reach" data-side="right" data-goto="camera-choice">
+      Reach to the side (right)
     </button>
     <button type="button" data-activity="knee_lift_or_step" data-side="left" data-goto="camera-choice">
-      Knee lift
+      Knee lift (left)
+    </button>
+    <button type="button" data-activity="knee_lift_or_step" data-side="right" data-goto="camera-choice">
+      Knee lift (right)
     </button>
   </div>
 </section>
@@ -61,8 +67,14 @@ block content %}
     <button type="button" class="sample-choice" data-activity="side_reach" data-side="left">
       Reach to the side (left)
     </button>
+    <button type="button" class="sample-choice" data-activity="side_reach" data-side="right">
+      Reach to the side (right)
+    </button>
     <button type="button" class="sample-choice" data-activity="knee_lift_or_step" data-side="left">
       Knee lift (left)
+    </button>
+    <button type="button" class="sample-choice" data-activity="knee_lift_or_step" data-side="right">
+      Knee lift (right)
     </button>
   </div>
   <p id="sample-upload-status" role="status" aria-live="polite"></p>
@@ -70,8 +82,12 @@ block content %}
 
 <section class="card" data-screen="camera-live" hidden>
   <h2>Live camera</h2>
-  <video id="camera-preview" autoplay playsinline muted></video>
+  <div class="camera-container">
+    <video id="camera-preview" autoplay playsinline muted></video>
+    <canvas id="pose-overlay" aria-hidden="true"></canvas>
+  </div>
   <canvas id="capture-canvas" hidden></canvas>
+  <p id="movement-hint" class="movement-hint" role="status" aria-live="polite"></p>
   <p>Camera frames are processed temporarily and are not stored by default.</p>
   <p>
     Please click Stop Camera to end live frame capture and return to the input

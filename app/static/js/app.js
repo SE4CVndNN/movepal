@@ -26,6 +26,131 @@ let activityToken = 0;
 const scoreCount = document.querySelector("#score-count");
 const summaryStarCount = document.querySelector("#summary-star-count");
 const feedbackMessage = document.querySelector("#feedback-message");
+const movementHint = document.querySelector("#movement-hint");
+const poseOverlay = document.querySelector("#pose-overlay");
+
+const MOVEMENT_HINTS = {
+  raise_both_arms:
+    "Raise both arms above your shoulders. Keep your full body visible.",
+  side_reach:
+    "Reach your arm straight out to the side at shoulder height. Hips and shoulders must stay visible.",
+  knee_lift_or_step:
+    "Lift the selected knee toward your hip. Keep your full body in frame.",
+};
+
+const SKELETON_CONNECTIONS = [
+  ["left_shoulder", "right_shoulder"],
+  ["left_shoulder", "left_elbow"],
+  ["left_elbow", "left_wrist"],
+  ["right_shoulder", "right_elbow"],
+  ["right_elbow", "right_wrist"],
+  ["left_shoulder", "left_hip"],
+  ["right_shoulder", "right_hip"],
+  ["left_hip", "right_hip"],
+  ["left_hip", "left_knee"],
+  ["left_knee", "left_ankle"],
+  ["right_hip", "right_knee"],
+  ["right_knee", "right_ankle"],
+];
+
+function updateMovementHint() {
+  if (!movementHint) return;
+  let hint = MOVEMENT_HINTS[currentActivity] || "";
+  if (currentSide && currentActivity !== "raise_both_arms") {
+    hint += ` Use your ${currentSide} side.`;
+  }
+  movementHint.textContent = hint;
+}
+
+async function startServerAttempt() {
+  if (!currentActivity) return;
+  try {
+    await fetch("/api/session/start-attempt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        movement: currentActivity,
+        side: currentSide,
+      }),
+    });
+  } catch (_error) {
+    // Non-blocking: scoring still works if this fails.
+  }
+}
+
+function syncOverlaySize() {
+  const video = document.querySelector("#camera-preview");
+  if (!video || !poseOverlay) return;
+  const rect = video.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  poseOverlay.width = Math.round(rect.width);
+  poseOverlay.height = Math.round(rect.height);
+}
+
+function drawSkeleton(landmarks) {
+  if (!poseOverlay || !landmarks) return;
+  syncOverlaySize();
+  const ctx = poseOverlay.getContext("2d");
+  if (!ctx) return;
+  ctx.clearRect(0, 0, poseOverlay.width, poseOverlay.height);
+
+  const minVisibility = 0.5;
+  const toPoint = (name) => {
+    const lm = landmarks[name];
+    if (!lm || lm.visibility < minVisibility) return null;
+    return { x: lm.x * poseOverlay.width, y: lm.y * poseOverlay.height };
+  };
+
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "#8bd3dd";
+  ctx.fillStyle = "#f582ae";
+
+  for (const [fromName, toName] of SKELETON_CONNECTIONS) {
+    const from = toPoint(fromName);
+    const to = toPoint(toName);
+    if (!from || !to) continue;
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.stroke();
+  }
+
+  for (const name of Object.keys(landmarks)) {
+    const point = toPoint(name);
+    if (!point) continue;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // #region agent log
+  fetch("http://127.0.0.1:7512/ingest/731cd992-bc96-42cb-9847-963b7cdf60a0", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Debug-Session-Id": "583a4f",
+    },
+    body: JSON.stringify({
+      sessionId: "583a4f",
+      hypothesisId: "H1-H2",
+      location: "app.js:drawSkeleton",
+      message: "skeleton drawn",
+      data: {
+        landmarkCount: Object.keys(landmarks).length,
+        overlayW: poseOverlay.width,
+        overlayH: poseOverlay.height,
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
+}
+
+function clearSkeletonOverlay() {
+  if (!poseOverlay) return;
+  const ctx = poseOverlay.getContext("2d");
+  if (ctx) ctx.clearRect(0, 0, poseOverlay.width, poseOverlay.height);
+}
 
 function updateScoreDisplays() {
   if (scoreCount) scoreCount.textContent = totalStars;
@@ -97,11 +222,13 @@ function showScreen(name) {
 }
 
 document.querySelectorAll("[data-goto]").forEach((button) => {
-  button.addEventListener("click", () => {
+  button.addEventListener("click", async () => {
     if (button.dataset.activity) {
       currentActivity = button.dataset.activity;
       currentSide = button.dataset.side || null;
       activityToken += 1;
+      await startServerAttempt();
+      updateMovementHint();
     }
     const target = button.dataset.goto;
     const mode = button.dataset.feedback || "success";
@@ -182,6 +309,7 @@ document
       });
 
       showScreen("camera-live");
+      updateMovementHint();
       startPeriodicCapture();
       cameraStatus.textContent =
         "Webcam connected successfully! Prepare to move.";
@@ -255,7 +383,7 @@ function startPeriodicCapture() {
   stopPeriodicCapture();
   captureIntervalId = window.setInterval(() => {
     if (!requestInFlight) captureFrame();
-  }, 8000);
+  }, 1000);
 }
 
 function stopPeriodicCapture() {
@@ -270,6 +398,7 @@ function stopCamera() {
   activeStream?.getTracks().forEach((track) => track.stop());
   activeStream = null;
   if (preview) preview.srcObject = null;
+  clearSkeletonOverlay();
 }
 
 function showCameraFallback(message) {
@@ -328,7 +457,7 @@ async function uploadFrame(blob, filename, requestToken) {
   setBusyRequest(true);
 
   const statusEl = getCurrentStatusElement();
-  if (statusEl) statusEl.textContent = "Sending frame…";
+  if (statusEl) statusEl.textContent = "Evaluating move…";
 
   const formData = new FormData();
   formData.append("image", blob, filename);
@@ -354,14 +483,53 @@ async function uploadFrame(blob, filename, requestToken) {
       return null;
     }
 
+    if (payload.landmarks) {
+      drawSkeleton(payload.landmarks);
+    } else {
+      clearSkeletonOverlay();
+    }
+
+    // #region agent log
+    fetch("http://127.0.0.1:7512/ingest/731cd992-bc96-42cb-9847-963b7cdf60a0", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "583a4f",
+      },
+      body: JSON.stringify({
+        sessionId: "583a4f",
+        hypothesisId: "H1-H6",
+        location: "app.js:uploadFrame",
+        message: "frame response received",
+        data: {
+          hasLandmarks: Boolean(payload.landmarks),
+          completed: payload.completed,
+          feedbackCode: payload.feedback_code,
+          stars: payload.stars,
+          movement: currentActivity,
+          side: currentSide,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+
     if ("completed" in payload) {
-      stopPeriodicCapture();
-      const mode = payload.completed ? "success" : "retry";
-      if (feedbackMessage) feedbackMessage.textContent = payload.feedback;
-      updateFeedbackStatus(mode);
-      if (payload.completed && payload.stars > 0) addStars(payload.stars);
-      showScreen("feedback");
-      setAppState(mode);
+      if (payload.completed) {
+        stopPeriodicCapture();
+        if (feedbackMessage) feedbackMessage.textContent = payload.feedback;
+        updateFeedbackStatus("success");
+        if (payload.stars > 0) addStars(payload.stars);
+        showScreen("feedback");
+        setAppState("success");
+        stopCamera();
+        return payload;
+      }
+
+      // Live frame evaluated but not yet completed (e.g. hold required or correction needed)
+      if (statusEl) {
+        statusEl.textContent = payload.feedback || "Adjust position and try again.";
+      }
       return payload;
     }
 
@@ -387,6 +555,9 @@ async function uploadFrame(blob, filename, requestToken) {
   }
 }
 
+window.addEventListener("resize", syncOverlaySize);
+preview?.addEventListener("loadedmetadata", syncOverlaySize);
+
 document.querySelector("#capture-frame-btn")?.addEventListener("click", captureFrame);
 
 document.querySelectorAll(".sample-choice").forEach((button) => {
@@ -394,6 +565,11 @@ document.querySelectorAll(".sample-choice").forEach((button) => {
     const activity = button.dataset.activity;
     const statusEl = document.querySelector("#sample-upload-status");
     if (!activity) return;
+
+    currentActivity = activity;
+    currentSide = button.dataset.side || null;
+    activityToken += 1;
+    await startServerAttempt();
 
     if (button.disabled) {
       if (fallbackError) {

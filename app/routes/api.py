@@ -20,7 +20,12 @@ from app.services.movement_rules import (
     load_raise_both_arms_fixture,
     load_side_reach_fixture,
 )
-from app.services.pose_tracking import MediaPipePoseAdapter, PoseResult, PoseStatus
+from app.services.pose_tracking import (
+    Landmark,
+    MediaPipePoseAdapter,
+    PoseResult,
+    PoseStatus,
+)
 from app.services.session_state import SessionStateService
 from app.services.session_summary import SessionSummary
 
@@ -115,6 +120,19 @@ def _validate_side_for_movement(movement_code: str, side: str | None):
     return None
 
 
+def _serialize_landmarks(landmarks: dict[str, Landmark]) -> dict[str, dict[str, float]]:
+    """Convert server-side landmarks to a JSON-safe dict for the frontend."""
+    return {
+        name: {
+            "x": landmark.x,
+            "y": landmark.y,
+            "z": landmark.z,
+            "visibility": landmark.visibility,
+        }
+        for name, landmark in landmarks.items()
+    }
+
+
 def _evaluate_live_frame(pose_result: PoseResult, movement_code: str, side: str | None):
     if pose_result.status != PoseStatus.SUCCESS:
         return _map_pose_result(pose_result)
@@ -123,15 +141,66 @@ def _evaluate_live_frame(pose_result: PoseResult, movement_code: str, side: str 
     if validation_error is not None:
         return validation_error
 
-    movement_result = _EVALUATORS[movement_code](pose_result.landmarks, side, None)
-
     state_service = SessionStateService(session)
+    current_samples = state_service.get_consecutive_samples(movement_code)
+    test_result = _EVALUATORS[movement_code](
+        pose_result.landmarks, side, current_samples + 1
+    )
+
+    satisfied = test_result.feedback_code in {"great", "hold"}
+    new_count = state_service.update_consecutive_samples(movement_code, satisfied)
+    if satisfied:
+        movement_result = _EVALUATORS[movement_code](
+            pose_result.landmarks, side, new_count
+        )
+    else:
+        movement_result = test_result
+
+    # #region agent log
+    if movement_code == "side_reach":
+        import json as _json
+        import time as _time
+        from pathlib import Path as _Path
+        _log_path = _Path(__file__).resolve().parents[2] / "debug-583a4f.log"
+        try:
+            with _log_path.open("a", encoding="utf-8") as _f:
+                _f.write(
+                    _json.dumps(
+                        {
+                            "sessionId": "583a4f",
+                            "hypothesisId": "H6-H9",
+                            "location": "api.py:_evaluate_live_frame",
+                            "message": "side_reach evaluation",
+                            "data": {
+                                "side": side,
+                                "feedback_code": movement_result.feedback_code,
+                                "completed": movement_result.completed,
+                                "consecutive_samples": new_count,
+                                "landmark_count": len(pose_result.landmarks),
+                            },
+                            "timestamp": int(_time.time() * 1000),
+                        }
+                    )
+                    + "\n"
+                )
+        except OSError:
+            pass
+    # #endregion
+
     scoring_session = state_service.load_scoring_session()
     feedback_result = format_feedback(movement_result, session=scoring_session)
     state_service.save_scoring_session(scoring_session)
-    state_service.record_result(movement_result, completed=feedback_result.completed)
+    state_service.record_result(
+        movement_result,
+        completed=feedback_result.completed,
+        stars_awarded=feedback_result.stars_awarded,
+    )
 
-    return jsonify(_movement_response(movement_result, feedback_result)), 200
+    return jsonify(
+        _movement_response(
+            movement_result, feedback_result, landmarks=pose_result.landmarks
+        )
+    ), 200
 
 
 def _movement_request_payload() -> dict[str, Any]:
@@ -203,24 +272,68 @@ def movement():
     scoring_session = state_service.load_scoring_session()
     feedback_result = format_feedback(result, session=scoring_session)
     state_service.save_scoring_session(scoring_session)
-    state_service.record_result(result, completed=feedback_result.completed)
+    state_service.record_result(
+        result, completed=feedback_result.completed, stars_awarded=feedback_result.stars_awarded
+    )
 
     return jsonify(_movement_response(result, feedback_result)), 200
 
 
+@api_bp.post("/session/start-attempt")
+def session_start_attempt():
+    """Begin a fresh scoring attempt for a selected movement."""
+    payload = request.get_json(silent=True) or {}
+    movement_code = payload.get("movement")
+    if movement_code not in SUPPORTED_MOVEMENTS:
+        return (
+            jsonify({"status": "error", "message": "Unsupported or missing movement."}),
+            400,
+        )
+
+    side = payload.get("side")
+    validation_error = _validate_side_for_movement(movement_code, side)
+    if validation_error is not None:
+        return validation_error
+
+    state_service = SessionStateService(session)
+    scoring_session = state_service.load_scoring_session()
+    scoring_session.start_new_attempt(movement_code)
+    state_service.save_scoring_session(scoring_session)
+    state_service.reset_consecutive_samples(movement_code)
+
+    return (
+        jsonify(
+            {
+                "status": "success",
+                "message": "Attempt started.",
+                "movement": movement_code,
+                "side": side,
+            }
+        ),
+        200,
+    )
+
+
 def _movement_response(
-    result: MovementResult, feedback_result: FeedbackResult
+    result: MovementResult,
+    feedback_result: FeedbackResult,
+    *,
+    landmarks: dict[str, Landmark] | None = None,
 ) -> dict[str, Any]:
-    return {
+    payload: dict[str, Any] = {
         "movement": result.movement,
         "completed": feedback_result.completed,
         "confidence": result.confidence,
         "feedback_code": feedback_result.feedback_code,
         "feedback": feedback_result.message,
         "stars": feedback_result.stars_awarded,
+        "total_stars": feedback_result.total_stars,
         "visibility_ok": feedback_result.visibility_ok,
         "retryable": feedback_result.retryable,
     }
+    if landmarks:
+        payload["landmarks"] = _serialize_landmarks(landmarks)
+    return payload
 
 
 @api_bp.post("/session/reset")
@@ -273,18 +386,19 @@ def _completion_message(summary: SessionSummary) -> str:
 
 
 def _map_pose_result(result: PoseResult):
+    landmarks_payload = (
+        _serialize_landmarks(result.landmarks) if result.landmarks else None
+    )
     match result.status:
         case PoseStatus.SUCCESS:
-            return (
-                jsonify(
-                    {
-                        "status": "success",
-                        "message": "Frame processed successfully.",
-                        "pose_status": "success",
-                    }
-                ),
-                200,
-            )
+            body: dict[str, Any] = {
+                "status": "success",
+                "message": "Frame processed successfully.",
+                "pose_status": "success",
+            }
+            if landmarks_payload:
+                body["landmarks"] = landmarks_payload
+            return jsonify(body), 200
         case PoseStatus.NO_POSE:
             return (
                 jsonify(
