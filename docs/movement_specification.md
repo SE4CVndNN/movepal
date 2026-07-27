@@ -152,48 +152,52 @@ The actual axis direction and margin must match the verified pose-service conven
 
 ### User-facing goal
 
-Reach one arm toward the requested side while remaining visible to the camera.
+Bend the torso toward the requested side while reaching the opposite arm
+overhead, matching the left/right reference images shown in the interface.
 
 ### Required landmarks
 
-At minimum for the requested side:
+At minimum:
 
-- shoulder;
-- elbow;
-- wrist;
-- torso reference landmarks.
-
-The opposite shoulder may be needed to establish body width and horizontal scale.
+- both shoulders;
+- both hips;
+- the overhead arm's shoulder, elbow, and wrist.
 
 ### Left/right convention
 
-The requested side refers to the user’s anatomical side, not the left side of the viewer’s screen. If the camera preview is mirrored, the UI must make this understandable while backend rules keep the anatomical convention.
+The requested side is the user's anatomical **bend direction**, not the side
+of the viewer's screen. A left bend uses the right arm overhead; a right bend
+uses the left arm overhead. A mirrored preview does not change those labels.
 
 ### Provisional logical rule
 
-A side reach may combine:
+A side reach combines:
 
-- horizontal wrist displacement from the corresponding shoulder;
-- elbow extension or wrist-to-shoulder distance;
-- wrist within an acceptable vertical band relative to the shoulder;
-- required torso/shoulder visibility;
-- requested-side match.
+- lateral displacement of the shoulder midpoint from the hip midpoint toward
+  the requested anatomical side;
+- the opposite wrist clearly above its shoulder;
+- the opposite wrist crossing toward the requested side;
+- a sufficiently extended overhead elbow;
+- required torso and arm visibility.
 
 Example relative measurement:
 
 ```text
 body_scale = distance(left_shoulder, right_shoulder)
-reach_ratio = horizontal_distance(wrist, shoulder) / body_scale
-completed = reach_ratio >= configured_reach_ratio
+bend = directional_offset(shoulder_midpoint, hip_midpoint, requested_side)
+active_arm = opposite(requested_side)
+overhead = active_wrist.y < active_shoulder.y
+crossed = active_wrist moves toward requested_side
+completed = bend >= configured_bend_ratio AND overhead AND crossed
 ```
 
 Guard against zero or unreliable body scale.
 
 ### Feedback examples
 
-- requested side reaches threshold → `great`
-- wrong side extended → side-specific correction
-- correct side started but not far enough → “Reach a little farther to your left/right.”
+- requested bend and overhead-arm thresholds are met → `great`
+- wrong bend direction or wrong arm overhead → side-specific correction
+- torso remains upright → bend-direction correction
 - landmarks missing/low visibility → framing feedback
 - vertical position too high/low if the specification requires a band → neutral correction
 
@@ -202,10 +206,10 @@ Guard against zero or unreliable body scale.
 For both left and right:
 
 - clear success;
-- insufficient reach;
-- wrong side;
-- arm down;
-- borderline reach ratio;
+- insufficient torso bend;
+- wrong bend direction;
+- overhead arm down;
+- borderline bend ratio;
 - elbow/wrist missing;
 - shoulder-width unavailable;
 - mirrored-preview contract test.
@@ -325,8 +329,8 @@ The checked-in synthetic fixture set is split by activity: [`raise_both_arms_fix
 | Activity | Start / visibility prerequisites | Progress measurement | Success and hold | Retry outcome |
 |---|---|---|---|---|
 | Raise both arms | Both shoulders and wrists present; visibility >= 0.50 | Each wrist is at least `0.40 * shoulder_width` above its matching shoulder (`y` decreases upward) | Both conditions true for 2 consecutive evaluated samples | `raise_arms`; visibility/framing failure takes precedence |
-| Side reach — left | Both shoulders, left elbow/wrist, and hips present; visibility >= 0.50 | Left wrist is outward by >= `0.85 * shoulder_width`; its vertical offset is <= `0.50 * shoulder_width` | Condition true for 2 consecutive samples | `reach_left`; a right-arm reach does not satisfy the request |
-| Side reach — right | Both shoulders, right elbow/wrist, and hips present; visibility >= 0.50 | Right wrist is outward by >= `0.85 * shoulder_width`; its vertical offset is <= `0.50 * shoulder_width` | Condition true for 2 consecutive samples | `reach_right`; a left-arm reach does not satisfy the request |
+| Side reach — left | Both shoulders/hips and right elbow/wrist present; visibility >= 0.50 | Shoulder midpoint moves left by >= `0.18 * shoulder_width`; right wrist is overhead and crosses left | Condition true for 2 consecutive samples | `reach_left`; a right bend does not satisfy the request |
+| Side reach — right | Both shoulders/hips and left elbow/wrist present; visibility >= 0.50 | Shoulder midpoint moves right by >= `0.18 * shoulder_width`; left wrist is overhead and crosses right | Condition true for 2 consecutive samples | `reach_right`; a left bend does not satisfy the request |
 | Knee lift / step — requested side | Target hip, knee, ankle, opposite hip, and opposite ankle present; visibility >= 0.50 | `knee.y <= hip.y + 0.35 * distance(hip, ankle)` | Condition true for 2 consecutive samples | `lift_knee`; a still frame cannot independently prove a dynamic step |
 
 `shoulder_width` is Euclidean distance between anatomical left and right shoulders. A zero or unavailable scale is a framing failure. The pose adapter must preserve the fixture convention: `x` grows toward the viewer's right, `y` grows downward, and `left`/`right` always mean the user's anatomical side. Mirroring changes only the preview, never the rule input or requested side.
@@ -338,7 +342,10 @@ Rules must use this precedence: missing/low-visibility required landmark or unus
 | Code | Approved wording source |
 |---|---|
 | `great` | “Awesome job! You've earned ⭐ 1 Star!” |
-| `raise_arms`, `reach_left`, `reach_right`, `lift_knee` | “Please adjust your pose slightly.” |
+| `raise_arms` | “You need both arms up. Try a picture with your hands above your shoulders.” |
+| `reach_left` | “Reach your right arm over your head and bend gently to your left.” |
+| `reach_right` | “Reach your left arm over your head and bend gently to your right.” |
+| `lift_knee` | “I asked for a knee lift. Try lifting your knee up in front like a marching move.” |
 | `hold` | “Please hold a bit longer for better validation.” |
 | `full_body_missing` | “We lost track of you! Please step back so your full body is visible in the frame.” |
 
@@ -374,15 +381,25 @@ MP-014 built the first vertical slice (`docs/architecture.md` section 7): a dete
 
 ## 14. MP-015 decisions
 
-MP-015 implemented `evaluate_side_reach` for both anatomical sides (`app/services/movement_rules.py`), backed by new shared helpers in `app/services/geometry.py` and the `reach_left`/`reach_right` entries in `app/services/feedback.py`. It reuses the four `side_reach_fixtures.json` fixtures MP-007 already checked in and adds directly-constructed mirrored fixtures in `tests/unit/test_movement_rules.py` for cases the committed set does not cover. Decisions, assumptions, and limitations recorded during that work:
+MP-015 implemented `evaluate_side_reach` for both anatomical sides (`app/services/movement_rules.py`), backed by shared helpers and the `reach_left`/`reach_right` entries in `app/services/feedback.py`. The executable fixture set contains positive left/right, wrong-direction, borderline, and low-visibility cases, with directly constructed mirrored cases in `tests/unit/test_movement_rules.py`. Decisions, assumptions, and limitations recorded during that work:
 
-- **Elbow is not a required landmark for `side_reach`, matching the `raise_both_arms` precedent.** Section 7's prose lists elbow as a "required landmark," and the section 12 acceptance-matrix table still names it in the prerequisites column, but the executable progress formula only ever reads the requested side's shoulder and wrist. The checked-in `synthetic_side_reach_right_negative_001` fixture (the wrong-side case) has no elbow landmarks at all for either side and still expects `reach_right`, not `full_body_missing`; requiring elbow would fail it for the wrong reason. `evaluate_side_reach`'s required-landmark tuple therefore omits elbow, exactly as `evaluate_raise_both_arms` already does (section 6's correction note and section 13's first bullet). No fixture data changed; this is a rule-side decision only.
-- **Only the requested side's own shoulder/wrist pair is ever read.** This is what makes "a right-arm reach does not satisfy a left request" (section 12) fall out of the rule automatically instead of needing a separate wrong-side branch or code: the opposite wrist is never inspected, so it cannot accidentally satisfy the request no matter how far it reaches. `test_opposite_arm_reaching_does_not_satisfy_requested_side` in `tests/unit/test_movement_rules.py` checks this in both directions.
-- **Mirrored symmetry is proved by construction, not by hand-authoring duplicate JSON fixtures.** Beyond parametrizing the four already-committed `side_reach_fixtures.json` cases over their `requested_side`, `tests/unit/test_movement_rules.py` adds a `_side_reach_landmarks(side, outward_ratio, vertical_ratio)` builder that places the requested wrist using the same side-dependent sign `horizontal_outward_offset` uses internally. Calling it with `"left"` and `"right"` for identical ratios yields literal mirror images across the body midline, so `@pytest.mark.parametrize("side", ["left", "right"])` exercises full-reach, arm-down, both reach-ratio boundary sides (just below/at `0.85 * shoulder_width`), excess vertical offset, missing/low-visibility wrist, zero shoulder width, and the hold/default-consecutive-samples contract identically for both sides. A left/right asymmetry bug would show up as exactly one parametrized case failing rather than a silently-drifted duplicate test file.
-- **`reach_left`/`reach_right` share `raise_arms`'s exact wording, not a distinct sentence.** Section 12's approved-wording table intentionally maps `raise_arms`, `reach_left`, `reach_right`, and `lift_knee` to the identical sentence ("Please adjust your pose slightly.") — the distinction between movements and sides is meant to be carried by `feedback_code`, not by different copy. `feedback.py` now defines that sentence once as `_MOVEMENT_CORRECTION_TEXT` and reuses it for all three keys so the two side codes cannot drift apart from each other or from `raise_arms`; `test_reach_left_and_reach_right_share_the_raise_arms_wording` guards this. The still-unmapped `lift_knee` code is left for the knee-lift task that implements that rule.
+- **The reference-image posture is authoritative.** The executable rule detects a
+  lateral torso bend with the opposite arm overhead. It therefore requires both
+  shoulders, both hips, and the active overhead elbow/wrist.
+- **`requested_side` names the bend direction.** A left bend uses the right arm
+  overhead; a right bend uses the left arm. The requested-side shoulder defines
+  the directional axis, making the calculation invariant to a mirrored frame.
+- **Mirrored symmetry is proved by construction.** The unit-test builder creates
+  equivalent left/right bends and then mirrors every `x` coordinate to ensure
+  anatomical labels still produce the same result.
+- **Feedback is side-specific and actionable.** `reach_left` tells the player to
+  raise the right arm and bend left; `reach_right` gives the mirrored instruction.
 - **No wrong-side-specific feedback code was added.** The acceptance matrix and the checked-in fixtures already treat an insufficient or wrong-side reach identically (`reach_left`/`reach_right`, not a separate `wrong_side` code), so `evaluate_side_reach` does not introduce one; adding a new code here would be undocumented scope beyond section 12's table.
-- **No "bent posture" signal is implemented for side reach.** MP-015's issue text mentions feedback for "bent posture where represented," but section 12's executable formula for side reach checks only wrist-to-shoulder horizontal and vertical offsets, not elbow angle — consistent with the elbow-exclusion decision above. Side reach therefore has no bent-posture representation in Sprint 1; this would need a new documented threshold and fixtures if a future task adds one.
-- **`side_reach` is not wired into `POST /api/movement` or the UI.** Following the same scoping the MP-014 decisions record for `raise_both_arms`-only wiring, the "Reach to the side" button remains `disabled` ("coming soon") in `app/templates/index.html` and `SUPPORTED_MOVEMENTS` in `app/routes/api.py` still only contains `raise_both_arms`. `evaluate_side_reach` and `load_side_reach_fixture` are ready to be composed into the endpoint the same way `evaluate_raise_both_arms` already is; that composition, plus any UI side-selection control, is left to whichever task actually enables the "Reach to the side" activity (MP-019's full game loop, or an earlier dedicated wiring task if one is scheduled first).
+- **The rule evaluates torso bend and arm shape together.** Success requires the
+  shoulder midpoint to move toward the requested side, the opposite wrist to
+  rise and cross overhead, and the overhead elbow to remain sufficiently open.
+- **`side_reach` is wired into live frames, fallback fixtures, and the UI.** The
+  readiness check requests the hips and the correct overhead arm before capture.
 
 ## 15. MP-016 decisions
 

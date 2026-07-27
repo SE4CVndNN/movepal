@@ -42,8 +42,8 @@ def test_message_catalog_covers_all_observation_codes():
     [
         ("great", "Awesome job! You've earned ⭐ 1 Star!"),
         ("raise_arms", "both arms up"),
-        ("reach_left", "left-side reach"),
-        ("reach_right", "right-side reach"),
+        ("reach_left", "bend gently to your left"),
+        ("reach_right", "bend gently to your right"),
         ("lift_knee", "knee lift"),
         ("hold", "Hold your pose a little longer"),
         ("full_body_missing", "visible in the frame"),

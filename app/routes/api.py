@@ -138,11 +138,12 @@ def _required_preview_landmarks(
     if movement_code == "raise_both_arms":
         return ("left_shoulder", "right_shoulder", "left_wrist", "right_wrist")
     if movement_code == "side_reach" and side in VALID_SIDES:
+        overhead_arm = "right" if side == "left" else "left"
         return (
             "left_shoulder",
             "right_shoulder",
-            f"{side}_elbow",
-            f"{side}_wrist",
+            f"{overhead_arm}_elbow",
+            f"{overhead_arm}_wrist",
             "left_hip",
             "right_hip",
         )
@@ -181,7 +182,11 @@ def _preview_guidance(
     if movement_code == "raise_both_arms":
         return False, "Step back so I can see your shoulders and hands."
     if movement_code == "side_reach" and side:
-        return False, f"Make sure your {side} arm is visible."
+        overhead_arm = "right" if side == "left" else "left"
+        return (
+            False,
+            f"Step back so I can see your hips and {overhead_arm} arm.",
+        )
     if movement_code == "knee_lift_or_step" and side:
         return False, f"Make sure your {side} knee and ankle are visible."
     return False, "Step back so I can see the body parts for this move."

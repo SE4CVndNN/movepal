@@ -18,20 +18,15 @@ if TYPE_CHECKING:
 _MOVEMENT_CORRECTION_TEXT = (
     "This picture doesn't show the move we asked for. Try again with the right pose."
 )
-"""Shared wording for every movement-specific correction code.
-
-Section 12's table intentionally gives ``raise_arms``, ``reach_left``,
-``reach_right``, and ``lift_knee`` the identical approved sentence -- the
-distinction between movements and sides is carried by ``feedback_code``,
-not by different wording, so it is defined once here rather than repeated
-per key (and risking the two sides drifting apart).
-"""
+"""Friendly fallback wording for an unknown movement-correction code."""
 
 FEEDBACK_MESSAGES: dict[str, str] = {
     "great": "Awesome job! You've earned ⭐ 1 Star!",
     "raise_arms": "You need both arms up. Try a picture with your hands above your shoulders.",
-    "reach_left": "I asked for a left-side reach. Use your left arm to stretch out to the side.",
-    "reach_right": "I asked for a right-side reach. Use your right arm to stretch out to the side.",
+    "reach_left": ("Reach your right arm over your head and bend gently to your left."),
+    "reach_right": (
+        "Reach your left arm over your head and bend gently to your right."
+    ),
     "lift_knee": "I asked for a knee lift. Try lifting your knee up in front like a marching move.",
     "move_back": "Move slightly farther from the camera.",
     "hold": "Hold your pose a little longer so I can see the whole move.",

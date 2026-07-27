@@ -200,64 +200,89 @@ def test_unknown_side_reach_fixture_id_raises_key_error():
 
 
 def _side_reach_landmarks(
-    side: str, outward_ratio: float, vertical_ratio: float = 0.0
+    side: str,
+    bend_ratio: float,
+    *,
+    arm_overhead: bool = True,
 ) -> dict[str, Landmark]:
-    """Build a minimal side-reach pose for *side*.
+    """Build the pictured lateral bend, mirrored for either direction.
 
-    The requested wrist is placed ``outward_ratio * shoulder_width``
-    beyond its shoulder (and ``vertical_ratio * shoulder_width`` above or
-    below it). Calling this with "left" and "right" for the same ratios
-    produces literal mirror images across the body midline, so the same
-    assertions can be parametrized over both sides to prove symmetry by
-    construction rather than by hand-authoring two matching fixtures.
+    ``side`` is the direction of the torso bend. The opposite arm reaches
+    overhead: a left bend uses the right arm and a right bend uses the
+    left arm.
     """
-    shoulder_width_value = 0.3
-    left_shoulder_x, right_shoulder_x = 0.35, 0.65
-    shoulder_y = 0.4
-    shoulder_x = left_shoulder_x if side == "left" else right_shoulder_x
     sign = -1 if side == "left" else 1
-    wrist_x = shoulder_x + sign * outward_ratio * shoulder_width_value
-    wrist_y = shoulder_y + vertical_ratio * shoulder_width_value
-    opposite_side_name = "right" if side == "left" else "left"
-    opposite_elbow_x = 0.55 if side == "left" else 0.45
-    opposite_wrist_x = 0.6 if side == "left" else 0.4
+    active_side = "right" if side == "left" else "left"
+    lower_side = side
+    shoulder_width_value = (0.3**2 + 0.1**2) ** 0.5
+    shoulder_mid_x = 0.5 + sign * bend_ratio * shoulder_width_value
+
+    if side == "left":
+        left_shoulder_x = shoulder_mid_x - 0.15
+        right_shoulder_x = shoulder_mid_x + 0.15
+        left_shoulder_y, right_shoulder_y = 0.48, 0.38
+    else:
+        left_shoulder_x = shoulder_mid_x - 0.15
+        right_shoulder_x = shoulder_mid_x + 0.15
+        left_shoulder_y, right_shoulder_y = 0.38, 0.48
+
+    active_shoulder_x = right_shoulder_x if active_side == "right" else left_shoulder_x
+    active_shoulder_y = right_shoulder_y if active_side == "right" else left_shoulder_y
+    if arm_overhead:
+        active_elbow_x = active_shoulder_x + sign * 0.45 * shoulder_width_value
+        active_elbow_y = active_shoulder_y - 0.16
+        active_wrist_x = active_shoulder_x + sign * 0.9 * shoulder_width_value
+        active_wrist_y = active_shoulder_y - 0.28
+    else:
+        active_elbow_x = active_shoulder_x
+        active_elbow_y = active_shoulder_y + 0.1
+        active_wrist_x = active_shoulder_x
+        active_wrist_y = active_shoulder_y + 0.2
+
+    lower_shoulder_x = left_shoulder_x if lower_side == "left" else right_shoulder_x
     return {
         "left_shoulder": Landmark(
-            "left_shoulder", left_shoulder_x, shoulder_y, 0.0, 0.9
+            "left_shoulder", left_shoulder_x, left_shoulder_y, 0.0, 0.9
         ),
         "right_shoulder": Landmark(
-            "right_shoulder", right_shoulder_x, shoulder_y, 0.0, 0.9
+            "right_shoulder", right_shoulder_x, right_shoulder_y, 0.0, 0.9
         ),
-        f"{side}_elbow": Landmark(
-            f"{side}_elbow",
-            shoulder_x + sign * 0.35 * shoulder_width_value,
-            shoulder_y,
+        f"{active_side}_elbow": Landmark(
+            f"{active_side}_elbow",
+            active_elbow_x,
+            active_elbow_y,
             0.0,
             0.9,
         ),
-        f"{side}_wrist": Landmark(f"{side}_wrist", wrist_x, wrist_y, 0.0, 0.9),
-        f"{opposite_side_name}_elbow": Landmark(
-            f"{opposite_side_name}_elbow",
-            opposite_elbow_x,
-            shoulder_y + 0.05,
+        f"{active_side}_wrist": Landmark(
+            f"{active_side}_wrist",
+            active_wrist_x,
+            active_wrist_y,
             0.0,
             0.9,
         ),
-        f"{opposite_side_name}_wrist": Landmark(
-            f"{opposite_side_name}_wrist",
-            opposite_wrist_x,
-            shoulder_y + 0.1,
+        f"{lower_side}_elbow": Landmark(
+            f"{lower_side}_elbow",
+            lower_shoulder_x - sign * 0.04,
+            0.54,
             0.0,
             0.9,
         ),
-        "left_hip": Landmark("left_hip", 0.4, 0.65, 0.0, 0.9),
-        "right_hip": Landmark("right_hip", 0.6, 0.65, 0.0, 0.9),
+        f"{lower_side}_wrist": Landmark(
+            f"{lower_side}_wrist",
+            0.5 - sign * 0.1,
+            0.6,
+            0.0,
+            0.9,
+        ),
+        "left_hip": Landmark("left_hip", 0.4, 0.68, 0.0, 0.9),
+        "right_hip": Landmark("right_hip", 0.6, 0.68, 0.0, 0.9),
     }
 
 
 @pytest.mark.parametrize("side", ["left", "right"])
 def test_full_reach_succeeds_symmetrically(side):
-    landmarks = _side_reach_landmarks(side, outward_ratio=1.0)
+    landmarks = _side_reach_landmarks(side, bend_ratio=0.25)
 
     result = evaluate_side_reach(landmarks, side, consecutive_samples=2)
 
@@ -267,13 +292,10 @@ def test_full_reach_succeeds_symmetrically(side):
 
 
 @pytest.mark.parametrize("side", ["left", "right"])
-def test_live_side_reach_does_not_require_unrelated_arm_or_hips(side):
-    landmarks = _side_reach_landmarks(side, outward_ratio=1.0)
-    opposite = "right" if side == "left" else "left"
-    del landmarks[f"{opposite}_elbow"]
-    del landmarks[f"{opposite}_wrist"]
-    del landmarks["left_hip"]
-    del landmarks["right_hip"]
+def test_live_side_reach_does_not_require_lower_arm(side):
+    landmarks = _side_reach_landmarks(side, bend_ratio=0.25)
+    del landmarks[f"{side}_elbow"]
+    del landmarks[f"{side}_wrist"]
 
     result = evaluate_side_reach(
         landmarks,
@@ -288,7 +310,7 @@ def test_live_side_reach_does_not_require_unrelated_arm_or_hips(side):
 
 @pytest.mark.parametrize("side", ["left", "right"])
 def test_live_side_reach_survives_horizontal_frame_mirroring(side):
-    landmarks = _side_reach_landmarks(side, outward_ratio=1.0)
+    landmarks = _side_reach_landmarks(side, bend_ratio=0.25)
     mirrored = {
         name: Landmark(
             item.name,
@@ -312,8 +334,8 @@ def test_live_side_reach_survives_horizontal_frame_mirroring(side):
 
 
 @pytest.mark.parametrize("side", ["left", "right"])
-def test_arm_down_returns_reach_code_symmetrically(side):
-    landmarks = _side_reach_landmarks(side, outward_ratio=0.0)
+def test_upright_torso_returns_reach_code_symmetrically(side):
+    landmarks = _side_reach_landmarks(side, bend_ratio=0.0)
 
     result = evaluate_side_reach(landmarks, side, consecutive_samples=2)
 
@@ -323,7 +345,7 @@ def test_arm_down_returns_reach_code_symmetrically(side):
 
 @pytest.mark.parametrize("side", ["left", "right"])
 def test_boundary_just_below_reach_ratio_fails_symmetrically(side):
-    landmarks = _side_reach_landmarks(side, outward_ratio=0.84)
+    landmarks = _side_reach_landmarks(side, bend_ratio=0.17)
 
     result = evaluate_side_reach(landmarks, side, consecutive_samples=2)
 
@@ -333,7 +355,7 @@ def test_boundary_just_below_reach_ratio_fails_symmetrically(side):
 
 @pytest.mark.parametrize("side", ["left", "right"])
 def test_boundary_exactly_at_reach_ratio_succeeds_symmetrically(side):
-    landmarks = _side_reach_landmarks(side, outward_ratio=0.85)
+    landmarks = _side_reach_landmarks(side, bend_ratio=0.18)
 
     result = evaluate_side_reach(landmarks, side, consecutive_samples=2)
 
@@ -342,8 +364,12 @@ def test_boundary_exactly_at_reach_ratio_succeeds_symmetrically(side):
 
 
 @pytest.mark.parametrize("side", ["left", "right"])
-def test_vertical_offset_too_large_fails_despite_full_reach_symmetrically(side):
-    landmarks = _side_reach_landmarks(side, outward_ratio=1.0, vertical_ratio=-0.6)
+def test_arm_must_reach_overhead_symmetrically(side):
+    landmarks = _side_reach_landmarks(
+        side,
+        bend_ratio=0.25,
+        arm_overhead=False,
+    )
 
     result = evaluate_side_reach(landmarks, side, consecutive_samples=2)
 
@@ -352,9 +378,10 @@ def test_vertical_offset_too_large_fails_despite_full_reach_symmetrically(side):
 
 
 @pytest.mark.parametrize("side", ["left", "right"])
-def test_missing_requested_wrist_returns_full_body_missing_symmetrically(side):
-    landmarks = _side_reach_landmarks(side, outward_ratio=1.0)
-    del landmarks[f"{side}_wrist"]
+def test_missing_overhead_wrist_returns_full_body_missing_symmetrically(side):
+    landmarks = _side_reach_landmarks(side, bend_ratio=0.25)
+    active_side = "right" if side == "left" else "left"
+    del landmarks[f"{active_side}_wrist"]
 
     result = evaluate_side_reach(landmarks, side, consecutive_samples=2)
 
@@ -364,10 +391,13 @@ def test_missing_requested_wrist_returns_full_body_missing_symmetrically(side):
 
 
 @pytest.mark.parametrize("side", ["left", "right"])
-def test_low_visibility_requested_wrist_returns_full_body_missing_symmetrically(side):
-    landmarks = _side_reach_landmarks(side, outward_ratio=1.0)
-    wrist = landmarks[f"{side}_wrist"]
-    landmarks[f"{side}_wrist"] = Landmark(wrist.name, wrist.x, wrist.y, wrist.z, 0.2)
+def test_low_visibility_overhead_wrist_returns_full_body_missing_symmetrically(side):
+    landmarks = _side_reach_landmarks(side, bend_ratio=0.25)
+    active_side = "right" if side == "left" else "left"
+    wrist = landmarks[f"{active_side}_wrist"]
+    landmarks[f"{active_side}_wrist"] = Landmark(
+        wrist.name, wrist.x, wrist.y, wrist.z, 0.2
+    )
 
     result = evaluate_side_reach(landmarks, side, consecutive_samples=2)
 
@@ -377,7 +407,7 @@ def test_low_visibility_requested_wrist_returns_full_body_missing_symmetrically(
 
 @pytest.mark.parametrize("side", ["left", "right"])
 def test_zero_shoulder_width_is_framing_failure_symmetrically(side):
-    landmarks = _side_reach_landmarks(side, outward_ratio=1.0)
+    landmarks = _side_reach_landmarks(side, bend_ratio=0.25)
     landmarks["right_shoulder"] = Landmark(
         "right_shoulder",
         landmarks["left_shoulder"].x,
@@ -394,7 +424,7 @@ def test_zero_shoulder_width_is_framing_failure_symmetrically(side):
 
 @pytest.mark.parametrize("side", ["left", "right"])
 def test_condition_met_but_insufficient_consecutive_samples_holds_symmetrically(side):
-    landmarks = _side_reach_landmarks(side, outward_ratio=1.0)
+    landmarks = _side_reach_landmarks(side, bend_ratio=0.25)
 
     result = evaluate_side_reach(landmarks, side, consecutive_samples=1)
 
@@ -404,7 +434,7 @@ def test_condition_met_but_insufficient_consecutive_samples_holds_symmetrically(
 
 @pytest.mark.parametrize("side", ["left", "right"])
 def test_default_consecutive_samples_assumes_hold_already_satisfied_symmetrically(side):
-    landmarks = _side_reach_landmarks(side, outward_ratio=1.0)
+    landmarks = _side_reach_landmarks(side, bend_ratio=0.25)
 
     result = evaluate_side_reach(landmarks, side)
 
@@ -413,20 +443,9 @@ def test_default_consecutive_samples_assumes_hold_already_satisfied_symmetricall
 
 
 @pytest.mark.parametrize("requested_side", ["left", "right"])
-def test_opposite_arm_reaching_does_not_satisfy_requested_side(requested_side):
-    """A full reach on the *other* arm must never satisfy the requested side.
-
-    Matches the acceptance matrix's "a right-arm reach does not satisfy
-    the [left] request" rule (docs/movement_specification.md section 12),
-    checked here in both directions.
-    """
+def test_bending_the_wrong_direction_does_not_satisfy_request(requested_side):
     other_side = "right" if requested_side == "left" else "left"
-    landmarks = _side_reach_landmarks(other_side, outward_ratio=1.0)
-    # The requested side's own wrist stays down at its shoulder, not reaching.
-    requested_shoulder_x = 0.35 if requested_side == "left" else 0.65
-    landmarks[f"{requested_side}_wrist"] = Landmark(
-        f"{requested_side}_wrist", requested_shoulder_x, 0.4, 0.0, 0.9
-    )
+    landmarks = _side_reach_landmarks(other_side, bend_ratio=0.25)
 
     result = evaluate_side_reach(landmarks, requested_side, consecutive_samples=2)
 
@@ -435,8 +454,8 @@ def test_opposite_arm_reaching_does_not_satisfy_requested_side(requested_side):
 
 
 def test_reach_left_and_reach_right_give_side_specific_feedback():
-    assert "left-side reach" in FEEDBACK_MESSAGES["reach_left"]
-    assert "right-side reach" in FEEDBACK_MESSAGES["reach_right"]
+    assert "bend gently to your left" in FEEDBACK_MESSAGES["reach_left"]
+    assert "bend gently to your right" in FEEDBACK_MESSAGES["reach_right"]
     assert FEEDBACK_MESSAGES["reach_left"] != FEEDBACK_MESSAGES["reach_right"]
 
 

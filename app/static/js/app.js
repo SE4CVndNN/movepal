@@ -121,7 +121,7 @@ const MOVE_PREVIEW = {
   },
   side_reach: {
     title: "Reach to the side",
-    description: "Reach out to the side with your arm and stretch.",
+    description: "Lift one arm over your head and bend gently to the side.",
     // Use a valid default file; specific left/right variants are applied
     // when a side is selected in `updateMovePreviews()`.
     avatar: "/static/images/avatars/reach-to-the-left.png",
@@ -139,9 +139,13 @@ function getMovePreviewData(activity) {
 
 function getMoveDescription(activity, side) {
   if (activity === "side_reach") {
-    return side
-      ? `Reach out to the ${side} with your arm and stretch.`
-      : "Reach out to the side with your arm and stretch.";
+    if (side === "left") {
+      return "Lift your right arm over your head and bend gently to your left.";
+    }
+    if (side === "right") {
+      return "Lift your left arm over your head and bend gently to your right.";
+    }
+    return "Lift one arm over your head and bend gently to the side.";
   }
   if (activity === "knee_lift_or_step") {
     return side
@@ -264,7 +268,9 @@ function updateCameraInstruction() {
   if (!cameraInstruction) return;
 
   if (currentActivity === "side_reach" && currentSide) {
-    cameraInstruction.textContent = `Reach with your ${currentSide} arm for this move.`;
+    const overheadArm = currentSide === "left" ? "right" : "left";
+    cameraInstruction.textContent =
+      `Lift your ${overheadArm} arm overhead and bend to your ${currentSide}.`;
     return;
   }
 

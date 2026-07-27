@@ -17,11 +17,9 @@ from typing import Any
 from app.services.geometry import (
     Side,
     angle_at_joint,
-    horizontal_outward_offset,
     opposite_side,
     shoulder_width,
     side_landmark_name,
-    vertical_offset,
 )
 from app.services.pose_tracking import Landmark, landmark_distance
 
@@ -167,20 +165,14 @@ def evaluate_raise_both_arms(
     )
 
 
-DEFAULT_REACH_RATIO = 0.85
-"""Fraction of shoulder width the requested wrist must clear outward.
+DEFAULT_SIDE_BEND_RATIO = 0.18
+"""Minimum lateral torso displacement as a fraction of shoulder width."""
 
-Matches the acceptance matrix's "wrist is outward by >= 0.85 *
-shoulder_width" progress measurement (docs/movement_specification.md
-section 12).
-"""
+DEFAULT_OVERHEAD_HEIGHT_RATIO = 0.35
+"""Minimum height the active wrist must clear above its shoulder."""
 
-DEFAULT_REACH_VERTICAL_RATIO = 0.50
-"""Fraction of shoulder width the wrist may drift vertically from its
-shoulder while still counting as a side reach rather than a raised or
-dropped arm. Matches the acceptance matrix's "vertical offset is <= 0.50
-* shoulder_width" progress measurement.
-"""
+DEFAULT_OVERHEAD_CROSS_RATIO = 0.20
+"""Minimum distance the active wrist reaches toward the requested side."""
 
 SIDE_REACH_COMMON_REQUIRED_LANDMARKS: tuple[str, ...] = (
     "left_shoulder",
@@ -188,17 +180,7 @@ SIDE_REACH_COMMON_REQUIRED_LANDMARKS: tuple[str, ...] = (
     "left_hip",
     "right_hip",
 )
-"""Landmarks every side-reach evaluation needs regardless of requested side.
-
-The requested side's own wrist is required in addition to these (see
-:func:`evaluate_side_reach`). The opposite wrist and both elbows are read
-by neither this rule nor the acceptance-matrix formula, mirroring the
-raise-both-arms elbow exclusion recorded above and in the "MP-014
-decisions" note in movement_specification.md: requiring them would fail
-the checked-in side_reach_fixtures.json positive/wrong-side cases, which
-omit them, for the wrong reason (missing landmark instead of insufficient
-reach).
-"""
+"""Torso landmarks required to detect the pictured lateral body bend."""
 
 
 def evaluate_side_reach(
@@ -207,18 +189,18 @@ def evaluate_side_reach(
     *,
     consecutive_samples: int | None = None,
     minimum_visibility: float = DEFAULT_MINIMUM_VISIBILITY,
-    reach_ratio: float = DEFAULT_REACH_RATIO,
-    vertical_ratio: float = DEFAULT_REACH_VERTICAL_RATIO,
+    bend_ratio: float = DEFAULT_SIDE_BEND_RATIO,
+    overhead_height_ratio: float = DEFAULT_OVERHEAD_HEIGHT_RATIO,
+    overhead_cross_ratio: float = DEFAULT_OVERHEAD_CROSS_RATIO,
     required_consecutive_samples: int = DEFAULT_REQUIRED_CONSECUTIVE_SAMPLES,
     lenient: bool = False,
 ) -> MovementResult:
-    """Evaluate a side-reach movement for one requested anatomical side.
+    """Evaluate the pictured standing side bend in either anatomical direction.
 
-    ``requested_side`` is the user's own side, never the mirrored
-    preview's screen side (docs/movement_specification.md section 2).
-    Only the requested side's own shoulder/wrist pair is read, so an
-    opposite-arm reach can never satisfy the request regardless of how
-    far it extends.
+    ``requested_side`` is the direction the user's torso should bend. A
+    left bend uses the right arm overhead; a right bend uses the left arm.
+    The direction is derived from the observed anatomical shoulders, so
+    horizontally mirrored camera frames produce the same result.
 
     ``consecutive_samples`` follows the same per-request hold contract as
     :func:`evaluate_raise_both_arms`: omitting it assumes the hold
@@ -234,29 +216,15 @@ def evaluate_side_reach(
         consecutive_samples = required_consecutive_samples
 
     feedback_code = f"reach_{requested_side}"
-    requested_wrist_name = side_landmark_name(requested_side, "wrist")
-    requested_elbow_name = side_landmark_name(requested_side, "elbow")
-    opposite_side_name = opposite_side(requested_side)
-    opposite_wrist_name = side_landmark_name(opposite_side_name, "wrist")
-    opposite_elbow_name = side_landmark_name(opposite_side_name, "elbow")
-    if lenient:
-        # Live camera and uploaded-image evaluation only needs the torso scale
-        # and the requested arm. Requiring the opposite arm and both hips made
-        # an otherwise clear side reach fail when those unrelated landmarks
-        # were cropped or briefly low visibility.
-        required = (
-            "left_shoulder",
-            "right_shoulder",
-            requested_elbow_name,
-            requested_wrist_name,
-        )
-    else:
-        required = SIDE_REACH_COMMON_REQUIRED_LANDMARKS + (
-            requested_elbow_name,
-            requested_wrist_name,
-            opposite_elbow_name,
-            opposite_wrist_name,
-        )
+    active_arm_side = opposite_side(requested_side)
+    active_shoulder_name = side_landmark_name(active_arm_side, "shoulder")
+    active_elbow_name = side_landmark_name(active_arm_side, "elbow")
+    active_wrist_name = side_landmark_name(active_arm_side, "wrist")
+    requested_shoulder_name = side_landmark_name(requested_side, "shoulder")
+    required = SIDE_REACH_COMMON_REQUIRED_LANDMARKS + (
+        active_elbow_name,
+        active_wrist_name,
+    )
 
     for name in required:
         landmark = landmarks.get(name)
@@ -279,105 +247,49 @@ def evaluate_side_reach(
             feedback_code="full_body_missing",
         )
 
-    requested_shoulder = left_shoulder if requested_side == "left" else right_shoulder
-    wrist = landmarks[requested_wrist_name]
-    elbow = landmarks[requested_elbow_name]
-    opposite_shoulder = right_shoulder if requested_side == "left" else left_shoulder
+    requested_shoulder = landmarks[requested_shoulder_name]
+    active_shoulder = landmarks[active_shoulder_name]
+    elbow = landmarks[active_elbow_name]
+    wrist = landmarks[active_wrist_name]
+    left_hip = landmarks["left_hip"]
+    right_hip = landmarks["right_hip"]
 
-    # Allow a more forgiving set of thresholds for live/uploaded frames
-    # when callers explicitly request lenient mode (helps users get
-    # immediate feedback in imperfect home setups). Fixtures and the
-    # deterministic `/api/movement` path remain strict.
-    effective_reach_ratio = reach_ratio
-    effective_vertical_ratio = vertical_ratio
-    elbow_angle_threshold = 170.0
-    if lenient:
-        # More aggressive leniency for live uploads: reduce required
-        # outward reach, allow more vertical drift, and accept more
-        # elbow bend. Also skip strict shoulder-level enforcement to
-        # accommodate casual phone framing.
-        effective_reach_ratio = min(reach_ratio, 0.74)
-        effective_vertical_ratio = max(vertical_ratio, 0.9)
-        elbow_angle_threshold = 125.0
+    # `side_direction` points toward the requested anatomical side in the
+    # observed frame. It flips automatically if the input is mirrored.
+    side_direction = -1.0 if requested_shoulder.x < active_shoulder.x else 1.0
+    shoulder_mid_x = (left_shoulder.x + right_shoulder.x) / 2
+    hip_mid_x = (left_hip.x + right_hip.x) / 2
+    lateral_bend = (shoulder_mid_x - hip_mid_x) * side_direction
+    overhead_height = active_shoulder.y - wrist.y
+    overhead_cross = (wrist.x - active_shoulder.x) * side_direction
+    elbow_angle = angle_at_joint(active_shoulder, elbow, wrist)
 
-    outward = horizontal_outward_offset(
-        wrist,
-        requested_shoulder,
-        requested_side,
-        opposite_shoulder,
+    effective_bend_ratio = min(bend_ratio, 0.12) if lenient else bend_ratio
+    effective_height_ratio = (
+        min(overhead_height_ratio, 0.25) if lenient else overhead_height_ratio
     )
-    elbow_outward = horizontal_outward_offset(
-        elbow,
-        requested_shoulder,
-        requested_side,
-        opposite_shoulder,
+    effective_cross_ratio = (
+        min(overhead_cross_ratio, 0.10) if lenient else overhead_cross_ratio
     )
-    wrist_height_ok = (
-        vertical_offset(wrist, requested_shoulder) <= effective_vertical_ratio * width
-    )
-    elbow_height_ok = (
-        vertical_offset(elbow, requested_shoulder) <= effective_vertical_ratio * width
-    )
-    elbow_angle = angle_at_joint(requested_shoulder, elbow, wrist)
-    # In lenient mode, allow looser shoulder alignment by skipping the
-    # strict shoulder-level check; hip alignment still helps detect
-    # gross framing issues.
-    if lenient:
-        shoulder_level_ok = True
-    else:
-        shoulder_level_ok = abs(left_shoulder.y - right_shoulder.y) <= (
-            effective_vertical_ratio * width
-        )
+    elbow_angle_threshold = 110.0 if lenient else 125.0
 
-    # In lenient mode, skip hip-level enforcement as well to tolerate
-    # casual framing and minor stance shifts in uploaded photos.
-    if lenient:
-        hip_level_ok = True
-        opposite_arm_relaxed = True
-    else:
-        left_hip = landmarks["left_hip"]
-        right_hip = landmarks["right_hip"]
-        hip_level_ok = abs(left_hip.y - right_hip.y) <= (
-            effective_vertical_ratio * width
-        )
-        opposite_elbow = landmarks[opposite_elbow_name]
-        opposite_wrist = landmarks[opposite_wrist_name]
-        opposite_arm_relaxed = (
-            opposite_wrist.y >= opposite_elbow.y
-            and opposite_elbow.y >= opposite_shoulder.y
-        )
-    elbow_in_line = elbow_outward >= 0 and outward >= elbow_outward
-    confidence = (
-        min(1.0, max(0.0, outward) / (effective_reach_ratio * width))
-        if effective_reach_ratio > 0
-        else 0.0
+    bend_progress = lateral_bend / (effective_bend_ratio * width)
+    height_progress = overhead_height / (effective_height_ratio * width)
+    cross_progress = overhead_cross / (effective_cross_ratio * width)
+    confidence = min(
+        1.0,
+        max(
+            0.0,
+            min(bend_progress, height_progress, cross_progress),
+        ),
     )
 
-    if not elbow_in_line or not elbow_height_ok or elbow_angle < elbow_angle_threshold:
-        return MovementResult(
-            movement="side_reach",
-            completed=False,
-            confidence=confidence,
-            feedback_code=feedback_code,
-        )
-
-    if not opposite_arm_relaxed:
-        return MovementResult(
-            movement="side_reach",
-            completed=False,
-            confidence=confidence,
-            feedback_code=feedback_code,
-        )
-
-    if not shoulder_level_ok or not hip_level_ok:
-        return MovementResult(
-            movement="side_reach",
-            completed=False,
-            confidence=confidence,
-            feedback_code=feedback_code,
-        )
-
-    reached = wrist_height_ok and outward >= effective_reach_ratio * width
+    reached = (
+        lateral_bend >= effective_bend_ratio * width
+        and overhead_height >= effective_height_ratio * width
+        and overhead_cross >= effective_cross_ratio * width
+        and elbow_angle >= elbow_angle_threshold
+    )
 
     if not reached:
         return MovementResult(
