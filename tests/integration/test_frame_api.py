@@ -5,6 +5,10 @@ from __future__ import annotations
 import io
 from pathlib import Path
 
+import pytest
+
+from app import create_app
+from app.routes.api import get_pose_adapter
 from app.services.pose_tracking import PoseResult, PoseStatus
 
 
@@ -18,6 +22,111 @@ class MockPoseAdapter:
     def estimate(self, image_path: str | Path) -> PoseResult:
         self.last_estimated_path = Path(image_path)
         return self.result
+
+
+def test_pose_adapter_is_reused_within_one_flask_app(app):
+    with app.app_context():
+        first = get_pose_adapter()
+        second = get_pose_adapter()
+
+    assert first is second
+
+
+def test_pose_adapter_cache_is_isolated_between_flask_apps():
+    first_app = create_app({"TESTING": True, "SECRET_KEY": "first"})
+    second_app = create_app({"TESTING": True, "SECRET_KEY": "second"})
+
+    with first_app.app_context():
+        first = get_pose_adapter()
+    with second_app.app_context():
+        second = get_pose_adapter()
+
+    assert first is not second
+
+
+def test_pose_adapter_is_replaced_when_model_path_changes(app, tmp_path):
+    with app.app_context():
+        first = get_pose_adapter()
+        app.config["POSE_MODEL_PATH"] = tmp_path / "different-model.task"
+        second = get_pose_adapter()
+
+    assert first is not second
+
+
+def test_pose_readiness_warms_reused_adapter_without_exposing_path(client, monkeypatch):
+    class ReadyAdapter:
+        def __init__(self):
+            self.warm_count = 0
+
+        def warm_up(self):
+            self.warm_count += 1
+
+    adapter = ReadyAdapter()
+    monkeypatch.setattr("app.routes.api.get_pose_adapter", lambda: adapter)
+
+    first = client.get("/api/pose/readiness")
+    second = client.get("/api/pose/readiness")
+
+    assert first.status_code == second.status_code == 200
+    assert first.get_json() == {"status": "ready"}
+    assert "path" not in first.get_data(as_text=True).lower()
+    assert adapter.warm_count == 2
+
+
+def test_pose_preview_is_transient_and_has_no_scoring_side_effect(client, monkeypatch):
+    from app.services.movement_rules import (
+        landmarks_from_fixture,
+        load_raise_both_arms_fixture,
+    )
+
+    fixture = load_raise_both_arms_fixture("synthetic_raise_arms_positive_001")
+    landmarks = landmarks_from_fixture(fixture)
+    captured_paths = []
+
+    class PreviewAdapter:
+        def estimate(self, image_path):
+            path = Path(image_path)
+            captured_paths.append(path)
+            assert path.exists()
+            return PoseResult(status=PoseStatus.SUCCESS, landmarks=landmarks)
+
+    monkeypatch.setattr("app.routes.api.get_pose_adapter", lambda: PreviewAdapter())
+    before = client.get("/api/session/summary").get_json()
+    response = client.post(
+        "/api/pose/preview",
+        data={
+            "image": (io.BytesIO(b"synthetic bytes"), "preview.jpg"),
+            "movement": "raise_both_arms",
+        },
+        content_type="multipart/form-data",
+    )
+    after = client.get("/api/session/summary").get_json()
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["ready_for_capture"] is True
+    assert set(payload) == {
+        "pose_status",
+        "ready_for_capture",
+        "guidance",
+        "display_landmarks",
+    }
+    assert set(payload["display_landmarks"]) <= {
+        "left_shoulder",
+        "right_shoulder",
+        "left_elbow",
+        "right_elbow",
+        "left_wrist",
+        "right_wrist",
+        "left_hip",
+        "right_hip",
+        "left_knee",
+        "right_knee",
+        "left_ankle",
+        "right_ankle",
+    }
+    assert before == after
+    assert captured_paths and not captured_paths[0].exists()
 
 
 def test_process_frame_success(client, monkeypatch):
@@ -197,3 +306,49 @@ def test_frame_with_movement_evaluates_when_pose_succeeds(client, monkeypatch):
     payload = response.get_json()
     assert response.status_code == 200
     assert "completed" in payload
+
+
+@pytest.mark.parametrize(
+    "side, fixture_id",
+    [
+        ("left", "synthetic_side_reach_left_positive_001"),
+        ("right", "synthetic_side_reach_right_positive_001"),
+    ],
+)
+def test_live_frame_side_reach_evaluates_both_anatomical_sides(
+    client, monkeypatch, side, fixture_id
+):
+    from app.services.movement_rules import (
+        landmarks_from_fixture,
+        load_side_reach_fixture,
+    )
+
+    fixture = load_side_reach_fixture(fixture_id)
+    landmarks = landmarks_from_fixture(fixture)
+
+    class SideReachPoseAdapter:
+        def estimate(self, image_path):
+            return PoseResult(status=PoseStatus.SUCCESS, landmarks=landmarks)
+
+    monkeypatch.setattr(
+        "app.routes.api.get_pose_adapter",
+        lambda: SideReachPoseAdapter(),
+    )
+
+    data = {
+        "image": (io.BytesIO(b"safe synthetic bytes"), "frame.png"),
+        "movement": "side_reach",
+        "side": side,
+    }
+    response = client.post(
+        "/api/frame",
+        data=data,
+        content_type="multipart/form-data",
+    )
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["movement"] == "side_reach"
+    assert payload["completed"] is True
+    assert payload["feedback_code"] == "great"
+    assert payload["stars"] == 1

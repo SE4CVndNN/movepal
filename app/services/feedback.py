@@ -15,29 +15,26 @@ if TYPE_CHECKING:
     from app.services.movement_rules import MovementResult
     from app.services.scoring import ScoringSession
 
-_MOVEMENT_CORRECTION_TEXT = "Please adjust your pose slightly."
-"""Shared wording for every movement-specific correction code.
-
-Section 12's table intentionally gives ``raise_arms``, ``reach_left``,
-``reach_right``, and ``lift_knee`` the identical approved sentence -- the
-distinction between movements and sides is carried by ``feedback_code``,
-not by different wording, so it is defined once here rather than repeated
-per key (and risking the two sides drifting apart).
-"""
+_MOVEMENT_CORRECTION_TEXT = (
+    "This picture doesn't show the move we asked for. Try again with the right pose."
+)
+"""Friendly fallback wording for an unknown movement-correction code."""
 
 FEEDBACK_MESSAGES: dict[str, str] = {
     "great": "Awesome job! You've earned ⭐ 1 Star!",
-    "raise_arms": _MOVEMENT_CORRECTION_TEXT,
-    "reach_left": _MOVEMENT_CORRECTION_TEXT,
-    "reach_right": _MOVEMENT_CORRECTION_TEXT,
-    "lift_knee": _MOVEMENT_CORRECTION_TEXT,
+    "raise_arms": "You need both arms up. Try a picture with your hands above your shoulders.",
+    "reach_left": ("Reach your right arm over your head and bend gently to your left."),
+    "reach_right": (
+        "Reach your left arm over your head and bend gently to your right."
+    ),
+    "lift_knee": "I asked for a knee lift. Try lifting your knee up in front like a marching move.",
     "move_back": "Move slightly farther from the camera.",
-    "hold": "Please hold a bit longer for better validation.",
+    "hold": "Hold your pose a little longer so I can see the whole move.",
     "full_body_missing": (
         "We lost track of you! Please step back so your full body is "
         "visible in the frame."
     ),
-    "try_again": "Try again.",
+    "try_again": "Looks like that one missed the move. Try again with the right pose.",
 }
 
 VISIBILITY_FRAMING_CODES: set[str] = {"full_body_missing", "move_back"}
@@ -89,7 +86,27 @@ def format_feedback(
     visibility_ok = result.feedback_code not in VISIBILITY_FRAMING_CODES
 
     if session is not None:
+        # Call into the session to update stars. However, format_feedback
+        # must be idempotent for repeated frames within the same active
+        # attempt: if the session already reported the previous attempt as
+        # completed, do not allow this call to award additional stars or
+        # mutate the session state.
+        before_total = session.total_stars
+        before_attempt_count = session.attempt_count
+        before_attempt_completed = session.attempt_completed
+        before_current_movement = session.current_movement
+
         stars_awarded, total_stars = session.process_result(result)
+
+        if before_attempt_completed and result.completed:
+            # Revert any session-side mutation performed by process_result
+            # and report zero newly-awarded stars for idempotence.
+            session.total_stars = before_total
+            session.attempt_completed = before_attempt_completed
+            session.attempt_count = before_attempt_count
+            session.current_movement = before_current_movement
+            stars_awarded = 0
+            total_stars = before_total
     else:
         stars_awarded = 1 if result.completed else 0
         total_stars = stars_awarded

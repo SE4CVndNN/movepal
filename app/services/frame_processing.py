@@ -11,11 +11,15 @@ JSON), while all file-I/O coordination lives here.
 
 from __future__ import annotations
 
+import logging
 import tempfile
+import time
 from pathlib import Path
 from typing import Protocol
 
 from app.services.pose_tracking import PoseResult
+
+logger = logging.getLogger(__name__)
 
 
 class PoseAdapter(Protocol):
@@ -59,9 +63,21 @@ def process_frame(file: object, pose_adapter: PoseAdapter) -> PoseResult:
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temp_file:
         temp_path = Path(temp_file.name)
 
+    started = time.perf_counter()
     try:
+        save_started = time.perf_counter()
         file.save(temp_path)  # type: ignore[union-attr]
-        return pose_adapter.estimate(temp_path)
+        save_seconds = time.perf_counter() - save_started
+        inference_started = time.perf_counter()
+        result = pose_adapter.estimate(temp_path)
+        logger.info(
+            "frame_processing save_seconds=%.4f adapter_seconds=%.4f "
+            "total_seconds=%.4f",
+            save_seconds,
+            time.perf_counter() - inference_started,
+            time.perf_counter() - started,
+        )
+        return result
     finally:
         if temp_path.exists():
             temp_path.unlink()

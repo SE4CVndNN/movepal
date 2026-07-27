@@ -38,11 +38,15 @@ docs/movement_specification.md for the full compatibility write-up):
 from __future__ import annotations
 
 import json
+import logging
+import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_VISIBILITY_THRESHOLD = 0.5
 """Starting per-landmark visibility cutoff.
@@ -52,11 +56,18 @@ value. See docs/movement_specification.md section 4; MP-021 must record
 the justified final threshold(s).
 """
 
-DEFAULT_MINIMUM_COVERAGE = 0.6
+DEFAULT_MINIMUM_COVERAGE = 0.35
 """Fraction of TRACKED_LANDMARK_NAMES that must clear the visibility
 threshold before a detected pose counts as PoseStatus.SUCCESS rather than
-PoseStatus.LOW_VISIBILITY. A coarse framing pre-filter only -- movement
-rules still perform their own per-landmark, per-movement checks."""
+PoseStatus.LOW_VISIBILITY. The Sprint-1 game experience is intentionally
+more forgiving so children can play without needing a perfect full-body
+frame."""
+
+# When validating external evidence (conservative mode) require a higher
+# fraction of visible tracked landmarks so incomplete samples are flagged
+# as LOW_VISIBILITY.
+CONSERVATIVE_MINIMUM_COVERAGE = 0.75
+
 
 TRACKED_LANDMARK_NAMES: tuple[str, ...] = (
     "left_shoulder",
@@ -216,6 +227,10 @@ class MediaPipePoseAdapter:
             self._landmarker = vision.PoseLandmarker.create_from_options(options)
         return self._landmarker
 
+    def warm_up(self) -> None:
+        """Initialize the reusable landmarker without processing an image."""
+        self._get_landmarker()
+
     def estimate(self, image_path: str | Path) -> PoseResult:
         """Run pose estimation on an image file and return a PoseResult.
 
@@ -227,8 +242,17 @@ class MediaPipePoseAdapter:
             import mediapipe as mp
 
             landmarker = self._get_landmarker()
+            decode_started = time.perf_counter()
             mp_image = mp.Image.create_from_file(str(image_path))
+            decode_seconds = time.perf_counter() - decode_started
+            inference_started = time.perf_counter()
             result = landmarker.detect(mp_image)
+            inference_seconds = time.perf_counter() - inference_started
+            logger.info(
+                "pose_estimate decode_seconds=%.4f inference_seconds=%.4f",
+                decode_seconds,
+                inference_seconds,
+            )
         except Exception as exc:  # noqa: BLE001 - convert any provider failure
             return PoseResult(status=PoseStatus.ERROR, error=str(exc))
 
@@ -287,7 +311,11 @@ def pose_result_from_fixture_data(
     # - Otherwise (checked-in fixtures), use the number of present tracked
     #   landmarks so existing fixture semantics remain unchanged.
     if conservative:
+        # Conservative mode uses the full tracked-landmark denominator and
+        # a stricter minimum coverage threshold so incomplete fixtures are
+        # flagged as LOW_VISIBILITY.
         coverage_denominator = None
+        minimum_coverage = max(minimum_coverage, CONSERVATIVE_MINIMUM_COVERAGE)
     else:
         tracked_present = [name for name in TRACKED_LANDMARK_NAMES if name in landmarks]
         coverage_denominator = len(tracked_present) if tracked_present else None

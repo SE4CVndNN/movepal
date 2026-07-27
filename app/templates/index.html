@@ -3,110 +3,189 @@ block content %}
 
 <section class="card" data-screen="start">
   {% set avatar_suffix = 'start' %} {% include "partials/_avatar.html" %}
-  <h2>Let's move and collect stars!</h2>
-  <p>
-    MovePal is a playful movement-practice prototype created for
-    software-engineering education. It is not a medical device, diagnostic tool,
-    rehabilitation system, treatment, or replacement for a physiotherapist or
-    healthcare professional.
-  </p>
-  <p>
-    A success result means only that the current pose landmarks satisfied the
-    project’s configured game rules. It does not establish that a movement is
-    medically correct, safe for a particular person, or beneficial for a health
-    condition.
-  </p>
-  <button type="button" data-goto="activity">Let's play!</button>
+  <h2>Let’s move and collect stars!</h2>
+  <p>MovePal is a fun game for moving, smiling, and playing.</p>
+  <p>This is just a game, not a doctor tool.</p>
+  <button type="button" data-goto="activity">Let’s play!</button>
 </section>
 
 <section class="card" data-screen="activity" hidden>
+  <button type="button" class="card-back-button" data-goto="start">
+    ← Back
+  </button>
   {% set avatar_suffix = 'activity' %} {% include "partials/_avatar.html" %}
-  <h2>Pick your favorite move</h2>
-  <p>Choose a move, then choose how you want to play.</p>
+  <h2>Pick a move</h2>
+  <p>Choose a move, then choose how to play.</p>
   <div class="activity-list">
-    <button type="button" data-activity="raise_both_arms" data-goto="camera-choice">
+    <button
+      type="button"
+      data-activity="raise_both_arms"
+      data-goto="camera-choice"
+    >
       Raise both arms
     </button>
-    <button type="button" data-activity="side_reach" data-side="left" data-goto="camera-choice">
-      Reach to the side
+    <button
+      type="button"
+      data-activity="side_reach"
+      data-side="left"
+      data-goto="camera-choice"
+    >
+      Reach to the left
     </button>
-    <button type="button" data-activity="knee_lift_or_step" data-side="left" data-goto="camera-choice">
-      Knee lift
+    <button
+      type="button"
+      data-activity="side_reach"
+      data-side="right"
+      data-goto="camera-choice"
+    >
+      Reach to the right
+    </button>
+    <button
+      type="button"
+      data-activity="knee_lift_or_step"
+      data-side="left"
+      data-goto="camera-choice"
+    >
+      Knee lift left
+    </button>
+    <button
+      type="button"
+      data-activity="knee_lift_or_step"
+      data-side="right"
+      data-goto="camera-choice"
+    >
+      Knee lift right
     </button>
   </div>
 </section>
 
 <section class="card" data-screen="camera-choice" hidden>
-  <h2>Choose Your Input Method</h2>
-  <p>
-    Please allow live camera access so you can have a live experience with
-    MovePal.
-  </p>
-  <button type="button" id="use-webcam-btn">Use Live Webcam</button>
-  <button type="button" id="use-fallback-btn">
-    Use Local Demo Sample (No Camera)
+  <button type="button" class="card-back-button" data-goto="activity">
+    ← Back
   </button>
+  <h2>Ready for your move?</h2>
+  <div class="move-preview">
+    <img id="selected-move-avatar" src="" alt="" hidden />
+    <h3 id="selected-move-title">Pick a move first</h3>
+    <p id="selected-move-description">
+      After you choose a move, you can use the camera, upload a photo, or try
+      the built-in demo.
+    </p>
+  </div>
+  <button type="button" id="use-webcam-btn">Use the camera</button>
+  <button type="button" id="use-upload-btn">Upload a photo</button>
+  <button type="button" id="use-fallback-btn">Try the built-in demo</button>
   <p id="camera-status" role="status" aria-live="polite"></p>
 </section>
 
-<section class="card" data-screen="sample-picker" hidden>
-  <h2>Pick a deterministic no-camera fallback</h2>
-  <p>
-    Reach and knee lift fallback demos currently only support the left side.
-  </p>
-  <div class="sample-list">
-    <button type="button" class="sample-choice" data-activity="raise_both_arms">
-      Raise both arms
-    </button>
-    <button type="button" class="sample-choice" data-activity="side_reach" data-side="left">
-      Reach to the side (left)
-    </button>
-    <button type="button" class="sample-choice" data-activity="knee_lift_or_step" data-side="left">
-      Knee lift (left)
-    </button>
+<section class="card" data-screen="camera-upload" hidden>
+  <button type="button" class="card-back-button" data-goto="camera-choice">
+    ← Back
+  </button>
+  <h2>Upload a photo</h2>
+  <div class="upload-panel">
+    <label for="camera-upload-input">Choose a photo of your move</label>
+    <input type="file" id="camera-upload-input" accept="image/jpeg,image/png" />
+    <button type="button" id="camera-upload-btn">Upload photo</button>
+    <p id="camera-upload-status" role="status" aria-live="polite"></p>
   </div>
-  <p id="sample-upload-status" role="status" aria-live="polite"></p>
 </section>
 
 <section class="card" data-screen="camera-live" hidden>
-  <h2>Live camera</h2>
-  <video id="camera-preview" autoplay playsinline muted></video>
-  <canvas id="capture-canvas" hidden></canvas>
-  <p>Camera frames are processed temporarily and are not stored by default.</p>
-  <p>
-    Please click Stop Camera to end live frame capture and return to the input
-    chooser.
-  </p>
-  <button type="button" id="stop-camera-btn">Stop Camera</button>
-  <button type="button" id="capture-frame-btn">Capture Frame</button>
+  <button type="button" class="card-back-button" data-goto="camera-choice">
+    ← Back
+  </button>
+  <h2>Camera time!</h2>
+  <div class="camera-stage">
+    <div class="camera-feed-wrapper camera-preview-container">
+      <video id="camera-preview" autoplay playsinline muted></video>
+      <canvas id="skeleton-overlay" aria-hidden="true"></canvas>
+      <canvas id="capture-canvas" hidden></canvas>
+      <div
+        id="capture-processing"
+        class="capture-processing"
+        role="status"
+        aria-live="polite"
+        hidden
+      >
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <span>Checking your pose…</span>
+      </div>
+      <div id="capture-flash" class="capture-flash" aria-hidden="true"></div>
+    </div>
+    <div id="capture-countdown" class="capture-countdown" hidden></div>
+  </div>
+  <p>Your picture is only used for this game.</p>
+  <p id="camera-instruction">Use the selected move side above.</p>
+  <p>The camera turns off automatically after this picture.</p>
+  <button type="button" id="stop-camera-btn">Cancel camera</button>
+  <button type="button" id="capture-frame-btn">Take a picture</button>
   <p id="upload-status" role="status" aria-live="polite"></p>
 </section>
 
 <section class="card" data-screen="camera-fallback" hidden>
-  <h2>Practice with demo mode</h2>
-  <p id="fallback-reason" role="status" aria-live="polite"></p>
-  <div class="fallback-actions">
-    <button type="button" data-goto="sample-picker">
-      Choose fallback movement
-    </button>
-    <button type="button" data-goto="camera-choice">Change input method</button>
+  <button type="button" class="card-back-button" data-goto="camera-choice">
+    ← Back
+  </button>
+  <h2>Demo time!</h2>
+  <p id="fallback-reason" role="status" aria-live="polite">
+    No camera? That’s okay. You can still try the demo.
+  </p>
+  <div class="move-preview">
+    <img id="fallback-move-avatar" src="" alt="" hidden />
+    <h3 id="fallback-move-title">Your selected move</h3>
+    <p id="fallback-move-description">
+      Start the demo for the move you already picked.
+    </p>
   </div>
+  <button type="button" id="start-demo-btn">Start built-in demo</button>
+  <button type="button" id="show-fallback-upload-btn" class="secondary">
+    Upload a photo instead
+  </button>
+  <button type="button" data-goto="camera-choice">Try camera again</button>
   <p id="fallback-error" role="status" aria-live="polite"></p>
 </section>
 
+<section class="card" data-screen="fallback-upload" hidden>
+  <button type="button" class="card-back-button" data-goto="camera-fallback">
+    ← Back
+  </button>
+  <h2>Upload a photo</h2>
+  <p>Upload a photo instead of using the built-in demo.</p>
+  <div class="upload-panel">
+    <label for="fallback-upload-input">Choose a photo</label>
+    <input
+      type="file"
+      id="fallback-upload-input"
+      accept="image/jpeg,image/png"
+    />
+    <button type="button" id="fallback-upload-btn">Upload photo</button>
+    <p id="fallback-upload-status" role="status" aria-live="polite"></p>
+  </div>
+</section>
+
 <section class="card feedback-card" data-screen="feedback" hidden>
+  <button type="button" class="card-back-button" data-goto="activity">
+    ← Back
+  </button>
   <div class="feedback-header">
-    <span id="feedback-status" class="status-badge" aria-live="polite"
-      >Success</span
-    >
     <h2 id="feedback-message">Awesome job! You've earned ⭐ 1 Star!</h2>
   </div>
+  <p id="feedback-status" hidden></p>
   <p id="feedback-detail">
-    Pose detection and movement evaluation are separate. This screen shows the
-    current deterministic fallback result for the selected move.
+    Here is how your move went. Check the feedback above if you want to try
+    again.
   </p>
   <button type="button" data-goto="activity">Try another move</button>
-  <button type="button" data-goto="summary">See my total stars</button>
+  <button
+    type="button"
+    id="feedback-secondary-btn"
+    class="secondary"
+    data-goto="fallback-upload"
+  >
+    Try again
+  </button>
+  <button type="button" data-goto="summary">See my stars</button>
   <div hidden>
     <button type="button" data-goto="feedback" data-feedback="success">
       Success mode
@@ -118,12 +197,14 @@ block content %}
 </section>
 
 <section class="card" data-screen="summary" hidden>
+  <button type="button" class="card-back-button" data-goto="activity">
+    ← Back
+  </button>
   {% set avatar_suffix = 'summary' %} {% include "partials/_avatar.html" %}
-  <h2>Session Complete!</h2>
+  <h2>You did it!</h2>
   <p id="summary-text">
-    You successfully completed your movements today and earned a total of ⭐
-    <span id="summary-star-count">0</span> Stars! Thanks for playing with
-    MovePal!
+    You earned ⭐ <span id="summary-star-count">0</span> stars! Thanks for
+    playing with MovePal!
   </p>
   <button type="button" data-goto="start">Play again</button>
 </section>
