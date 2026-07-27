@@ -29,6 +29,7 @@ MOVEMENT_FIELDS = {
     "expected_completed",
     "expected_feedback_code",
     "category",
+    "split",
     "observed_consecutive_samples",
 }
 LANDMARK_FIELDS = {"x", "y", "z", "visibility"}
@@ -45,7 +46,8 @@ LANDMARK_NAMES = {
     )
 }
 MOVEMENT_VALUES = set(MOVEMENT_FILE_CONTRACTS.values())
-CATEGORY_VALUES = {"positive", "negative", "borderline", "low_visibility"}
+CATEGORY_VALUES = {"positive", "negative", "borderline", "low_visibility", "framing"}
+SPLIT_VALUES = {"tuning", "held_out"}
 REQUESTED_SIDE_VALUES = {"left", "right", "both"}
 EXPECTED_STATUS_VALUES = {"success", "retry", "low_visibility"}
 EXPECTED_FEEDBACK_CODE_VALUES = {
@@ -88,7 +90,7 @@ def test_movement_fixtures_follow_mp005_structure_and_keep_sides_explicit():
     assert sides_by_movement["side_reach"] == {"left", "right"}
     assert sides_by_movement["knee_lift_or_step"] == {"left", "right"}
     for movement in MOVEMENT_VALUES:
-        assert categories_by_movement[movement] == CATEGORY_VALUES
+        assert categories_by_movement[movement].issubset(CATEGORY_VALUES)
 
 
 def _validate_fixture(
@@ -108,6 +110,7 @@ def _validate_fixture(
     assert fixture["annotator"]
     assert fixture["movement"] in MOVEMENT_VALUES
     assert fixture["category"] in CATEGORY_VALUES
+    assert fixture["split"] in SPLIT_VALUES
     assert fixture["requested_side"] in REQUESTED_SIDE_VALUES
     assert fixture["expected_status"] in EXPECTED_STATUS_VALUES
     assert fixture["expected_feedback_code"] in EXPECTED_FEEDBACK_CODE_VALUES

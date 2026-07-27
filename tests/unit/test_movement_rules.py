@@ -16,16 +16,22 @@ from app.services.movement_rules import (
 )
 from app.services.pose_tracking import Landmark
 
-FIXTURE_CASES = [
+RAISE_ARMS_FIXTURE_CASES = [
     ("synthetic_raise_arms_positive_001", True, "great"),
+    ("synthetic_raise_arms_positive_002", True, "great"),
     ("synthetic_raise_arms_negative_001", False, "raise_arms"),
+    ("synthetic_raise_arms_negative_002", False, "raise_arms"),
     ("synthetic_raise_arms_borderline_001", False, "raise_arms"),
+    ("synthetic_raise_arms_borderline_002", False, "raise_arms"),
     ("synthetic_raise_arms_low_visibility_001", False, "full_body_missing"),
+    ("synthetic_raise_arms_framing_001", False, "full_body_missing"),
 ]
 
 
-@pytest.mark.parametrize("fixture_id, expected_completed, expected_code", FIXTURE_CASES)
-def test_committed_fixtures_match_expected_outcome(
+@pytest.mark.parametrize(
+    "fixture_id, expected_completed, expected_code", RAISE_ARMS_FIXTURE_CASES
+)
+def test_committed_raise_arms_fixtures_match_expected_outcome(
     fixture_id, expected_completed, expected_code
 ):
     fixture = load_raise_both_arms_fixture(fixture_id)
@@ -37,6 +43,74 @@ def test_committed_fixtures_match_expected_outcome(
     )
 
     assert result.movement == "raise_both_arms"
+    assert result.completed is expected_completed
+    assert result.feedback_code == expected_code
+    assert fixture["expected_completed"] == expected_completed
+    assert fixture["expected_feedback_code"] == expected_code
+
+
+SIDE_REACH_FIXTURE_CASES = [
+    ("synthetic_side_reach_left_positive_001", True, "great"),
+    ("synthetic_side_reach_right_positive_001", True, "great"),
+    ("synthetic_side_reach_right_negative_001", False, "reach_right"),
+    ("synthetic_side_reach_left_negative_001", False, "reach_left"),
+    ("synthetic_side_reach_left_borderline_001", False, "reach_left"),
+    ("synthetic_side_reach_right_borderline_001", False, "reach_right"),
+    ("synthetic_side_reach_right_low_visibility_001", False, "full_body_missing"),
+    ("synthetic_side_reach_left_framing_001", False, "reach_left"),
+]
+
+
+@pytest.mark.parametrize(
+    "fixture_id, expected_completed, expected_code", SIDE_REACH_FIXTURE_CASES
+)
+def test_committed_side_reach_fixtures_match_expected_outcome(
+    fixture_id, expected_completed, expected_code
+):
+    fixture = load_side_reach_fixture(fixture_id)
+    landmarks = landmarks_from_fixture(fixture)
+
+    result = evaluate_side_reach(
+        landmarks,
+        requested_side=fixture["requested_side"],
+        consecutive_samples=fixture["observed_consecutive_samples"],
+    )
+
+    assert result.movement == "side_reach"
+    assert result.completed is expected_completed
+    assert result.feedback_code == expected_code
+    assert fixture["expected_completed"] == expected_completed
+    assert fixture["expected_feedback_code"] == expected_code
+
+
+KNEE_LIFT_FIXTURE_CASES = [
+    ("synthetic_knee_lift_left_positive_001", True, "great"),
+    ("synthetic_knee_lift_right_positive_001", True, "great"),
+    ("synthetic_knee_lift_right_negative_001", False, "lift_knee"),
+    ("synthetic_knee_lift_left_negative_001", False, "lift_knee"),
+    ("synthetic_knee_lift_right_borderline_001", False, "lift_knee"),
+    ("synthetic_knee_lift_left_borderline_001", False, "lift_knee"),
+    ("synthetic_knee_lift_left_low_visibility_001", False, "full_body_missing"),
+    ("synthetic_knee_lift_right_framing_001", False, "full_body_missing"),
+]
+
+
+@pytest.mark.parametrize(
+    "fixture_id, expected_completed, expected_code", KNEE_LIFT_FIXTURE_CASES
+)
+def test_committed_knee_lift_fixtures_match_expected_outcome(
+    fixture_id, expected_completed, expected_code
+):
+    fixture = load_knee_lift_fixture(fixture_id)
+    landmarks = landmarks_from_fixture(fixture)
+
+    result = evaluate_knee_lift(
+        landmarks,
+        requested_side=fixture["requested_side"],
+        consecutive_samples=fixture["observed_consecutive_samples"],
+    )
+
+    assert result.movement == "knee_lift_or_step"
     assert result.completed is expected_completed
     assert result.feedback_code == expected_code
     assert fixture["expected_completed"] == expected_completed

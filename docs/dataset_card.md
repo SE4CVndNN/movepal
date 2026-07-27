@@ -83,13 +83,14 @@ Note: this is not a full MP-007 fixture record (it omits `movement`, `requested_
 
 | Movement             | Positive | Negative | Borderline | Missing/low visibility | Framing failure | Total |
 | --------------------- | -------: | -------: | ---------: | ---------------------: | --------------: | ----: |
-| Raise both arms      |          |          |            |                        |                 |       |
-| Side reach left      |          |          |            |                        |                 |       |
-| Side reach right     |          |          |            |                        |                 |       |
-| Knee lift/step left  |          |          |            |                        |                 |       |
-| Knee lift/step right |          |          |            |                        |                 |       |
+| Raise both arms      |        2 |        2 |          2 |                      1 |               1 |     8 |
+| Side reach left      |        1 |        1 |          1 |                      0 |               1 |     4 |
+| Side reach right     |        1 |        1 |          1 |                      1 |               0 |     4 |
+| Knee lift/step left  |        1 |        1 |          1 |                      1 |               0 |     4 |
+| Knee lift/step right |        1 |        1 |          1 |                      0 |               1 |     4 |
+| **Total**            |    **6** |    **6** |      **6** |                  **3** |           **3** | **24**|
 
-Not applicable to this version of the card. This spike validates pipeline *compatibility* (does an external sample produce a well-formed, `SUCCESS`-status `PoseResult`?), not movement-rule accuracy, so no movement/outcome labels were assigned. Populating this table against real or synthetic per-movement examples is MP-021's job.
+Updated for MP-021. The synthetic fixture collection contains 24 schema-validated movement examples (8 per movement activity across left, right, and both sides), plus 1 external sample compatibility data point (`external_pixabay_demo_photo_001`).
 
 ## 7. Collection conditions
 
@@ -101,9 +102,11 @@ N/A — no manual annotation was performed. The landmark coordinates and visibil
 
 ## 9. Split and evaluation policy
 
-N/A — this card describes a single compatibility example, not a calibration or held-out evaluation set. Separating tuning data from held-out sanity fixtures is in scope for MP-021, once real per-movement fixtures exist.
+For MP-021, the 24 synthetic movement fixtures are divided into two equal, balanced splits:
+- **Tuning Split (12 fixtures)**: 4 per movement (1 positive, 1 negative, 1 borderline, 1 low_visibility) used to verify initial heuristic parameters during development.
+- **Held-Out Sanity Split (12 fixtures)**: 4 per movement (1 positive, 1 negative, 1 borderline, 1 framing) reserved for unbiased evaluation of rule accuracy.
 
-Do not claim general accuracy from a tiny convenience sample.
+Rules are evaluated using `scripts/evaluate_rules.py` and regression-tested in CI via `tests/unit/test_movement_rules.py`. Evaluation language explicitly frames results as a prototype heuristic evaluation, not model validation.
 
 ## 10. Privacy and security
 

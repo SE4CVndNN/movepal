@@ -12,6 +12,7 @@
     "expected_completed": true,
     "expected_feedback_code": "great",
     "category": "positive",
+    "split": "tuning",
     "observed_consecutive_samples": 2,
     "landmarks": {
       "left_shoulder": {"x": 0.28, "y": 0.48, "z": 0, "visibility": 0.9},
@@ -37,6 +38,7 @@
     "expected_completed": true,
     "expected_feedback_code": "great",
     "category": "positive",
+    "split": "held_out",
     "observed_consecutive_samples": 2,
     "landmarks": {
       "left_shoulder": {"x": 0.42, "y": 0.38, "z": 0, "visibility": 0.9},
@@ -62,6 +64,7 @@
     "expected_completed": false,
     "expected_feedback_code": "reach_right",
     "category": "negative",
+    "split": "tuning",
     "observed_consecutive_samples": 2,
     "landmarks": {
       "left_shoulder": {"x": 0.28, "y": 0.48, "z": 0, "visibility": 0.9},
@@ -70,6 +73,32 @@
       "left_wrist": {"x": 0.4, "y": 0.6, "z": 0, "visibility": 0.9},
       "right_elbow": {"x": 0.45, "y": 0.22, "z": 0, "visibility": 0.9},
       "right_wrist": {"x": 0.3, "y": 0.1, "z": 0, "visibility": 0.9},
+      "left_hip": {"x": 0.4, "y": 0.68, "z": 0, "visibility": 0.9},
+      "right_hip": {"x": 0.6, "y": 0.68, "z": 0, "visibility": 0.9}
+    }
+  },
+  {
+    "fixture_id": "synthetic_side_reach_left_negative_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for the pictured standing side bend",
+    "description": "The body bends right although a left bend was requested.",
+    "expected_status": "retry",
+    "annotator": "MovePal team",
+    "movement": "side_reach",
+    "requested_side": "left",
+    "expected_completed": false,
+    "expected_feedback_code": "reach_left",
+    "category": "negative",
+    "split": "held_out",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {"x": 0.42, "y": 0.38, "z": 0, "visibility": 0.9},
+      "right_shoulder": {"x": 0.72, "y": 0.48, "z": 0, "visibility": 0.9},
+      "left_elbow": {"x": 0.55, "y": 0.22, "z": 0, "visibility": 0.9},
+      "left_wrist": {"x": 0.7, "y": 0.1, "z": 0, "visibility": 0.9},
+      "right_elbow": {"x": 0.67, "y": 0.55, "z": 0, "visibility": 0.9},
+      "right_wrist": {"x": 0.6, "y": 0.6, "z": 0, "visibility": 0.9},
       "left_hip": {"x": 0.4, "y": 0.68, "z": 0, "visibility": 0.9},
       "right_hip": {"x": 0.6, "y": 0.68, "z": 0, "visibility": 0.9}
     }
@@ -87,6 +116,7 @@
     "expected_completed": false,
     "expected_feedback_code": "reach_left",
     "category": "borderline",
+    "split": "tuning",
     "observed_consecutive_samples": 2,
     "landmarks": {
       "left_shoulder": {"x": 0.32, "y": 0.44, "z": 0, "visibility": 0.9},
@@ -95,6 +125,32 @@
       "left_wrist": {"x": 0.41, "y": 0.6, "z": 0, "visibility": 0.9},
       "right_elbow": {"x": 0.48, "y": 0.22, "z": 0, "visibility": 0.9},
       "right_wrist": {"x": 0.34, "y": 0.1, "z": 0, "visibility": 0.9},
+      "left_hip": {"x": 0.4, "y": 0.68, "z": 0, "visibility": 0.9},
+      "right_hip": {"x": 0.6, "y": 0.68, "z": 0, "visibility": 0.9}
+    }
+  },
+  {
+    "fixture_id": "synthetic_side_reach_right_borderline_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for the pictured standing side bend",
+    "description": "The left arm is overhead but the torso has not bent far enough right.",
+    "expected_status": "retry",
+    "annotator": "MovePal team",
+    "movement": "side_reach",
+    "requested_side": "right",
+    "expected_completed": false,
+    "expected_feedback_code": "reach_right",
+    "category": "borderline",
+    "split": "held_out",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {"x": 0.38, "y": 0.38, "z": 0, "visibility": 0.9},
+      "right_shoulder": {"x": 0.68, "y": 0.44, "z": 0, "visibility": 0.9},
+      "left_elbow": {"x": 0.52, "y": 0.22, "z": 0, "visibility": 0.9},
+      "left_wrist": {"x": 0.66, "y": 0.1, "z": 0, "visibility": 0.9},
+      "right_elbow": {"x": 0.64, "y": 0.54, "z": 0, "visibility": 0.9},
+      "right_wrist": {"x": 0.59, "y": 0.6, "z": 0, "visibility": 0.9},
       "left_hip": {"x": 0.4, "y": 0.68, "z": 0, "visibility": 0.9},
       "right_hip": {"x": 0.6, "y": 0.68, "z": 0, "visibility": 0.9}
     }
@@ -112,6 +168,7 @@
     "expected_completed": false,
     "expected_feedback_code": "full_body_missing",
     "category": "low_visibility",
+    "split": "tuning",
     "observed_consecutive_samples": 0,
     "landmarks": {
       "left_shoulder": {"x": 0.42, "y": 0.38, "z": 0, "visibility": 0.9},
@@ -120,6 +177,32 @@
       "left_wrist": {"x": 0.7, "y": 0.1, "z": 0, "visibility": 0.2},
       "right_elbow": {"x": 0.67, "y": 0.55, "z": 0, "visibility": 0.9},
       "right_wrist": {"x": 0.6, "y": 0.6, "z": 0, "visibility": 0.9},
+      "left_hip": {"x": 0.4, "y": 0.68, "z": 0, "visibility": 0.9},
+      "right_hip": {"x": 0.6, "y": 0.68, "z": 0, "visibility": 0.9}
+    }
+  },
+  {
+    "fixture_id": "synthetic_side_reach_left_framing_001",
+    "schema_version": "1.0",
+    "source_type": "synthetic",
+    "provenance_reference": "hand-authored for the pictured standing side bend",
+    "description": "Framing failure: the raised right arm is cropped low in frame, so it does not clear the overhead height threshold for a left bend.",
+    "expected_status": "retry",
+    "annotator": "MovePal team",
+    "movement": "side_reach",
+    "requested_side": "left",
+    "expected_completed": false,
+    "expected_feedback_code": "reach_left",
+    "category": "framing",
+    "split": "held_out",
+    "observed_consecutive_samples": 2,
+    "landmarks": {
+      "left_shoulder": {"x": 0.28, "y": 0.48, "z": 0, "visibility": 0.9},
+      "right_shoulder": {"x": 0.58, "y": 0.38, "z": 0, "visibility": 0.9},
+      "left_elbow": {"x": 0.33, "y": 0.55, "z": 0, "visibility": 0.9},
+      "left_wrist": {"x": 0.4, "y": 0.6, "z": 0, "visibility": 0.9},
+      "right_elbow": {"x": 0.45, "y": 0.34, "z": 0, "visibility": 0.9},
+      "right_wrist": {"x": 0.34, "y": 0.3, "z": 0, "visibility": 0.9},
       "left_hip": {"x": 0.4, "y": 0.68, "z": 0, "visibility": 0.9},
       "right_hip": {"x": 0.6, "y": 0.68, "z": 0, "visibility": 0.9}
     }
