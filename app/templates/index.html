@@ -99,11 +99,21 @@ block content %}
   <div class="camera-stage">
     <div class="camera-feed-wrapper">
       <video id="camera-preview" autoplay playsinline muted></video>
+      <canvas id="capture-canvas" hidden></canvas>
+      <div
+        id="capture-processing"
+        class="capture-processing"
+        role="status"
+        aria-live="polite"
+        hidden
+      >
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <span>Checking your pose…</span>
+      </div>
       <div id="capture-flash" class="capture-flash" aria-hidden="true"></div>
     </div>
     <div id="capture-countdown" class="capture-countdown" hidden></div>
   </div>
-  <canvas id="capture-canvas" hidden></canvas>
   <p>Your picture is only used for this game.</p>
   <p id="camera-instruction">Use the selected move side above.</p>
   <p>Reach with the selected side of your body.</p>

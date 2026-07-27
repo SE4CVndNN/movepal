@@ -319,6 +319,9 @@ function setAppState(state) {
 }
 
 function showScreen(name) {
+  if (name !== "camera-live") {
+    clearCapturedFrame();
+  }
   screens.forEach((section) => {
     section.hidden = section.dataset.screen !== name;
   });
@@ -367,11 +370,13 @@ document.querySelectorAll("[data-goto]").forEach((button) => {
 // --- camera / fallback probe ---
 let activeStream = null;
 
-void resetSession();
-
 const cameraStatus = document.querySelector("#camera-status");
 const preview = document.querySelector("#camera-preview");
+const captureCanvas = document.querySelector("#capture-canvas");
+const captureProcessing = document.querySelector("#capture-processing");
 const fallbackReason = document.querySelector("#fallback-reason");
+
+void resetSession();
 
 function isSecureContextForCamera() {
   return (
@@ -388,6 +393,7 @@ function isCameraApiSupported() {
 document
   .querySelector("#use-webcam-btn")
   ?.addEventListener("click", async () => {
+    clearCapturedFrame();
     if (!isSecureContextForCamera()) {
       if (fallbackReason)
         fallbackReason.textContent =
@@ -509,6 +515,7 @@ window.addEventListener("beforeunload", stopCamera);
 
 const MAX_CAPTURE_WIDTH = 640;
 const MAX_CAPTURE_HEIGHT = 480;
+const FRAME_REQUEST_TIMEOUT_MS = 15000;
 let requestInFlight = false;
 let captureCountdownTimerId = null;
 let captureCountdownValue = 0;
@@ -621,6 +628,22 @@ function stopCamera() {
   if (preview) preview.srcObject = null;
 }
 
+function showCapturedFrame() {
+  if (preview) preview.hidden = true;
+  if (captureCanvas) captureCanvas.hidden = false;
+  if (captureProcessing) captureProcessing.hidden = false;
+}
+
+function clearCapturedFrame() {
+  if (captureProcessing) captureProcessing.hidden = true;
+  if (captureCanvas) {
+    const context = captureCanvas.getContext("2d");
+    context?.clearRect(0, 0, captureCanvas.width, captureCanvas.height);
+    captureCanvas.hidden = true;
+  }
+  if (preview) preview.hidden = false;
+}
+
 function showCameraFallback(message) {
   if (fallbackReason) fallbackReason.textContent = message;
   stopCamera();
@@ -666,7 +689,7 @@ function getCurrentStatusElement() {
 
 function captureFrame() {
   const video = document.querySelector("#camera-preview");
-  const canvas = document.querySelector("#capture-canvas");
+  const canvas = captureCanvas;
   const statusEl = getCurrentStatusElement();
   if (!video || !canvas) return;
 
@@ -690,6 +713,7 @@ function captureFrame() {
     ctx.drawImage(video, 0, 0, width, height);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
+  showCapturedFrame();
   const requestToken = activityToken;
   // The pixels are now copied into the canvas, so release the camera before
   // encoding or uploading the image. This keeps camera access limited to the
@@ -716,7 +740,7 @@ async function uploadFrame(blob, filename, requestToken, statusEl) {
   setBusyRequest(true);
 
   const status = statusEl || getCurrentStatusElement();
-  if (status) setUploadStatus(status, "Sending frame…");
+  if (status) setUploadStatus(status, "Checking your pose…");
   updateCameraInstruction();
   const formData = new FormData();
   formData.append("image", blob, filename);
@@ -725,14 +749,20 @@ async function uploadFrame(blob, filename, requestToken, statusEl) {
 
   const progressTimeout = window.setTimeout(() => {
     if (status) {
-      status.textContent = "Still uploading… this may take a few more seconds.";
+      status.textContent = "Still checking your pose…";
     }
-  }, 8000);
+  }, 2500);
+  const requestController = new AbortController();
+  const requestTimeout = window.setTimeout(
+    () => requestController.abort(),
+    FRAME_REQUEST_TIMEOUT_MS,
+  );
 
   try {
     const response = await fetch("/api/frame", {
       method: "POST",
       body: formData,
+      signal: requestController.signal,
     });
     const payload = await response.json();
 
@@ -781,16 +811,21 @@ async function uploadFrame(blob, filename, requestToken, statusEl) {
       );
 
     return payload;
-  } catch (_error) {
+  } catch (error) {
     if (requestToken !== undefined && requestToken !== activityToken) {
       return null;
     }
+    const message =
+      error.name === "AbortError"
+        ? "Pose checking took too long. Please try again or use the no-camera fallback."
+        : "Frame upload failed. Please use the no-camera fallback or try again later.";
     showCameraFallback(
-      "Frame upload failed. Please use the no-camera fallback or try again later.",
+      message,
     );
     return null;
   } finally {
     window.clearTimeout(progressTimeout);
+    window.clearTimeout(requestTimeout);
     setBusyRequest(false);
   }
 }

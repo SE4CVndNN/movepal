@@ -63,6 +63,12 @@ is connected to the actual game flow.
 - The live preview uses `navigator.mediaDevices.getUserMedia`, draws one
   bounded frame to a hidden canvas, and immediately stops every camera track
   before encoding or uploading the picture.
+- While the server evaluates the frame, the canvas temporarily displays the
+  captured still with a loading indicator and "Checking your pose…" status
+  instead of leaving a black, disconnected video element. The canvas is
+  cleared when the result or another screen is shown; the image is never
+  written to browser storage. A 15-second request timeout prevents the UI from
+  remaining indefinitely in the checking state.
 - Every uploaded frame is sent to `/api/frame` in a `FormData` request with the field name `image`.
 - Overlapping uploads are prevented with a single `requestInFlight` guard and button disabling.
 - The camera-choice screen now shows a preview of the selected move before the child chooses camera or fallback demo.

@@ -22,6 +22,10 @@ def test_ui_includes_initial_state_and_feedback_modes(client):
     assert 'data-feedback="retry"' in body
     assert 'id="feedback-status"' in body
     assert 'aria-hidden="true"' in body
+    assert '<canvas id="capture-canvas" hidden></canvas>' in body
+    assert 'id="capture-processing"' in body
+    assert "<span>Checking your pose…</span>" in body
+    assert 'class="loading-spinner"' in body
 
 
 def test_avatar_uses_unique_gradient_ids(client):

@@ -397,7 +397,9 @@ button:active {
   width: 100%;
 }
 
-#camera-preview {
+#camera-preview,
+#capture-canvas {
+  display: block;
   width: 100%;
   max-width: 100%;
   min-height: 20rem;
@@ -406,6 +408,48 @@ button:active {
   background: black;
   box-shadow: 0 0.75rem 1.8rem rgb(23 32 51 / 12%);
   object-fit: cover;
+}
+
+#capture-canvas[hidden] {
+  display: none;
+}
+
+.capture-processing {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  z-index: 2;
+  min-width: 12rem;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 92%);
+  color: var(--color-text);
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 0.4rem 1rem rgb(23 32 51 / 18%);
+  transform: translateX(-50%);
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-right: 0.5rem;
+  vertical-align: -0.2rem;
+  border: 0.2rem solid rgb(23 32 51 / 18%);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: loading-spin 0.75s linear infinite;
+}
+
+.capture-processing[hidden] {
+  display: none;
+}
+
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .capture-countdown {
