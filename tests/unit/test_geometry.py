@@ -52,6 +52,25 @@ def test_horizontal_outward_offset_is_negative_when_wrist_crosses_midline():
     assert horizontal_outward_offset(inward_wrist, left_shoulder, "left") < 0
 
 
+@pytest.mark.parametrize(
+    "side, shoulder_x, opposite_x, wrist_x",
+    [
+        ("left", 0.65, 0.35, 0.95),
+        ("right", 0.35, 0.65, 0.05),
+    ],
+)
+def test_outward_offset_uses_observed_shoulders_for_raw_camera_orientation(
+    side, shoulder_x, opposite_x, wrist_x
+):
+    shoulder = Landmark(f"{side}_shoulder", shoulder_x, 0.4, 0.0, 0.9)
+    opposite = Landmark("opposite_shoulder", opposite_x, 0.4, 0.0, 0.9)
+    wrist = Landmark(f"{side}_wrist", wrist_x, 0.4, 0.0, 0.9)
+
+    assert horizontal_outward_offset(wrist, shoulder, side, opposite) == pytest.approx(
+        0.3
+    )
+
+
 def test_vertical_offset_is_symmetric_above_and_below():
     shoulder = Landmark("left_shoulder", 0.35, 0.4, 0.0, 0.9)
     above = Landmark("left_wrist", 0.35, 0.3, 0.0, 0.9)

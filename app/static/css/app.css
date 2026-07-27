@@ -60,36 +60,17 @@ body {
 }
 
 .site-header,
-main,
-footer {
+main {
   max-width: 44rem;
   margin: 0 auto;
   padding: var(--space-md);
 }
 
-body {
-  background:
-    radial-gradient(
-      8rem 8rem at 20% 15%,
-      rgba(255, 233, 149, 0.55),
-      transparent 30%
-    ),
-    radial-gradient(
-      6rem 6rem at 80% 10%,
-      rgba(255, 154, 179, 0.45),
-      transparent 30%
-    ),
-    radial-gradient(
-      7rem 7rem at 15% 75%,
-      rgba(139, 211, 221, 0.35),
-      transparent 28%
-    ),
-    radial-gradient(
-      10rem 10rem at 85% 75%,
-      rgba(179, 213, 255, 0.35),
-      transparent 28%
-    ),
-    linear-gradient(180deg, #fff9f0 0%, #fef0f8 35%, #fff5fd 100%);
+footer {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: var(--space-md);
+  text-align: center;
 }
 
 .site-header {
@@ -123,6 +104,26 @@ h2 {
   gap: var(--space-md);
 }
 
+.header-start {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.back-button {
+  background: linear-gradient(135deg, #c4f0ff, #89dadd);
+  color: var(--color-text);
+  border-radius: 1rem;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  box-shadow: 0 0.45rem 0.9rem rgb(58 155 168 / 28%);
+}
+
+.back-button:hover,
+.back-button:active {
+  transform: translateY(-0.08rem) scale(1.02);
+}
+
 .score-badge {
   background: var(--color-secondary);
   color: var(--color-text);
@@ -137,12 +138,134 @@ h2 {
 }
 
 .card {
+  position: relative;
   background: var(--color-surface);
   border-radius: var(--radius-lg);
-  padding: var(--space-xl) var(--space-lg);
+  padding: calc(var(--space-xl) + 1.5rem) calc(var(--space-lg) + 0.5rem)
+    var(--space-xl);
   box-shadow: 0 0.75rem 2rem rgb(23 32 51 / 10%);
   text-align: center;
   margin-top: var(--space-lg);
+}
+
+.card-back-button + h2,
+.card-back-button + .move-preview,
+.card-back-button + .feedback-header {
+  margin-top: 0.85rem;
+}
+
+.card-back-button {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  min-height: auto;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #3a3f55;
+  background: rgba(220, 244, 255, 0.85);
+  border-radius: 0.75rem;
+  box-shadow: 0 0.2rem 0.4rem rgb(58 155 168 / 14%);
+}
+
+.card-back-button:hover,
+.card-back-button:focus-visible {
+  transform: none;
+  outline: 0.15rem solid rgba(58, 155, 168, 0.35);
+}
+
+.move-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  margin: var(--space-lg) 0;
+  padding: 1.5rem 1.25rem 1.75rem;
+  border: none;
+  border-radius: 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  width: 100%;
+  max-width: 42rem;
+  box-shadow: 0 1rem 2rem rgb(23 32 51 / 12%);
+}
+
+.upload-panel,
+.fallback-upload {
+  margin: var(--space-md) auto;
+  padding: var(--space-md);
+  max-width: 32rem;
+  border: 1px solid rgba(23, 32, 51, 0.08);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.95);
+  text-align: left;
+}
+
+.upload-panel label,
+.fallback-upload label,
+.fallback-upload .fallback-help {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.upload-panel input,
+.fallback-upload input {
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.upload-panel button,
+.fallback-upload button {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.upload-panel p,
+.fallback-upload p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.move-preview img {
+  width: min(16rem, 100%);
+  height: auto;
+  max-height: 12rem;
+  object-fit: contain;
+  border-radius: 1rem;
+  box-shadow: 0 0.4rem 0.9rem rgb(23 32 51 / 10%);
+}
+
+.move-preview img.full-photo {
+  /* Keep the image large and visible */
+  border-radius: 1rem;
+  max-height: 22rem;
+  width: min(28rem, 100%);
+  object-fit: contain;
+  box-shadow: none;
+  display: block;
+}
+
+.move-preview h3,
+.move-preview p {
+  margin: 0.25rem 0 0.5rem 0;
+}
+
+.move-preview h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--color-primary-dark);
+}
+
+.move-preview p {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1.05rem;
+  max-width: 34rem;
+  text-align: center;
+  line-height: 1.6;
+  font-weight: 600;
 }
 
 .card p {
@@ -153,11 +276,11 @@ h2 {
 }
 
 .avatar {
-  width: 7rem;
-  height: 7rem;
+  width: 9rem;
+  height: 9rem;
   display: block;
   margin: 0 auto var(--space-md);
-  filter: drop-shadow(0 0.4rem 0.5rem rgb(23 32 51 / 15%));
+  filter: drop-shadow(0 0.5rem 0.8rem rgb(23 32 51 / 16%));
 }
 
 button {
@@ -186,11 +309,12 @@ button:active {
   filter: brightness(1.02);
 }
 
+.secondary,
 #use-fallback-btn,
 #stop-camera-btn {
-  background: linear-gradient(135deg, #d8eef2, #bde4eb);
+  background: linear-gradient(135deg, #f7d9e4, #d7e9f4);
   color: var(--color-text);
-  box-shadow: 0 0.3rem 0.6rem rgb(58 155 168 / 30%);
+  box-shadow: 0 0.35rem 0.8rem rgb(209 71 126 / 30%);
 }
 
 .status-badge {
@@ -215,9 +339,9 @@ button:active {
 }
 
 .status-retry {
-  background: rgba(245, 130, 174, 0.14);
-  color: var(--color-retry-dark);
-  border-color: rgba(209, 71, 126, 0.2);
+  background: rgba(139, 211, 221, 0.08);
+  color: var(--color-secondary-dark);
+  border-color: rgba(58, 155, 168, 0.16);
 }
 
 .feedback-header {
@@ -258,13 +382,161 @@ button:active {
   margin-top: var(--space-md);
 }
 
-#camera-preview {
+.camera-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
   width: 100%;
-  max-width: 24rem;
+  max-width: 34rem;
+  margin: var(--space-md) auto 0;
+}
+
+.camera-feed-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+#camera-preview {
+  transform: scaleX(-1);
+}
+
+#skeleton-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transform: scaleX(-1);
+  transform-origin: center;
+}
+
+#camera-preview,
+#capture-canvas {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-height: 20rem;
+  aspect-ratio: 4 / 3;
   border-radius: 1.5rem;
   background: black;
-  margin-top: var(--space-md);
   box-shadow: 0 0.75rem 1.8rem rgb(23 32 51 / 12%);
+  object-fit: cover;
+}
+
+#capture-canvas[hidden] {
+  display: none;
+}
+
+.capture-processing {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  z-index: 2;
+  min-width: 12rem;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 92%);
+  color: var(--color-text);
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 0.4rem 1rem rgb(23 32 51 / 18%);
+  transform: translateX(-50%);
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-right: 0.5rem;
+  vertical-align: -0.2rem;
+  border: 0.2rem solid rgb(23 32 51 / 18%);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: loading-spin 0.75s linear infinite;
+}
+
+.capture-processing[hidden] {
+  display: none;
+}
+
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.capture-countdown {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 8rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f7d9e4, #d7e9f4);
+  color: var(--color-text);
+  font-size: 1.1rem;
+  font-weight: 800;
+  box-shadow: 0 0.3rem 0.7rem rgb(23 32 51 / 12%);
+  pointer-events: none;
+  letter-spacing: 0.04em;
+  transform: scale(1);
+  transition: transform 0.2s ease;
+}
+
+.capture-countdown[hidden] {
+  display: none;
+}
+
+.capture-countdown.is-pulse {
+  animation: countdown-bounce 0.45s ease;
+}
+
+.capture-flash {
+  position: absolute;
+  inset: 0;
+  border-radius: 1.5rem;
+  background: radial-gradient(
+    circle,
+    rgba(255, 249, 198, 0.95) 0%,
+    rgba(255, 255, 255, 0.4) 70%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.capture-flash.is-visible {
+  opacity: 1;
+  animation: flash-pop 0.38s ease;
+}
+
+@keyframes countdown-bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes flash-pop {
+  0% {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
 }
 
 body[data-app-state="capturing"] .score-badge {

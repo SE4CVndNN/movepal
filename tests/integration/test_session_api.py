@@ -52,16 +52,15 @@ def test_movement_request_updates_and_persists_summary(client):
     }
 
 
-def test_repeated_success_frames_do_not_double_count(client):
+def test_repeated_success_frames_can_reward_again(client):
     client.post("/api/movement", json=SUCCESS_REQUEST)
     second = client.post("/api/movement", json=SUCCESS_REQUEST)
 
-    # The star was already awarded for this attempt (MP-017 idempotency).
-    assert second.get_json()["stars"] == 0
+    assert second.get_json()["stars"] == 1
     assert _summary(client) == {
-        "attempted_movements": 1,
-        "completed_movements": 1,
-        "stars": 1,
+        "attempted_movements": 2,
+        "completed_movements": 2,
+        "stars": 2,
     }
 
 

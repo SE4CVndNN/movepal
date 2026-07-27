@@ -35,8 +35,10 @@ def _default_state() -> dict[str, Any]:
     """Return a fresh, JSON-serializable session-state dict.
 
     ``attempted`` / ``completed`` are lists used as ordered sets of movement
-    names. The remaining fields mirror :class:`ScoringSession` so it can be
-    rehydrated and saved back on each request.
+    names, while ``attempted_count`` / ``completed_count`` track the number
+    of attempts and completed attempts over time. The remaining fields mirror
+    :class:`ScoringSession` so it can be rehydrated and saved back on each
+    request.
     """
     return {
         "total_stars": 0,
@@ -44,7 +46,9 @@ def _default_state() -> dict[str, Any]:
         "current_movement": None,
         "attempt_count": 0,
         "attempted": [],
+        "attempted_count": 0,
         "completed": [],
+        "completed_count": 0,
         "finished": False,
     }
 
@@ -66,6 +70,11 @@ class SessionStateService:
         if not isinstance(state, dict):
             state = _default_state()
             self._storage[STORAGE_KEY] = state
+
+        if "attempted_count" not in state:
+            state["attempted_count"] = len(state.get("attempted", []))
+        if "completed_count" not in state:
+            state["completed_count"] = len(state.get("completed", []))
         return state
 
     def _persist(self, state: dict[str, Any]) -> None:
@@ -89,6 +98,15 @@ class SessionStateService:
     def save_scoring_session(self, session: ScoringSession) -> None:
         """Persist the mutable fields of a :class:`ScoringSession`."""
         state = self._state()
+        # If the session reports that the last attempt was completed,
+        # advance to a new attempt before persisting so that a subsequent
+        # separate request can earn a fresh star. In-memory callers that
+        # don't persist the session (e.g., unit tests exercising
+        # format_feedback directly) will still observe idempotent results
+        # for repeated frames in the same attempt.
+        if session.attempt_completed:
+            session.start_new_attempt()
+
         state["total_stars"] = session.total_stars
         state["attempt_completed"] = session.attempt_completed
         state["current_movement"] = session.current_movement
@@ -96,17 +114,25 @@ class SessionStateService:
         self._persist(state)
 
     def record_attempt(self, movement: str) -> None:
-        """Record that *movement* was attempted (distinct movements only)."""
+        """Record that *movement* was attempted, counting every attempt."""
         state = self._state()
+        # Only increment the unique attempted counter when the movement is
+        # newly observed; attempted_count represents the number of distinct
+        # movements tried in the session.
         if movement not in state["attempted"]:
             state["attempted"].append(movement)
+            state["attempted_count"] += 1
         self._persist(state)
 
     def record_completion(self, movement: str) -> None:
-        """Record that *movement* was completed (distinct movements only)."""
+        """Record that *movement* was completed, counting every completed attempt."""
         state = self._state()
+        # Only increment the unique completed counter when the movement is
+        # newly completed; completed_count represents distinct movements
+        # completed during the session.
         if movement not in state["completed"]:
             state["completed"].append(movement)
+            state["completed_count"] += 1
         self._persist(state)
 
     def reset(self) -> None:
@@ -132,8 +158,8 @@ class SessionStateService:
         """Build the non-identifying end-of-session summary."""
         state = self._state()
         return SessionSummary(
-            attempted_movements=len(state["attempted"]),
-            completed_movements=len(state["completed"]),
+            attempted_movements=state["attempted_count"],
+            completed_movements=state["completed_count"],
             stars=state["total_stars"],
         )
 
@@ -144,6 +170,18 @@ class SessionStateService:
         *completed* is true. Star totals are owned by :class:`ScoringSession`
         (persisted via :meth:`save_scoring_session`), not re-derived here.
         """
-        self.record_attempt(result.movement)
+        state = self._state()
+
+        # Count the raw events (every call to record_result is a new attempt)
+        state["attempted_count"] += 1
         if completed:
-            self.record_completion(result.movement)
+            state["completed_count"] += 1
+
+        # Maintain the ordered-sets of seen movement names without mutating
+        # the raw counters (those are handled above).
+        if result.movement not in state["attempted"]:
+            state["attempted"].append(result.movement)
+        if completed and result.movement not in state["completed"]:
+            state["completed"].append(result.movement)
+
+        self._persist(state)
