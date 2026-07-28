@@ -76,20 +76,54 @@ Pending until a tester actually executes it.
 | Live camera/photo inference needs a separately downloaded, gitignored MediaPipe `.task` model. | Live inference does not work without local model setup. | Follow README setup or use the model-free built-in fallback. | Accepted with documented setup; fallback remains mandatory. | `README.md`; `docs/qa_handoff.md` |
 | Session state is a signed, unencrypted browser cookie and is not resumable across browsers/devices. | Clearing cookies ends progress; no cross-device history exists. | Complete one local session in one browser; store no personal data. | Accepted MVP limitation. | `docs/privacy.md`; `docs/limitations.md` section 4 |
 
-## 8. Final regression evidence
+## 8. Regression evidence by exact tested SHA
+
+Evidence from different revisions must not be combined. The following two
+records have different purposes and test counts.
+
+### 8.1 Frozen `sprint1-rc1` application evidence
+
+| Field | Value |
+| --- | --- |
+| Exact tested SHA | `bfde35e112f3846fbf1771bc362154b32c72249a` |
+| Evidence source | MP-024 clean release-candidate rehearsal |
+| Environment | Clean Linux environment; Python 3.11.15 |
+| Result | Ruff lint and formatting, pytest, compileall, and Flask health smoke passed |
+| Pytest count | **219 passed** |
+
+This is the evidence that belongs to the immutable `sprint1-rc1` tag. It was
+recorded during MP-024 and was not rerun or replaced by the MP-025 preparation
+checks below.
+
+### 8.2 MP-024 handoff/base preparation evidence
+
+The local MP-025 preparation checks were run while `HEAD` was the MP-024
+handoff SHA below. MP-024 added two QA self-check regression tests after the
+frozen application commit, which explains the increase from 219 to 221 tests.
+
+| Field | Value |
+| --- | --- |
+| Exact tested SHA | `7e359be25d0a697c79df37bf0142d5f17d1090f8` |
+| Relationship to candidate | Post-candidate MP-024 documentation/QA handoff revision |
+| MP-025 documentation commit | `3436061d55df1a04b770ac377f3821bd1e2c6246` (documentation-only change) |
+| Release meaning | Preparation evidence only; not the final externally tested SHA |
 
 | Check | Command | Environment | Result | Count / relevant error |
 | --- | --- | --- | --- | --- |
 | Ruff lint | `python -m ruff check . --exclude .tmp` | Windows 11 10.0.22631; Python 3.13.12 | Pass | All checks passed |
 | Ruff formatting | `python -m ruff format --check . --exclude .tmp` | Windows 11 10.0.22631; Python 3.13.12 | Pass | 43 files already formatted |
-| pytest | `python -m pytest -p no:cacheprovider` | Windows 11 10.0.22631; Python 3.13.12; pytest 9.0.2 | Pass | 221 passed in 2.40s |
+| pytest | `python -m pytest -p no:cacheprovider` | Windows 11 10.0.22631; Python 3.13.12; pytest 9.0.2 | Pass | **221 passed** in 2.40s |
 | compileall | `python -m compileall -q app tests scripts` | Windows 11 10.0.22631; Python 3.13.12 | Pass | Exit code 0; no errors |
 | JavaScript syntax | `node --check app/static/js/app.js` | Windows 11 10.0.22631; Node v24.14.0 | Pass | Exit code 0; no errors |
 | Deterministic QA self-check | `python scripts/qa_selfcheck.py --skip-lint` | Windows 11 10.0.22631; Python 3.13.12 | Pass with manual warnings | 46 pass, 0 fail, 3 manual warnings |
 | Flask health smoke | Flask test client `GET /api/health` | Windows 11 10.0.22631; Python 3.13.12 | Pass | HTTP 200; `{"service": "movepal", "status": "ok"}` |
-| Git status/privacy scan | `git status --short`, `git diff`, `git ls-files`, targeted prohibited-data pattern scan | Local working tree | Pass with expected untracked files | Only `.tmp/` and this document are untracked; `.tmp/` was not inspected or modified; no prohibited file name or private-data pattern found in this document |
+| Git status/privacy scan | `git status --short`, `git diff`, `git ls-files`, targeted prohibited-data pattern scan | Local working tree | Pass with expected untracked files | Only `.tmp/` and this document were untracked; `.tmp/` was not inspected or modified; no prohibited file name or private-data pattern was found in this document |
 | Manual browser/camera | Permission grant/deny, stop/reset, upload, fallback journey | Pending | Pending | Not performed |
 | Manual responsive/keyboard | 375px, keyboard-only navigation, visible focus | Pending | Pending | Not performed |
+
+Neither record is the final MP-025 external-QA decision. MP-028 through MP-033
+must still record the exact SHA they test. If a must-fix change produces a new
+candidate, affected checks and manual cases must be repeated on that new SHA.
 
 ## 9. Release decision
 
@@ -115,9 +149,10 @@ existing SHA. After review and full retest, create a new candidate such as
 - [ ] Must-fix defects resolved or release blocked.
 - [ ] Every fix has a focused regression test.
 - [ ] Every fix has independent retest evidence.
-- [x] Full automated suite passes.
+- [x] Development/handoff automated suite passes on the recorded
+      `7e359be25d0a697c79df37bf0142d5f17d1090f8` SHA.
 - [ ] Manual browser/camera QA recorded.
 - [x] Known limitations documented.
-- [x] Final tested SHA recorded.
+- [ ] Final externally tested SHA recorded.
 - [ ] Independent review completed.
-- [x] Final release decision recorded.
+- [ ] Final release decision recorded.
