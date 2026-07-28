@@ -86,7 +86,26 @@ block content %}
   <div class="upload-panel">
     <label for="camera-upload-input">Choose a photo of your move</label>
     <input type="file" id="camera-upload-input" accept="image/jpeg,image/png" />
-    <button type="button" id="camera-upload-btn">Upload photo</button>
+    <p class="upload-requirements">JPEG or PNG, up to 5 MB.</p>
+    <div id="camera-upload-preview-stage" class="upload-preview-stage" hidden>
+      <div class="upload-photo-wrapper">
+        <img
+          id="camera-upload-preview"
+          alt="Preview of the selected movement photo"
+        />
+        <canvas id="camera-upload-overlay" aria-hidden="true"></canvas>
+      </div>
+    </div>
+    <p
+      id="camera-upload-guidance"
+      class="camera-guidance"
+      role="status"
+      aria-live="polite"
+      hidden
+    ></p>
+    <button type="button" id="camera-upload-btn" disabled>
+      Check my move
+    </button>
     <p id="camera-upload-status" role="status" aria-live="polite"></p>
   </div>
 </section>
@@ -115,11 +134,22 @@ block content %}
     </div>
     <div id="capture-countdown" class="capture-countdown" hidden></div>
   </div>
-  <p>Your picture is only used for this game.</p>
-  <p id="camera-instruction">Use the selected move side above.</p>
-  <p>The camera turns off automatically after this picture.</p>
-  <button type="button" id="stop-camera-btn">Cancel camera</button>
-  <button type="button" id="capture-frame-btn">Take a picture</button>
+  <p class="camera-privacy-note">Your picture is only used for this game.</p>
+  <p
+    id="camera-instruction"
+    class="camera-guidance"
+    role="status"
+    aria-live="polite"
+  >
+    Stand in the middle so I can see you!
+  </p>
+  <p class="camera-auto-off-note">
+    The camera turns off automatically after this picture.
+  </p>
+  <div class="camera-actions">
+    <button type="button" id="stop-camera-btn">Cancel camera</button>
+    <button type="button" id="capture-frame-btn">Take a picture</button>
+  </div>
   <p id="upload-status" role="status" aria-live="polite"></p>
 </section>
 
@@ -159,7 +189,26 @@ block content %}
       id="fallback-upload-input"
       accept="image/jpeg,image/png"
     />
-    <button type="button" id="fallback-upload-btn">Upload photo</button>
+    <p class="upload-requirements">JPEG or PNG, up to 5 MB.</p>
+    <div id="fallback-upload-preview-stage" class="upload-preview-stage" hidden>
+      <div class="upload-photo-wrapper">
+        <img
+          id="fallback-upload-preview"
+          alt="Preview of the selected movement photo"
+        />
+        <canvas id="fallback-upload-overlay" aria-hidden="true"></canvas>
+      </div>
+    </div>
+    <p
+      id="fallback-upload-guidance"
+      class="camera-guidance"
+      role="status"
+      aria-live="polite"
+      hidden
+    ></p>
+    <button type="button" id="fallback-upload-btn" disabled>
+      Check my move
+    </button>
     <p id="fallback-upload-status" role="status" aria-live="polite"></p>
   </div>
 </section>

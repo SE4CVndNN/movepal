@@ -27,6 +27,18 @@ def test_ui_includes_initial_state_and_feedback_modes(client):
     assert 'id="capture-processing"' in body
     assert "<span>Checking your pose…</span>" in body
     assert 'class="loading-spinner"' in body
+    assert 'class="camera-guidance"' in body
+    assert "Stand in the middle so I can see you!" in body
+    assert 'accept="image/jpeg,image/png"' in body
+    assert 'id="camera-upload-preview"' in body
+    assert 'id="camera-upload-overlay"' in body
+    assert 'id="fallback-upload-preview"' in body
+    assert 'id="fallback-upload-overlay"' in body
+    assert body.count("JPEG or PNG, up to 5 MB.") == 2
+    assert body.count("Check my move") == 2
+    assert 'class="camera-privacy-note"' in body
+    assert 'class="camera-auto-off-note"' in body
+    assert 'class="camera-actions"' in body
 
 
 def test_avatar_uses_unique_gradient_ids(client):
