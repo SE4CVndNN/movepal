@@ -31,6 +31,9 @@ release decision.
 
 ## Repeatable verification
 
+The automated suite was also run after integrating the latest `master`,
+including the camera-guidance and photo-upload changes from PR #120.
+
 ```powershell
 python -m ruff check .
 python -m ruff format --check .

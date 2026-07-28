@@ -11,6 +11,7 @@ def test_index_page_renders_all_regions(client):
     assert 'data-screen="feedback"' in body
     assert 'data-screen="summary"' in body
     assert "avatar" in body
+    assert body.count("117-preview-7") == 2
 
 
 def test_ui_includes_initial_state_and_feedback_modes(client):

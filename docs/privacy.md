@@ -25,9 +25,11 @@ not need child data, accounts, names, email addresses, or raw recordings.
 - The browser clears the capture canvas, skeleton overlay, and camera stream
   when the user leaves the camera flow. The app does not use `localStorage` or
   `sessionStorage` for frames, landmarks, names, or secrets.
-- The current game session uses a signed browser cookie with only aggregate,
-  non-identifying counters: attempted movements, completed movements, and
-  stars. It is not encrypted, so it must never contain personal or sensitive
+- The current game session uses a signed browser cookie containing
+  non-identifying gameplay state: attempted and completed movement
+  identifiers, aggregate attempt/completion counts, the current movement and
+  attempt state, total stars, and whether the session is finished. The cookie
+  is signed but not encrypted, so it must never contain personal or sensitive
   data. Clearing browser cookies ends the session.
 - The MVP has no user accounts, database, server-side session history,
   historical analytics, or deletion-request workflow because it stores no
