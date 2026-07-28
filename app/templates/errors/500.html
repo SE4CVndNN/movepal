@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}File Too Large - MovePal{% endblock %}
+{% block title %}Something went wrong - MovePal{% endblock %}
 
 {% block content %}
 <section class="card error-card">
-  <h2>File too large</h2>
-  <p>Choose a smaller JPG or PNG photo, then try again.</p>
+  <h2>Something went wrong</h2>
+  <p>MovePal could not finish that step. Please try again.</p>
   <a class="button-link" href="{{ url_for('pages.index') }}">Return to MovePal</a>
 </section>
 {% endblock %}

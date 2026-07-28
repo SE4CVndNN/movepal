@@ -54,3 +54,16 @@ def test_camera_lifecycle_stops_streams_and_cancels_background_work():
     assert 'window.addEventListener("pagehide", stopCamera)' in app_js
     assert 'document.addEventListener("visibilitychange"' in app_js
     assert "requestedStream.getTracks().forEach((track) => track.stop())" in app_js
+
+
+def test_screen_changes_manage_keyboard_focus_and_keep_mobile_controls_usable():
+    root = Path(__file__).parents[2]
+    app_js = (root / "app" / "static" / "js" / "app.js").read_text(encoding="utf-8")
+    app_css = (root / "app" / "static" / "css" / "app.css").read_text(encoding="utf-8")
+
+    assert "function focusScreenHeading" in app_js
+    assert 'heading.setAttribute("tabindex", "-1")' in app_js
+    assert "heading.focus({ preventScroll: true })" in app_js
+    assert "focusScreenHeading(activeScreen)" in app_js
+    assert ":focus-visible" in app_css
+    assert "@media (max-width: 22.5rem)" in app_css

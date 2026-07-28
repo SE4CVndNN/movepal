@@ -37,3 +37,13 @@ def test_avatar_uses_unique_gradient_ids(client):
     assert "robotBody-activity" in body
     assert "robotBody-summary" in body
     assert "robotBody-default" not in body
+
+
+def test_server_error_page_template_is_friendly_and_actionable(app):
+    from flask import render_template
+
+    with app.test_request_context():
+        body = render_template("errors/500.html")
+
+    assert "Something went wrong" in body
+    assert "Return to MovePal" in body
