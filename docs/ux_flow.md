@@ -161,6 +161,22 @@ Use this sequence to confirm the current fallback behavior end to end:
   call POST /api/session/finish for the authoritative stars/attempted/completed
   counts.
 
+### Uploaded photo parity
+
+- Camera captures and uploaded photos both send the selected `movement` and
+  anatomical `side` to `POST /api/frame`, so they use the same MediaPipe pose
+  adapter, movement evaluator, feedback orchestration, and scoring rules.
+- Selecting a photo does not immediately upload it. The browser first checks
+  that it is a JPEG or PNG no larger than 5 MB and at least 200 by 200 pixels,
+  resizes it to the same maximum 640 by 480 evaluation bounds as a camera
+  capture, and shows a local preview.
+- The preview uses `POST /api/pose/preview` to show the same skeleton and
+  framing guidance used by the live camera. No-person, low-visibility, and
+  missing-body cases keep the final check button disabled.
+- The prepared photo is uploaded only after the user presses "Check my move."
+  Object URLs are revoked when the user leaves the upload screen, and the
+  server deletes the temporary upload after inference.
+
 ### Known limitations
 
 - Live camera access is one-shot: each attempt opens a short preview,

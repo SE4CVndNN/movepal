@@ -42,10 +42,58 @@ const startDemoButton = document.querySelector("#start-demo-btn");
 const cameraUploadInput = document.querySelector("#camera-upload-input");
 const cameraUploadButton = document.querySelector("#camera-upload-btn");
 const cameraUploadStatus = document.querySelector("#camera-upload-status");
+const cameraUploadPreviewStage = document.querySelector(
+  "#camera-upload-preview-stage",
+);
+const cameraUploadPreview = document.querySelector("#camera-upload-preview");
+const cameraUploadOverlay = document.querySelector("#camera-upload-overlay");
+const cameraUploadGuidance = document.querySelector("#camera-upload-guidance");
 const fallbackUploadInput = document.querySelector("#fallback-upload-input");
 const fallbackUploadButton = document.querySelector("#fallback-upload-btn");
 const fallbackUploadStatus = document.querySelector("#fallback-upload-status");
+const fallbackUploadPreviewStage = document.querySelector(
+  "#fallback-upload-preview-stage",
+);
+const fallbackUploadPreview = document.querySelector(
+  "#fallback-upload-preview",
+);
+const fallbackUploadOverlay = document.querySelector(
+  "#fallback-upload-overlay",
+);
+const fallbackUploadGuidance = document.querySelector(
+  "#fallback-upload-guidance",
+);
 const cameraInstruction = document.querySelector("#camera-instruction");
+
+const MAX_UPLOAD_FILE_BYTES = 5 * 1024 * 1024;
+const MIN_UPLOAD_DIMENSION = 200;
+const SUPPORTED_UPLOAD_TYPES = new Set(["image/jpeg", "image/png"]);
+
+const cameraPhotoContext = {
+  input: cameraUploadInput,
+  button: cameraUploadButton,
+  status: cameraUploadStatus,
+  stage: cameraUploadPreviewStage,
+  image: cameraUploadPreview,
+  overlay: cameraUploadOverlay,
+  guidance: cameraUploadGuidance,
+  preparedBlob: null,
+  objectUrl: null,
+  inspectionToken: 0,
+};
+
+const fallbackPhotoContext = {
+  input: fallbackUploadInput,
+  button: fallbackUploadButton,
+  status: fallbackUploadStatus,
+  stage: fallbackUploadPreviewStage,
+  image: fallbackUploadPreview,
+  overlay: fallbackUploadOverlay,
+  guidance: fallbackUploadGuidance,
+  preparedBlob: null,
+  objectUrl: null,
+  inspectionToken: 0,
+};
 
 async function refreshSessionSummary() {
   try {
@@ -313,11 +361,38 @@ const SCREEN_TO_STATE = {
   summary: "summary",
 };
 
+function clearPhotoUploadContext(context) {
+  context.inspectionToken += 1;
+  context.preparedBlob = null;
+  if (context.objectUrl) {
+    URL.revokeObjectURL(context.objectUrl);
+    context.objectUrl = null;
+  }
+  if (context.input) context.input.value = "";
+  if (context.button) context.button.disabled = true;
+  if (context.status) context.status.textContent = "";
+  if (context.guidance) {
+    context.guidance.textContent = "";
+    context.guidance.hidden = true;
+  }
+  if (context.stage) context.stage.hidden = true;
+  if (context.image) context.image.removeAttribute("src");
+  if (context.overlay) {
+    const overlayContext = context.overlay.getContext("2d");
+    overlayContext?.clearRect(
+      0,
+      0,
+      context.overlay.width,
+      context.overlay.height,
+    );
+    context.overlay.width = 0;
+    context.overlay.height = 0;
+  }
+}
+
 function clearUploadState() {
-  if (cameraUploadInput) cameraUploadInput.value = "";
-  if (cameraUploadStatus) cameraUploadStatus.textContent = "";
-  if (fallbackUploadInput) fallbackUploadInput.value = "";
-  if (fallbackUploadStatus) fallbackUploadStatus.textContent = "";
+  clearPhotoUploadContext(cameraPhotoContext);
+  clearPhotoUploadContext(fallbackPhotoContext);
 }
 
 function setAppState(state) {
@@ -512,7 +587,7 @@ document
       });
 
       transitionCameraState("finding-pose");
-      setCameraGuidance("Move into the center so I can find your pose.");
+      setCameraGuidance("Stand in the middle so I can see you!");
       startPosePreviewLoop();
     } catch (error) {
       if (
@@ -656,8 +731,14 @@ const SUPPORTED_FALLBACK_FIXTURES = {
 function setBusyRequest(isBusy) {
   requestInFlight = isBusy;
   if (captureFrameButton) captureFrameButton.disabled = isBusy;
-  if (cameraUploadButton) cameraUploadButton.disabled = isBusy;
-  if (fallbackUploadButton) fallbackUploadButton.disabled = isBusy;
+  if (cameraUploadButton) {
+    cameraUploadButton.disabled =
+      isBusy || cameraPhotoContext.preparedBlob === null;
+  }
+  if (fallbackUploadButton) {
+    fallbackUploadButton.disabled =
+      isBusy || fallbackPhotoContext.preparedBlob === null;
+  }
   sampleChoiceButtons.forEach((button) => {
     button.disabled = isBusy;
   });
@@ -682,6 +763,181 @@ function getCaptureDimensions(sourceWidth, sourceHeight) {
   }
 
   return { width, height };
+}
+
+function setPhotoGuidance(context, message) {
+  if (!context.guidance) return;
+  context.guidance.textContent = message;
+  context.guidance.hidden = false;
+}
+
+function validatePhotoFile(file) {
+  if (!file) return "Choose a photo first.";
+  if (!SUPPORTED_UPLOAD_TYPES.has(file.type)) {
+    return "Please choose a JPEG or PNG photo.";
+  }
+  if (file.size <= 0) return "That photo is empty. Choose another one.";
+  if (file.size > MAX_UPLOAD_FILE_BYTES) {
+    return "That photo is too big. Choose one under 5 MB.";
+  }
+  return null;
+}
+
+function loadPhotoIntoPreview(file, context) {
+  return new Promise((resolve, reject) => {
+    if (!context.image) {
+      reject(new Error("Photo preview is unavailable."));
+      return;
+    }
+    if (context.objectUrl) URL.revokeObjectURL(context.objectUrl);
+    context.objectUrl = URL.createObjectURL(file);
+    context.image.onload = () => {
+      const wrapper = context.image.parentElement;
+      if (wrapper) {
+        const ratio = context.image.naturalWidth / context.image.naturalHeight;
+        wrapper.style.aspectRatio =
+          `${context.image.naturalWidth} / ${context.image.naturalHeight}`;
+        wrapper.style.width =
+          ratio >= 1
+            ? "min(100%, 34rem)"
+            : `min(100%, ${Math.max(12, 32 * ratio)}rem)`;
+      }
+      resolve({
+        width: context.image.naturalWidth,
+        height: context.image.naturalHeight,
+      });
+    };
+    context.image.onerror = () => {
+      reject(new Error("The selected file is not a readable photo."));
+    };
+    context.image.src = context.objectUrl;
+    if (context.stage) context.stage.hidden = false;
+  });
+}
+
+function resizePhotoForEvaluation(image, sourceWidth, sourceHeight) {
+  const { width, height } = getCaptureDimensions(sourceWidth, sourceHeight);
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) return Promise.reject(new Error("Photo preparation failed."));
+  // JPEG has no alpha channel. A white background keeps transparent PNGs
+  // deterministic instead of turning transparent pixels black.
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, width, height);
+  context.drawImage(image, 0, 0, width, height);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) =>
+        blob
+          ? resolve({ blob, width, height })
+          : reject(new Error("Photo preparation failed.")),
+      "image/jpeg",
+      0.85,
+    );
+  });
+}
+
+async function inspectSelectedPhoto(file, context) {
+  context.inspectionToken += 1;
+  const inspectionToken = context.inspectionToken;
+  context.preparedBlob = null;
+  if (context.button) context.button.disabled = true;
+  if (context.objectUrl) {
+    URL.revokeObjectURL(context.objectUrl);
+    context.objectUrl = null;
+  }
+  if (context.image) context.image.removeAttribute("src");
+  if (context.stage) context.stage.hidden = true;
+  if (context.overlay) {
+    context.overlay
+      .getContext("2d")
+      ?.clearRect(0, 0, context.overlay.width, context.overlay.height);
+  }
+
+  const validationMessage = validatePhotoFile(file);
+  if (validationMessage) {
+    setPhotoGuidance(context, validationMessage);
+    if (context.status) context.status.textContent = "";
+    return;
+  }
+
+  if (context.status) context.status.textContent = "Looking for you…";
+  setPhotoGuidance(context, "Let’s check this photo!");
+
+  try {
+    const dimensions = await loadPhotoIntoPreview(file, context);
+    if (inspectionToken !== context.inspectionToken) return;
+    if (
+      dimensions.width < MIN_UPLOAD_DIMENSION ||
+      dimensions.height < MIN_UPLOAD_DIMENSION
+    ) {
+      setPhotoGuidance(
+        context,
+        "That photo is too small. Choose a clearer one!",
+      );
+      if (context.status) context.status.textContent = "";
+      return;
+    }
+
+    const prepared = await resizePhotoForEvaluation(
+      context.image,
+      dimensions.width,
+      dimensions.height,
+    );
+    if (inspectionToken !== context.inspectionToken) return;
+
+    const formData = new FormData();
+    formData.append("image", prepared.blob, "photo-preview.jpg");
+    formData.append("movement", currentActivity);
+    if (currentSide) formData.append("side", currentSide);
+    const response = await fetch("/api/pose/preview", {
+      method: "POST",
+      body: formData,
+    });
+    const payload = await response.json();
+    if (inspectionToken !== context.inspectionToken) return;
+
+    const skeletonDrawn =
+      response.ok &&
+      payload.pose_status === "success" &&
+      drawSkeletonOnCanvas(
+        context.overlay,
+        prepared.width,
+        prepared.height,
+        payload.display_landmarks || {},
+      );
+    const ready =
+      skeletonDrawn === true && payload.ready_for_capture === true;
+
+    if (payload.pose_status === "no_pose") {
+      setPhotoGuidance(
+        context,
+        "I can’t find a person. Choose a clear full-body photo!",
+      );
+    } else if (payload.pose_status === "error") {
+      setPhotoGuidance(context, "I can’t read this photo. Choose another one!");
+    } else {
+      setPhotoGuidance(
+        context,
+        ready
+          ? "Great! I found you. Press “Check my move”."
+          : payload.guidance || "Choose a clearer full-body photo!",
+      );
+    }
+
+    if (ready) {
+      context.preparedBlob = prepared.blob;
+      if (context.button) context.button.disabled = false;
+      if (context.status) context.status.textContent = "Ready to check.";
+    } else if (context.status) {
+      context.status.textContent = "Choose another photo and try again.";
+    }
+  } catch (_error) {
+    setPhotoGuidance(context, "That file doesn’t look like a photo!");
+    if (context.status) context.status.textContent = "";
+  }
 }
 
 function updateCaptureCountdown(value) {
@@ -747,16 +1003,14 @@ const SKELETON_CONNECTIONS = [
   ["right_knee", "right_ankle"],
 ];
 
-function drawSkeleton(displayLandmarks) {
-  if (!skeletonOverlay || !preview.videoWidth || !preview.videoHeight) {
-    return false;
-  }
-  skeletonOverlay.width = preview.videoWidth;
-  skeletonOverlay.height = preview.videoHeight;
-  const context = skeletonOverlay.getContext("2d");
+function drawSkeletonOnCanvas(canvas, width, height, displayLandmarks) {
+  if (!canvas || !width || !height) return false;
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
   if (!context) return false;
-  context.clearRect(0, 0, skeletonOverlay.width, skeletonOverlay.height);
-  context.lineWidth = Math.max(5, skeletonOverlay.width / 120);
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.lineWidth = Math.max(5, canvas.width / 120);
   context.lineCap = "round";
   context.strokeStyle = "#8cf4ff";
   for (const [firstName, secondName] of SKELETON_CONNECTIONS) {
@@ -765,8 +1019,8 @@ function drawSkeleton(displayLandmarks) {
     if (!first || !second || first.visibility < 0.5 || second.visibility < 0.5)
       continue;
     context.beginPath();
-    context.moveTo(first.x * skeletonOverlay.width, first.y * skeletonOverlay.height);
-    context.lineTo(second.x * skeletonOverlay.width, second.y * skeletonOverlay.height);
+    context.moveTo(first.x * canvas.width, first.y * canvas.height);
+    context.lineTo(second.x * canvas.width, second.y * canvas.height);
     context.stroke();
   }
   context.fillStyle = "#ffe56b";
@@ -774,15 +1028,27 @@ function drawSkeleton(displayLandmarks) {
     if (landmark.visibility < 0.5) continue;
     context.beginPath();
     context.arc(
-      landmark.x * skeletonOverlay.width,
-      landmark.y * skeletonOverlay.height,
-      Math.max(6, skeletonOverlay.width / 90),
+      landmark.x * canvas.width,
+      landmark.y * canvas.height,
+      Math.max(6, canvas.width / 90),
       0,
       Math.PI * 2,
     );
     context.fill();
   }
   return Object.keys(displayLandmarks).length > 0;
+}
+
+function drawSkeleton(displayLandmarks) {
+  if (!skeletonOverlay || !preview.videoWidth || !preview.videoHeight) {
+    return false;
+  }
+  return drawSkeletonOnCanvas(
+    skeletonOverlay,
+    preview.videoWidth,
+    preview.videoHeight,
+    displayLandmarks,
+  );
 }
 
 function stopPosePreviewLoop() {
@@ -858,7 +1124,7 @@ async function analyzePreviewFrame() {
     } else if (cameraState === "countdown") {
       // Readiness is latched once the skeleton has been stable long enough to
       // start the countdown. A single noisy preview must not cancel the photo.
-      setCameraGuidance("Hold that pose until the picture is taken.");
+      setCameraGuidance("Hold still—picture time!");
     } else {
       stablePoseChecks = 0;
       lastReadyPreviewAt = 0;
@@ -873,7 +1139,7 @@ async function analyzePreviewFrame() {
     )
       return;
     if (cameraState === "countdown") {
-      setCameraGuidance("Hold that pose until the picture is taken.");
+      setCameraGuidance("Hold still—picture time!");
       return;
     }
     stablePoseChecks = 0;
@@ -881,9 +1147,7 @@ async function analyzePreviewFrame() {
     clearSkeletonOverlay();
     cancelCountdown();
     transitionCameraState("finding-pose");
-    setCameraGuidance(
-      "I lost your pose for a moment. Hold still and try again.",
-    );
+    setCameraGuidance("I lost you—stand still and try again!");
   } finally {
     if (previewRequestController === requestController) {
       previewRequestController = null;
@@ -910,7 +1174,7 @@ function startCountdown() {
     return;
   cancelCountdown();
   transitionCameraState("countdown");
-  setCameraGuidance("Great! Hold that pose.");
+  setCameraGuidance("Great pose! Hold still!");
 
   captureCountdownValue = 3;
   updateCaptureCountdown(captureCountdownValue);
@@ -1070,9 +1334,9 @@ async function handleFrameEvaluationResult(payload, requestToken) {
   const completed = payload.completed === true;
   const poseMessages = {
     no_pose:
-      "I could not see your pose. Step back, face the camera, and try again.",
+      "I can't see you yet. Step back and face me!",
     low_visibility:
-      "I could not see the movement clearly. Improve the lighting and try again.",
+      "A little more light, please!",
     error:
       "The movement checker needs a quick reset. Please try again or use the no-camera option.",
   };
@@ -1165,7 +1429,11 @@ async function uploadFrame(blob, filename, requestToken, statusEl) {
   }
 }
 
-async function uploadSelectedPhoto(file, statusEl) {
+async function uploadSelectedPhoto(
+  file,
+  statusEl,
+  retryTarget = "camera-upload",
+) {
   if (!currentActivity) {
     if (statusEl)
       statusEl.textContent =
@@ -1177,11 +1445,10 @@ async function uploadSelectedPhoto(file, statusEl) {
     return null;
   }
 
-  if (statusEl)
-    setUploadStatus(statusEl, "Uploading photo… This may take a few seconds.");
-  feedbackRetryTarget = "camera-upload";
+  if (statusEl) setUploadStatus(statusEl, "Checking your move…");
+  feedbackRetryTarget = retryTarget;
   const requestToken = activityToken;
-  return uploadFrame(file, file.name || "upload.jpg", requestToken, statusEl);
+  return uploadFrame(file, "upload.jpg", requestToken, statusEl);
 }
 
 document.querySelector("#capture-frame-btn")?.addEventListener("click", () => {
@@ -1211,37 +1478,47 @@ document
 document
   .querySelector("#camera-upload-btn")
   ?.addEventListener("click", async () => {
-    if (cameraUploadInput?.files?.length) {
-      await uploadSelectedPhoto(cameraUploadInput.files[0], cameraUploadStatus);
+    if (cameraPhotoContext.preparedBlob) {
+      await uploadSelectedPhoto(
+        cameraPhotoContext.preparedBlob,
+        cameraUploadStatus,
+        "camera-upload",
+      );
     } else if (cameraUploadStatus) {
-      cameraUploadStatus.textContent = "Choose a photo first.";
+      cameraUploadStatus.textContent =
+        "Choose a clear photo and wait for the skeleton first.";
     }
   });
 
 document
   .querySelector("#fallback-upload-btn")
   ?.addEventListener("click", async () => {
-    if (fallbackUploadInput?.files?.length) {
+    if (fallbackPhotoContext.preparedBlob) {
       await uploadSelectedPhoto(
-        fallbackUploadInput.files[0],
+        fallbackPhotoContext.preparedBlob,
         fallbackUploadStatus,
+        "fallback-upload",
       );
     } else if (fallbackUploadStatus) {
-      fallbackUploadStatus.textContent = "Choose a photo first.";
+      fallbackUploadStatus.textContent =
+        "Choose a clear photo and wait for the skeleton first.";
     }
   });
 
 cameraUploadInput?.addEventListener("change", async () => {
   if (cameraUploadInput.files?.length) {
-    await uploadSelectedPhoto(cameraUploadInput.files[0], cameraUploadStatus);
+    await inspectSelectedPhoto(
+      cameraUploadInput.files[0],
+      cameraPhotoContext,
+    );
   }
 });
 
 fallbackUploadInput?.addEventListener("change", async () => {
   if (fallbackUploadInput.files?.length) {
-    await uploadSelectedPhoto(
+    await inspectSelectedPhoto(
       fallbackUploadInput.files[0],
-      fallbackUploadStatus,
+      fallbackPhotoContext,
     );
   }
 });

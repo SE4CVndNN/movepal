@@ -161,9 +161,9 @@ def _preview_guidance(
     pose_result: PoseResult, movement_code: str, side: str | None
 ) -> tuple[bool, str]:
     if pose_result.status == PoseStatus.NO_POSE:
-        return False, "Move into the center of the camera so I can see you."
+        return False, "Stand in the middle so I can see you!"
     if pose_result.status == PoseStatus.ERROR:
-        return False, "The movement checker needs a quick reset. Please try again."
+        return False, "Oops! Let's try the camera again."
 
     required = _required_preview_landmarks(movement_code, side)
     missing = [
@@ -173,23 +173,17 @@ def _preview_guidance(
         or pose_result.landmarks[name].visibility < PREVIEW_VISIBILITY_THRESHOLD
     ]
     if not missing:
-        return True, "Great! Hold still."
+        return True, "Great pose! Hold still!"
     if pose_result.status == PoseStatus.LOW_VISIBILITY:
-        return (
-            False,
-            "Improve the lighting so I can see your pose.",
-        )
+        return False, "A little more light, please!"
     if movement_code == "raise_both_arms":
-        return False, "Step back so I can see your shoulders and hands."
+        return False, "Step back and show me your hands!"
     if movement_code == "side_reach" and side:
         overhead_arm = "right" if side == "left" else "left"
-        return (
-            False,
-            f"Step back so I can see your hips and {overhead_arm} arm.",
-        )
+        return False, f"Show your hips and {overhead_arm} arm!"
     if movement_code == "knee_lift_or_step" and side:
-        return False, f"Make sure your {side} knee and ankle are visible."
-    return False, "Step back so I can see the body parts for this move."
+        return False, f"Show your {side} knee and ankle!"
+    return False, "Step back so I can see your move!"
 
 
 @api_bp.get("/pose/readiness")

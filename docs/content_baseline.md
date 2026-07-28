@@ -52,6 +52,36 @@ This document outlines the approved text strings for the MovePal user interface,
 - **Webcam success notification:**  
   "Camera is on! Get ready to move."
 
+### Live camera guidance
+
+> **Constraint:** Show one short instruction at a time in large, high-contrast
+> text. Use encouraging language and tell the child what to do next.
+
+- **Person not centered:** "Stand in the middle so I can see you!"
+- **Pose ready:** "Great pose! Hold still!"
+- **Low light or visibility:** "A little more light, please!"
+- **Raise-arms framing:** "Step back and show me your hands!"
+- **Side-reach framing:** "Show your hips and {side} arm!"
+- **Knee-lift framing:** "Show your {side} knee and ankle!"
+- **Countdown guidance:** "Hold still—picture time!"
+- **Temporary pose loss:** "I lost you—stand still and try again!"
+
+### Uploaded photo guidance
+
+> **Constraint:** Do not upload immediately after file selection. Show a
+> local preview, validate the file, and ask for an explicit check action.
+> Uploaded photos use the same pose adapter and movement rules as camera
+> captures.
+
+- **Allowed file summary:** "JPEG or PNG, up to 5 MB."
+- **Check action:** "Check my move"
+- **Looking for a pose:** "Looking for you…"
+- **No person found:** "I can’t find a person. Choose a clear full-body photo!"
+- **Unreadable file:** "That file doesn’t look like a photo!"
+- **Photo too large:** "That photo is too big. Choose one under 5 MB."
+- **Photo too small:** "That photo is too small. Choose a clearer one!"
+- **Ready for evaluation:** "Great! I found you. Press “Check my move”."
+
 ---
 
 ## 3. Demo & Move Selection
