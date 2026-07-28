@@ -94,6 +94,10 @@ python run.py
 ```
 
 - **Frozen-commit test result:** 219 tests pass.
+- **Clean-install rehearsal:** the exact frozen commit was exported from Git,
+  installed from scratch in a disposable Linux container using Python 3.11.15,
+  and passed Ruff lint/format, all 219 tests, compileall, model download, and
+  the Flask health smoke check on 2026-07-28.
 - **MP-024 regression result:** 46 deterministic checks pass, 0 fail; three
   browser/manual checks remain explicitly marked as warnings.
 - **Frozen-commit CI:** Windows and Ubuntu Python 3.11 jobs passed:
@@ -216,7 +220,8 @@ and retest result.
 - [x] Release-candidate SHA and tag are specified.
 - [x] Windows and Ubuntu Python 3.11 CI are green for the frozen application
       commit.
-- [ ] Fresh installation has been rehearsed from the tag.
+- [x] Fresh installation has been rehearsed from the exact commit referenced
+      by the tag.
 - [x] README installation/start/model instructions match the candidate.
 - [x] All three movements and expected outcomes are documented.
 - [x] Camera denial, upload, and fallback behavior are documented.
