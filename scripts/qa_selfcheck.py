@@ -138,12 +138,18 @@ def _load_fixture_file(name: str) -> list[dict[str, Any]]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _observed_status(payload: dict[str, Any]) -> str:
-    if not payload.get("visibility_ok", True):
-        return "low_visibility"
-    if payload.get("completed"):
-        return "success"
-    return "retry"
+def _matches_fixture_outcome(payload: dict[str, Any], fixture: dict[str, Any]) -> bool:
+    """Compare the movement API fields that are part of its public contract.
+
+    ``POST /api/movement`` returns ``completed`` and ``feedback_code`` rather
+    than the pose-adapter ``status`` enum. In particular, both a cropped
+    framing case and a low-visibility case may set ``visibility_ok`` to false
+    while retaining different fixture categories/status expectations.
+    """
+    return (
+        bool(payload.get("completed")) == bool(fixture["expected_completed"])
+        and payload.get("feedback_code") == fixture["expected_feedback_code"]
+    )
 
 
 def section_mp030(client) -> None:
@@ -164,17 +170,21 @@ def section_mp030(client) -> None:
             if "requested_side" in fx:
                 body["side"] = fx["requested_side"]
             resp = client.post("/api/movement", json=body)
-            case = f"{movement}/{fx['fixture_id']} -> expect {fx['expected_status']}"
+            case = (
+                f"{movement}/{fx['fixture_id']} -> expect "
+                f"completed={fx['expected_completed']} "
+                f"feedback={fx['expected_feedback_code']}"
+            )
             if resp.status_code != 200:
                 record("MP-030", case, False, f"HTTP {resp.status_code}")
                 continue
             payload = resp.get_json()
-            observed = _observed_status(payload)
             record(
                 "MP-030",
                 case,
-                observed == fx["expected_status"],
-                f"observed={observed} feedback_code={payload.get('feedback_code')}",
+                _matches_fixture_outcome(payload, fx),
+                f"completed={payload.get('completed')} "
+                f"feedback_code={payload.get('feedback_code')}",
             )
 
     # No pose / unsupported movement edge cases.
