@@ -30,4 +30,27 @@ def create_app(test_config: dict[str, object] | None = None) -> Flask:
             return jsonify({"status": "error", "message": "File too large."}), 413
         return render_template("errors/413.html"), 413
 
+    @app.errorhandler(500)
+    def internal_server_error(error):
+        """Return a safe response while retaining diagnostic details server-side."""
+        # Do not log request bodies, uploaded filenames, or landmark data here.
+        # Flask's exception context is retained for operators without exposing it
+        # to the browser response.
+        app.logger.error(
+            "unhandled_server_error endpoint=%s",
+            request.endpoint or "unknown",
+            exc_info=True,
+        )
+        if request.path.startswith("/api/"):
+            return (
+                jsonify(
+                    {
+                        "status": "error",
+                        "message": "Something went wrong. Please try again.",
+                    }
+                ),
+                500,
+            )
+        return render_template("errors/500.html"), 500
+
     return app

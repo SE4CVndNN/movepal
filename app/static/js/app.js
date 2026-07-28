@@ -399,6 +399,13 @@ function setAppState(state) {
   document.body.dataset.appState = state;
 }
 
+function focusScreenHeading(screen) {
+  const heading = screen.querySelector("h2");
+  if (!heading) return;
+  heading.setAttribute("tabindex", "-1");
+  heading.focus({ preventScroll: true });
+}
+
 function showScreen(name) {
   if (name !== "camera-live") {
     stopCamera();
@@ -409,6 +416,8 @@ function showScreen(name) {
   screens.forEach((section) => {
     section.hidden = section.dataset.screen !== name;
   });
+  const activeScreen = document.querySelector(`[data-screen="${name}"]`);
+  if (activeScreen) focusScreenHeading(activeScreen);
   setAppState(SCREEN_TO_STATE[name] ?? "idle");
   if (name === "camera-choice" || name === "camera-fallback") {
     updateMovePreviews();
