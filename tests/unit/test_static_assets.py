@@ -37,6 +37,18 @@ def test_camera_preparation_state_machine_and_skeleton_are_present():
     assert "Running fallback demo" not in app_js
     assert "pointer-events: none" in app_css
     assert ".capture-countdown[hidden]" in app_css
+    assert ".camera-guidance" in app_css
+    assert "font-size: clamp(1.25rem, 3vw, 1.55rem)" in app_css
+    assert ".upload-photo-wrapper" in app_css
+    assert ".camera-actions" in app_css
+    assert ".camera-privacy-note" in app_css
+    assert ".camera-auto-off-note" in app_css
+    assert "MAX_UPLOAD_FILE_BYTES = 5 * 1024 * 1024" in app_js
+    assert 'new Set(["image/jpeg", "image/png"])' in app_js
+    assert 'fetch("/api/pose/preview"' in app_js
+    assert "inspectSelectedPhoto" in app_js
+    assert "drawSkeletonOnCanvas" in app_js
+    assert "I can’t find a person." in app_js
 
 
 def test_camera_lifecycle_stops_streams_and_cancels_background_work():

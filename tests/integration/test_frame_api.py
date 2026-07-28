@@ -105,6 +105,7 @@ def test_pose_preview_is_transient_and_has_no_scoring_side_effect(client, monkey
     payload = response.get_json()
     assert response.status_code == 200
     assert payload["ready_for_capture"] is True
+    assert payload["guidance"] == "Great pose! Hold still!"
     assert set(payload) == {
         "pose_status",
         "ready_for_capture",
@@ -127,6 +128,31 @@ def test_pose_preview_is_transient_and_has_no_scoring_side_effect(client, monkey
     }
     assert before == after
     assert captured_paths and not captured_paths[0].exists()
+
+
+def test_pose_preview_reports_no_person_with_child_friendly_guidance(
+    client, monkeypatch
+):
+    class NoPoseAdapter:
+        def estimate(self, image_path):
+            return PoseResult(status=PoseStatus.NO_POSE)
+
+    monkeypatch.setattr("app.routes.api.get_pose_adapter", lambda: NoPoseAdapter())
+    response = client.post(
+        "/api/pose/preview",
+        data={
+            "image": (io.BytesIO(b"safe synthetic bytes"), "preview.jpg"),
+            "movement": "raise_both_arms",
+        },
+        content_type="multipart/form-data",
+    )
+
+    payload = response.get_json()
+    assert response.status_code == 200
+    assert payload["pose_status"] == "no_pose"
+    assert payload["ready_for_capture"] is False
+    assert payload["display_landmarks"] == {}
+    assert payload["guidance"] == "Stand in the middle so I can see you!"
 
 
 def test_process_frame_success(client, monkeypatch):
