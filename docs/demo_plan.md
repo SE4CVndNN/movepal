@@ -6,6 +6,14 @@ The final demonstration should prove that the team delivered a coherent Sprint i
 
 Target duration: **10–12 minutes**, leaving time for questions and transition.
 
+Demonstration candidate:
+
+- tag: `sprint1-rc1`;
+- frozen application SHA:
+  `bfde35e112f3846fbf1771bc362154b32c72249a`;
+- QA/release status: **Pending QA evidence** in
+  [MP-025](https://github.com/SE4CVndNN/movepal/issues/25).
+
 ## 2. Demonstration rules
 
 - Demonstrate the frozen/released commit, not an uncommitted local version.
@@ -18,16 +26,18 @@ Target duration: **10–12 minutes**, leaving time for questions and transition.
 
 ## 3. Roles
 
-Assign and record presenters before the final rehearsal:
+The following assignment matches the merged work evidence. Confirm availability
+before the rehearsal and swap a presenter/backup only with both members'
+agreement.
 
 | Segment | Presenter | Backup |
 |---|---|---|
-| Problem, users, Sprint Goal, disclaimer |  |  |
-| Scrum/GitHub process and contribution evidence |  |  |
-| Architecture and backend/API |  |  |
-| Pose and movement rules |  |  |
-| Frontend, camera, feedback, score, summary |  |  |
-| Tests, CI, QA, limitations, close |  |  |
+| Problem, users, Sprint Goal, disclaimer | `@IslamOuda85` | `@alaamadii` |
+| Scrum/GitHub process and contribution evidence | `@alaamadii` | `@fatimarajab12` |
+| Architecture and backend/API | `@AhmadKollab` | `@myarnwas` |
+| Pose and movement rules | `@myarnwas` | `@fatimarajab12` |
+| Frontend, camera, feedback, score, summary | `@JHT127` | `@IslamOuda85` |
+| Tests, CI, QA, limitations, close | `@alaamadii` | `@AhmadKollab` |
 
 Every development member should be able to explain their own contribution, even if not every member speaks for the same duration.
 
@@ -120,6 +130,15 @@ Show:
 - one defect and its fix/retest if useful;
 - the frozen commit/tag.
 
+Use the real evidence links:
+
+- [release-candidate handoff PR #122](https://github.com/SE4CVndNN/movepal/pull/122);
+- [current `master` CI run](https://github.com/SE4CVndNN/movepal/actions/runs/30352942869);
+- [final QA triage PR #123](https://github.com/SE4CVndNN/movepal/pull/123).
+
+Do not present PR #123 as a final release decision while its QA checklist is
+still incomplete.
+
 ### 10:00–11:00 — Limitations and future work
 
 Explain the most important limitations:
@@ -155,8 +174,8 @@ Fallback assets must:
 
 ## 7. Demonstration evidence checklist
 
-- [ ] Release-candidate commit/tag is recorded.
-- [ ] Fresh setup commands work.
+- [x] Release-candidate commit/tag is recorded.
+- [x] Fresh setup commands worked in the MP-024 clean Python 3.11 rehearsal.
 - [ ] Live camera was rehearsed.
 - [ ] Fallback was rehearsed independently.
 - [ ] All three movements have a success case.
@@ -164,10 +183,22 @@ Fallback assets must:
 - [ ] Points/stars and session summary are shown.
 - [ ] Invalid-input or permission behavior is shown.
 - [ ] Privacy and disclaimer are visible.
-- [ ] CI and QA evidence are ready.
-- [ ] Known limitations are stated.
+- [ ] CI and final external QA evidence are ready (CI passes; QA is pending).
+- [x] Known limitations are stated.
 - [ ] No private or identifying content appears.
 - [ ] Presentation fits within 10–12 minutes.
+
+Privacy-safe evidence that may be shown:
+
+- the GitHub Actions result and test count;
+- `/api/health` JSON;
+- deterministic fixture IDs and movement API JSON;
+- the built-in avatar/movement illustrations;
+- redacted UI screenshots that contain no person, private path, token, or
+  student email.
+
+Do not use a captured camera frame or an uploaded personal photo as
+presentation evidence.
 
 ## 8. After the demonstration
 
