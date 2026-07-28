@@ -12,6 +12,8 @@ MovePal is a **prototype for playful movement practice**. It is not a medical de
 - **External QA team:** Team A / `team-aidsign`
 - **Release-candidate freeze:** Tuesday, 28 July 2026
 - **External manual QA:** Wednesday, 29 July 2026
+- **Release-candidate tag:** `sprint1-rc1`
+- **Frozen application SHA:** `bfde35e112f3846fbf1771bc362154b32c72249a`
 - **Default branch:** `master`
 - **Python:** 3.11
 - **Repository:** private, under a GitHub Free organization
@@ -42,9 +44,17 @@ The full Product Backlog contains later improvements, but students must not begi
 
 ## Current repository status
 
-The repository starts with a small Flask application factory, a landing page, a health endpoint, service contracts, starter tests, and CI configuration. Some modules are intentionally incomplete because they are assigned Sprint tasks.
+Sprint 1 development and the MP-024 release-candidate handoff are complete on
+`master`. The frozen `sprint1-rc1` application includes the Flask game loop,
+live camera and photo input, a deterministic model-free fallback, MediaPipe
+pose extraction, three movement families, friendly feedback, session scoring
+and summary, privacy/error hardening, automated tests, and Windows/Linux CI.
 
-Do not assume a placeholder service is a finished feature. Read the assigned GitHub issue, its dependencies, and its acceptance criteria before modifying code.
+External QA is coordinated through MP-025 and MP-028 through MP-033. The
+release decision remains **Pending QA evidence** until those reports and any
+required retests are recorded. See
+[`docs/release_notes.md`](docs/release_notes.md) and
+[`docs/qa_handoff.md`](docs/qa_handoff.md).
 
 ## Start here
 
@@ -62,6 +72,13 @@ Every student should read these files before beginning an assigned issue:
 10. [`docs/limitations.md`](docs/limitations.md)
 11. [`backlog/sprint_1_plan.md`](backlog/sprint_1_plan.md)
 12. the assigned GitHub issue and every dependency referenced by that issue.
+
+Final delivery package:
+
+- [`docs/demo_plan.md`](docs/demo_plan.md)
+- [`docs/release_notes.md`](docs/release_notes.md)
+- [`docs/contribution_report.md`](docs/contribution_report.md)
+- [`docs/retrospective.md`](docs/retrospective.md)
 
 Useful planning reports:
 
@@ -98,11 +115,26 @@ If `python3.11` is not available, install Python 3.11 before continuing. Do not 
 
 ### Environment configuration (optional)
 
-The application runs with safe built-in defaults, so this step is optional for local development. Copy [`.env.example`](.env.example) to `.env` only if you want to override a default (secret key, upload size limit, debug mode):
+The application runs with development defaults, so this step is optional for
+local testing. [`.env.example`](.env.example) documents the available variable
+names, but `python run.py` does not automatically load a `.env` file. Set an
+override in the shell that starts Flask.
+
+```powershell
+$env:SECRET_KEY = "replace-with-a-random-local-value"
+$env:MAX_CONTENT_LENGTH_MB = "5"
+python run.py
+```
+
+Linux/macOS:
 
 ```bash
-cp .env.example .env
+export SECRET_KEY="replace-with-a-random-local-value"
+export MAX_CONTENT_LENGTH_MB="5"
+python run.py
 ```
+
+Never commit a real secret or a local `.env` file.
 
 ## Verify the environment
 
@@ -112,8 +144,15 @@ Run all checks from the repository root:
 python -m ruff check .
 python -m ruff format --check .
 python -m pytest
-python -m compileall app tests
+python -m compileall app tests scripts
+python scripts/qa_selfcheck.py --skip-lint
 python -c "from app import create_app; assert create_app().name == 'app'"
+```
+
+If Node.js is already installed, an additional JavaScript syntax check is:
+
+```bash
+node --check app/static/js/app.js
 ```
 
 This is the same sequence Windows and Linux CI run on every push and pull request to `master` (see `.github/workflows/ci.yml`).
@@ -176,9 +215,8 @@ app/
 └── static/                   CSS, JavaScript, images, and movement assets
 
 data/
-├── samples/                 Small privacy-safe fallback samples
 ├── schemas/                 Landmark and evaluation schemas
-└── landmarks/               Small derived fixtures; no raw private recordings
+└── landmarks/               Synthetic/derived fallback and test fixtures
 
 tests/
 ├── unit/                    Service-level deterministic tests
@@ -257,13 +295,20 @@ Read [`docs/movement_specification.md`](docs/movement_specification.md) before i
 
 ## External QA and final demonstration
 
-External QA is performed by `team-aidsign` on 29 July against one frozen release-candidate commit. QA members run manual sanity checks and open separate bug issues; they do not silently modify MovePal code.
+External QA is performed by `team-aidsign` on 29 July against
+`sprint1-rc1`. QA members run manual sanity checks and open separate bug
+issues; they do not silently modify MovePal code. If a release-critical fix is
+required, the existing tag stays immutable and a separately reviewed and
+retested candidate must be recorded.
 
 Read:
 
 - [`docs/qa_plan.md`](docs/qa_plan.md)
 - [`docs/qa_handoff.md`](docs/qa_handoff.md)
 - [`docs/demo_plan.md`](docs/demo_plan.md)
+- [`docs/release_notes.md`](docs/release_notes.md)
+- [`docs/contribution_report.md`](docs/contribution_report.md)
+- [`docs/retrospective.md`](docs/retrospective.md)
 
 ## Common problems
 
@@ -291,7 +336,10 @@ Delete and recreate the virtual environment if it was created with another Pytho
 
 ### The camera is unavailable or permission is denied
 
-Do not block the Sprint on a specific device. Use the required fallback sample path once MP-012 is merged. Record the browser, operating system, and observed permission behavior in the issue or PR.
+Do not block the demonstration on a specific device. Use the built-in
+deterministic fallback, which evaluates the selected movement through the same
+movement API without requiring a camera or pose-model download. Record the
+browser, operating system, and observed permission behavior in the QA issue.
 
 ### Tests work locally but fail in CI
 
