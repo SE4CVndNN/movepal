@@ -551,10 +551,18 @@ if (!speechRecognition) {
 
   speechRecognition.onerror = (event) => {
     if (speechStatus) {
+      const speechErrorMessages = {
+        "not-allowed":
+          "Microphone permission was denied. Allow it in the address bar.",
+        "service-not-allowed":
+          "Speech service is unavailable. Try Chrome or Edge.",
+        "no-speech": "No speech heard. Speak immediately after pressing Start.",
+        network: "Speech service needs an internet connection.",
+        aborted: "Listening stopped. Press Start to try again.",
+      };
       speechStatus.textContent =
-        event.error === "not-allowed"
-          ? "Microphone permission was denied."
-          : "Speech could not be recognized. Try again.";
+        speechErrorMessages[event.error] ||
+        `Speech error: ${event.error}. Try again.`;
     }
   };
 
@@ -568,7 +576,13 @@ if (!speechRecognition) {
 
   speechStartButton?.addEventListener("click", () => {
     if (speechResult) speechResult.textContent = "Listening…";
-    speechRecognition.start();
+    if (speechStatus) speechStatus.textContent = "Listening for your voice…";
+    try {
+      speechRecognition.start();
+    } catch (_error) {
+      if (speechStatus)
+        speechStatus.textContent = "Already listening. Say your sentence.";
+    }
   });
 
   speechStopButton?.addEventListener("click", () => {
