@@ -7,6 +7,59 @@ block content %}
   <p>MovePal is a fun game for moving, smiling, and playing.</p>
   <p>This is just a game, not a doctor tool.</p>
   <button type="button" data-goto="activity">Let’s play!</button>
+  <button type="button" class="secondary" data-goto="sign-upload">
+    Try a sign video
+  </button>
+  <button type="button" class="secondary" data-goto="speech-input">
+    Try speech to text
+  </button>
+</section>
+
+<section class="card" data-screen="sign-upload" hidden>
+  <button type="button" class="card-back-button" data-goto="start">
+    ← Back
+  </button>
+  <h2>Upload a sign video</h2>
+  <div class="upload-panel">
+    <label for="sign-upload-input">Choose a sign video</label>
+    <input type="file" id="sign-upload-input" accept="video/mp4,video/webm" />
+    <p class="upload-requirements">MP4 or WebM, up to 5 MB.</p>
+    <button type="button" id="sign-upload-btn" disabled>Recognize sign</button>
+    <p id="sign-upload-status" role="status" aria-live="polite"></p>
+    <p
+      id="sign-upload-result"
+      class="camera-guidance"
+      role="status"
+      aria-live="polite"
+      hidden
+    ></p>
+    <button type="button" id="sign-speak-btn" class="secondary" hidden>
+      Speak result
+    </button>
+  </div>
+</section>
+
+<section class="card" data-screen="speech-input" hidden>
+  <button type="button" class="card-back-button" data-goto="start">
+    ← Back
+  </button>
+  <h2>Speak to get text</h2>
+  <div class="upload-panel">
+    <p>Press start, then say a short sentence.</p>
+    <button type="button" id="speech-start-btn">Start listening</button>
+    <button type="button" id="speech-stop-btn" class="secondary" disabled>
+      Stop listening
+    </button>
+    <p id="speech-status" role="status" aria-live="polite"></p>
+    <p
+      id="speech-result"
+      class="camera-guidance"
+      role="status"
+      aria-live="polite"
+    >
+      Your words will appear here.
+    </p>
+  </div>
 </section>
 
 <section class="card" data-screen="activity" hidden>
@@ -103,9 +156,7 @@ block content %}
       aria-live="polite"
       hidden
     ></p>
-    <button type="button" id="camera-upload-btn" disabled>
-      Check my move
-    </button>
+    <button type="button" id="camera-upload-btn" disabled>Check my move</button>
     <p id="camera-upload-status" role="status" aria-live="polite"></p>
   </div>
 </section>

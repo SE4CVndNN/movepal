@@ -16,6 +16,16 @@ class BaseConfig:
     LANDMARK_DATA_DIR = BASE_DIR / "data" / "landmarks"
     ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png"}
     ALLOWED_VIDEO_EXTENSIONS = {"mp4", "webm"}
+    SIGN_MODEL_PATH = Path(
+        os.getenv("SIGN_MODEL_PATH", BASE_DIR / "data" / "experiments" / "hand_landmarker.task")
+    )
+    SIGN_CLASSIFIER_PATH = Path(
+        os.getenv(
+            "SIGN_CLASSIFIER_PATH",
+            BASE_DIR / "data" / "experiments" / "aidsign_classifier.joblib",
+        )
+    )
+    MAX_SIGN_VIDEO_FRAMES = 120
     POSE_MODEL_PATH = Path(
         os.getenv("POSE_MODEL_PATH", BASE_DIR / "pose_landmarker_lite.task")
     )

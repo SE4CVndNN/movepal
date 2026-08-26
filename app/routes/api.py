@@ -29,6 +29,7 @@ from app.services.pose_tracking import (
 )
 from app.services.session_state import SessionStateService
 from app.services.session_summary import SessionSummary
+from app.services.sign_recognition import SignRecognitionResult, SignRecognizer
 
 api_bp = Blueprint("api", __name__)
 
@@ -73,6 +74,18 @@ def get_pose_adapter() -> MediaPipePoseAdapter:
     adapter = MediaPipePoseAdapter(model_path=model_path)
     current_app.extensions["pose_adapter"] = (model_path, adapter)
     return adapter
+
+
+def get_sign_recognizer() -> SignRecognizer:
+    """Return the app-scoped sign recognizer and reuse loaded model state."""
+    model_path = current_app.config["SIGN_MODEL_PATH"]
+    classifier_path = current_app.config["SIGN_CLASSIFIER_PATH"]
+    cached = current_app.extensions.get("sign_recognizer")
+    if cached is not None and cached[:2] == (model_path, classifier_path):
+        return cached[2]
+    recognizer = SignRecognizer(model_path, classifier_path)
+    current_app.extensions["sign_recognizer"] = (model_path, classifier_path, recognizer)
+    return recognizer
 
 
 @api_bp.get("/health")
@@ -126,6 +139,52 @@ def frame():
         perf_counter() - total_started,
     )
     return _map_pose_result(result)
+
+
+@api_bp.post("/sign")
+def sign():
+    """Recognize one uploaded sign video using the verified classifier."""
+    if "video" not in request.files:
+        return jsonify({"status": "error", "message": "No video file provided."}), 400
+    file = request.files["video"]
+    filename = file.filename or ""
+    extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    mimetype = (file.mimetype or "").split(";")[0].strip().lower()
+    allowed_types = {"video/mp4", "video/webm"}
+    if (
+        extension not in current_app.config["ALLOWED_VIDEO_EXTENSIONS"]
+        or mimetype not in allowed_types
+    ):
+        return jsonify({"status": "error", "message": "Unsupported video format."}), 415
+
+    import tempfile
+
+    with tempfile.NamedTemporaryFile(suffix=f".{extension}", delete=False) as temporary:
+        temporary_path = Path(temporary.name)
+    try:
+        file.save(temporary_path)
+        result = get_sign_recognizer().recognize(
+            temporary_path, max_frames=current_app.config["MAX_SIGN_VIDEO_FRAMES"]
+        )
+    finally:
+        temporary_path.unlink(missing_ok=True)
+    return jsonify(_sign_response(result)), 200 if result.status != "error" else 500
+
+
+def _sign_response(result: SignRecognitionResult) -> dict[str, Any]:
+    return {
+        "status": result.status,
+        "label": result.label,
+        "confidence": result.confidence,
+        "frames_processed": result.frames_processed,
+        "detected_frames": result.detected_frames,
+        "message": {
+            "success": "Sign recognized.",
+            "no_hand_detected": "No hand landmarks were detected.",
+            "unavailable": "Sign recognition is not configured.",
+            "error": "Unable to process video.",
+        }.get(result.status, "Unable to process video."),
+    }
 
 
 VALID_SIDES = {"left", "right"}

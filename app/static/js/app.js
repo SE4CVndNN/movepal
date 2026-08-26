@@ -317,8 +317,7 @@ function updateCameraInstruction() {
 
   if (currentActivity === "side_reach" && currentSide) {
     const overheadArm = currentSide === "left" ? "right" : "left";
-    cameraInstruction.textContent =
-      `Lift your ${overheadArm} arm overhead and bend to your ${currentSide}.`;
+    cameraInstruction.textContent = `Lift your ${overheadArm} arm overhead and bend to your ${currentSide}.`;
     return;
   }
 
@@ -354,6 +353,8 @@ const SCREEN_TO_STATE = {
   activity: "idle",
   "camera-choice": "preparing",
   "camera-upload": "preparing",
+  "sign-upload": "preparing",
+  "speech-input": "preparing",
   "camera-live": "capturing",
   "camera-fallback": "capturing",
   "fallback-upload": "preparing",
@@ -459,6 +460,121 @@ document.querySelectorAll("[data-goto]").forEach((button) => {
     }
   });
 });
+
+const signUploadInput = document.querySelector("#sign-upload-input");
+const signUploadButton = document.querySelector("#sign-upload-btn");
+const signUploadStatus = document.querySelector("#sign-upload-status");
+const signUploadResult = document.querySelector("#sign-upload-result");
+const signSpeakButton = document.querySelector("#sign-speak-btn");
+let recognizedSign = "";
+
+signUploadInput?.addEventListener("change", () => {
+  const file = signUploadInput.files?.[0];
+  if (signUploadButton) signUploadButton.disabled = !file;
+  if (signUploadStatus) signUploadStatus.textContent = file ? file.name : "";
+  if (signUploadResult) signUploadResult.hidden = true;
+  if (signSpeakButton) signSpeakButton.hidden = true;
+});
+
+signUploadButton?.addEventListener("click", async () => {
+  const file = signUploadInput?.files?.[0];
+  if (!file) return;
+  signUploadButton.disabled = true;
+  if (signUploadStatus) signUploadStatus.textContent = "Recognizing sign…";
+  try {
+    const response = await fetch("/api/sign", {
+      method: "POST",
+      body: (() => {
+        const data = new FormData();
+        data.append("video", file);
+        return data;
+      })(),
+    });
+    const payload = await response.json();
+    recognizedSign = payload.label || "";
+    if (signUploadResult) {
+      signUploadResult.textContent = recognizedSign
+        ? `Text result: ${recognizedSign} (${Math.round((payload.confidence || 0) * 100)}% confidence)`
+        : payload.message;
+      signUploadResult.hidden = false;
+    }
+    if (signSpeakButton) signSpeakButton.hidden = !recognizedSign;
+    if (signUploadStatus) signUploadStatus.textContent = "Done.";
+  } catch (_error) {
+    if (signUploadStatus)
+      signUploadStatus.textContent = "The video could not be processed.";
+  } finally {
+    signUploadButton.disabled = false;
+  }
+});
+
+signSpeakButton?.addEventListener("click", () => {
+  if (recognizedSign && "speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(new SpeechSynthesisUtterance(recognizedSign));
+  }
+});
+
+const speechStartButton = document.querySelector("#speech-start-btn");
+const speechStopButton = document.querySelector("#speech-stop-btn");
+const speechStatus = document.querySelector("#speech-status");
+const speechResult = document.querySelector("#speech-result");
+const SpeechRecognitionAPI =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
+const speechRecognition = SpeechRecognitionAPI
+  ? new SpeechRecognitionAPI()
+  : null;
+
+if (!speechRecognition) {
+  if (speechStartButton) speechStartButton.disabled = true;
+  if (speechStatus) {
+    speechStatus.textContent =
+      "Speech recognition is not supported in this browser.";
+  }
+} else {
+  speechRecognition.continuous = false;
+  speechRecognition.interimResults = true;
+  speechRecognition.lang = "en-US";
+
+  speechRecognition.onstart = () => {
+    if (speechStartButton) speechStartButton.disabled = true;
+    if (speechStopButton) speechStopButton.disabled = false;
+    if (speechStatus) speechStatus.textContent = "Listening…";
+  };
+
+  speechRecognition.onresult = (event) => {
+    const transcript = Array.from(event.results)
+      .map((result) => result[0].transcript)
+      .join("");
+    if (speechResult) speechResult.textContent = transcript || "Listening…";
+  };
+
+  speechRecognition.onerror = (event) => {
+    if (speechStatus) {
+      speechStatus.textContent =
+        event.error === "not-allowed"
+          ? "Microphone permission was denied."
+          : "Speech could not be recognized. Try again.";
+    }
+  };
+
+  speechRecognition.onend = () => {
+    if (speechStartButton) speechStartButton.disabled = false;
+    if (speechStopButton) speechStopButton.disabled = true;
+    if (speechStatus && speechStatus.textContent === "Listening…") {
+      speechStatus.textContent = "Finished listening.";
+    }
+  };
+
+  speechStartButton?.addEventListener("click", () => {
+    if (speechResult) speechResult.textContent = "Listening…";
+    speechRecognition.start();
+  });
+
+  speechStopButton?.addEventListener("click", () => {
+    speechRecognition.stop();
+  });
+}
 
 // --- camera / fallback probe ---
 let activeStream = null;
@@ -795,8 +911,7 @@ function loadPhotoIntoPreview(file, context) {
       const wrapper = context.image.parentElement;
       if (wrapper) {
         const ratio = context.image.naturalWidth / context.image.naturalHeight;
-        wrapper.style.aspectRatio =
-          `${context.image.naturalWidth} / ${context.image.naturalHeight}`;
+        wrapper.style.aspectRatio = `${context.image.naturalWidth} / ${context.image.naturalHeight}`;
         wrapper.style.width =
           ratio >= 1
             ? "min(100%, 34rem)"
@@ -908,8 +1023,7 @@ async function inspectSelectedPhoto(file, context) {
         prepared.height,
         payload.display_landmarks || {},
       );
-    const ready =
-      skeletonDrawn === true && payload.ready_for_capture === true;
+    const ready = skeletonDrawn === true && payload.ready_for_capture === true;
 
     if (payload.pose_status === "no_pose") {
       setPhotoGuidance(
@@ -1333,10 +1447,8 @@ async function handleFrameEvaluationResult(payload, requestToken) {
   feedbackRetryTarget = "camera-choice";
   const completed = payload.completed === true;
   const poseMessages = {
-    no_pose:
-      "I can't see you yet. Step back and face me!",
-    low_visibility:
-      "A little more light, please!",
+    no_pose: "I can't see you yet. Step back and face me!",
+    low_visibility: "A little more light, please!",
     error:
       "The movement checker needs a quick reset. Please try again or use the no-camera option.",
   };
@@ -1507,10 +1619,7 @@ document
 
 cameraUploadInput?.addEventListener("change", async () => {
   if (cameraUploadInput.files?.length) {
-    await inspectSelectedPhoto(
-      cameraUploadInput.files[0],
-      cameraPhotoContext,
-    );
+    await inspectSelectedPhoto(cameraUploadInput.files[0], cameraPhotoContext);
   }
 });
 
